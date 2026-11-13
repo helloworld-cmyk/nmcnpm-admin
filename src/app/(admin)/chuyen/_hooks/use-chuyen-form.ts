@@ -32,7 +32,7 @@ export type ChuyenFormValues = {
 
 type UseChuyenFormOptions = {
   initial: ChuyenFormFields;
-  editingMa: string | null;
+  editingId: string | null;
   trips: ChuyenRecord[];
   routeDurations?: Record<string, number>;
   taixeOptions: TaiXeOption[];
@@ -53,7 +53,7 @@ const REQUIRED_FIELDS: {
 
 export function useChuyenForm({
   initial,
-  editingMa,
+  editingId,
   trips,
   routeDurations,
   taixeOptions,
@@ -106,12 +106,12 @@ export function useChuyenForm({
   const ketThuc = batDau !== null ? batDau + thoiLuong : null;
 
   const busyXe = useMemo(
-    () => buildBusyMap(trips, values.ngay, editingMa, "xe"),
-    [trips, values.ngay, editingMa]
+    () => buildBusyMap(trips, values.ngay, editingId, "xe"),
+    [trips, values.ngay, editingId]
   );
   const busyTx = useMemo(
-    () => buildBusyMap(trips, values.ngay, editingMa, "tx"),
-    [trips, values.ngay, editingMa]
+    () => buildBusyMap(trips, values.ngay, editingId, "tx"),
+    [trips, values.ngay, editingId]
   );
 
   const trungLich = (map: Map<string, BusyInterval[]>, key: string) =>

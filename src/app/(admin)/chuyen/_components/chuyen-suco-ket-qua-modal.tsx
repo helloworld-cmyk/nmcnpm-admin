@@ -12,7 +12,7 @@ type ChuyenSucoKetQuaModalProps = {
   trip: ChuyenRecord | null;
   onClose: () => void;
   onConfirm: (
-    ma: string,
+    tripId: string,
     data: { bienPhapThuc: string; ketQua: string }
   ) => void;
 };
@@ -37,7 +37,7 @@ export function ChuyenSucoKetQuaModal({
       (bienPhapThuc ? ketQuaRef : bienPhapRef).current?.focus();
       return;
     }
-    onConfirm(trip.ma, { bienPhapThuc, ketQua: ketQua.trim() });
+    onConfirm(trip.id, { bienPhapThuc, ketQua: ketQua.trim() });
   };
 
   return (

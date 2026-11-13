@@ -71,7 +71,7 @@ export type ChuyenDetailView = {
  */
 export function useChuyenDetailDrawer(trip: ChuyenRecord | null) {
   const closeBtnRef = useRef<HTMLButtonElement>(null);
-  const focusedMaRef = useRef<string | null>(null);
+  const focusedIdRef = useRef<string | null>(null);
 
   const {
     veList,
@@ -84,8 +84,8 @@ export function useChuyenDetailDrawer(trip: ChuyenRecord | null) {
   } = useChuyenDetail(trip);
 
   useEffect(() => {
-    if (!trip || focusedMaRef.current === trip.ma) return;
-    focusedMaRef.current = trip.ma;
+    if (!trip || focusedIdRef.current === trip.id) return;
+    focusedIdRef.current = trip.id;
     closeBtnRef.current?.focus();
   }, [trip]);
 

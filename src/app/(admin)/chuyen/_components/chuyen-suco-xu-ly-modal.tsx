@@ -17,7 +17,7 @@ type ChuyenSucoXuLyModalProps = {
   trip: ChuyenRecord | null;
   onClose: () => void;
   onConfirm: (
-    ma: string,
+    tripId: string,
     data: { nguoi: string; bienPhap: string }
   ) => void;
 };
@@ -43,7 +43,7 @@ export function ChuyenSucoXuLyModal({
       (nguoi ? bienPhapRef : nguoiRef).current?.focus();
       return;
     }
-    onConfirm(trip.ma, { nguoi, bienPhap });
+    onConfirm(trip.id, { nguoi, bienPhap });
   };
 
   return (

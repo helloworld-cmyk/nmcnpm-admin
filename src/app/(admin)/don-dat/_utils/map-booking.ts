@@ -1,3 +1,4 @@
+import type { PassengerTripStatus } from "@/api/booking/types";
 import type {
   CompanyBookingResponse,
   CompanyBookingSummaryResponse,
@@ -67,7 +68,7 @@ export type DonDatTicket = {
   diemTra: string;
   tien: number;
   trangThai: string;
-  passengerTripStatus: CompanyBookingSummaryResponse["passengerTripStatus"];
+  passengerTripStatus: PassengerTripStatus;
 };
 
 /* Chi tiết đơn đã map sẵn để component chỉ việc render. */

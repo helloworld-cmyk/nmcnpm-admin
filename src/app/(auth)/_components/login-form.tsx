@@ -21,13 +21,13 @@ export function LoginForm() {
     toggleShowPassword,
     invalid,
     status,
-    loading,
+    isSubmitting,
     identifierRef,
     passwordRef,
     handleIdentifierBlur,
     handlePasswordBlur,
     handleSubmit,
-  } = useLoginForm(() => router.push(REDIRECT_PATH));
+  } = useLoginForm(() => router.replace(REDIRECT_PATH));
 
   return (
     <form className="auth-form" noValidate onSubmit={handleSubmit}>
@@ -86,16 +86,10 @@ export function LoginForm() {
         />
       </FormField>
 
-      <div className="auth-row">
-        <label className="auth-check" htmlFor="remember">
-          <input type="checkbox" id="remember" name="remember" />
-          Ghi nhớ đăng nhập
-        </label>
-      </div>
-
       <button
         type="submit"
-        className={`btn btn-primary btn-lg auth-submit${loading ? " is-loading" : ""}`}
+        className={`btn btn-primary btn-lg auth-submit${isSubmitting ? " is-loading" : ""} disabled:cursor-not-allowed disabled:opacity-70`}
+        disabled={isSubmitting}
       >
         Đăng nhập
       </button>

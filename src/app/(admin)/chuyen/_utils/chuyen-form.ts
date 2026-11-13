@@ -26,12 +26,12 @@ export const overlaps = (
 export function buildBusyMap(
   trips: ChuyenRecord[],
   ngayISO: string,
-  excludeMa: string | null,
+  excludeId: string | null,
   field: "xe" | "tx"
 ) {
   const map = new Map<string, BusyInterval[]>();
   trips.forEach((trip) => {
-    if (trip.ngayISO !== ngayISO || trip.ma === excludeMa) return;
+    if (trip.ngayISO !== ngayISO || trip.id === excludeId) return;
     const key = field === "xe" ? trip.xeId : trip.taixeId;
     if (!key) return;
     const start = gioSangPhut(trip.gio);

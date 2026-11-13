@@ -1,10 +1,9 @@
 "use client";
 
 import { Icon } from "@/components/icons/icon";
-import { FormField, Select, TextInput } from "@/components/ui/form";
+import { DatePicker, FormField, Select, TextInput } from "@/components/ui/form";
 import { useChuyenFiltersStore } from "@/global-states/chuyen-filters-store";
 import {
-  NGAY_OPTIONS,
   TAIXE_FILTER_ALL,
   TAIXE_FILTER_UNASSIGNED,
   TRANG_THAI_OPTIONS,
@@ -119,16 +118,12 @@ export function ChuyenToolbar({
             </FormField>
 
             <FormField id="fNgayLoc" label="Ngày">
-              <Select
+              <DatePicker
                 id="fNgayLoc"
-                name="ngay"
                 icon="i-calendar"
                 value={filters.ngay}
                 onChange={(value) => setFilter("ngay", value)}
-                options={NGAY_OPTIONS.map((option) => ({
-                  value: option.value,
-                  label: option.label,
-                }))}
+                placeholder="Mọi ngày"
               />
             </FormField>
 

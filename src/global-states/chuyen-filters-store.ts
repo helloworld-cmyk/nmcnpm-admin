@@ -14,7 +14,7 @@ export type ChuyenFilters = {
 
 export const EMPTY_CHUYEN_FILTERS: ChuyenFilters = {
   search: "",
-  ngay: "all",
+  ngay: "",
   tuyen: "all",
   taixe: "all",
 };

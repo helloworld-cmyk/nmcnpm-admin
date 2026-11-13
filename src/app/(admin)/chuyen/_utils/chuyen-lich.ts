@@ -23,6 +23,7 @@ export type LaneResource = {
 
 /* Chuyến đã tính sẵn vị trí + nhãn để component chỉ việc render. */
 export type LaneTrip = {
+  id: string;
   ma: string;
   tuyenNgan: string;
   trangThai: TrangThaiChuyen;
@@ -37,7 +38,38 @@ export type LaneView = LaneResource & {
   trips: LaneTrip[];
 };
 
-export const LICH_SPAN = LICH_DAY_TO - LICH_DAY_FROM;
+/* Nhịp chia lưới giờ trên trục thời gian (1 giờ = 60 phút) → mỗi giờ một ô. */
+export const LICH_STEP = 60;
+
+/* Khung giờ hiển thị của lịch: mặc định 05:00–23:00, tự nới sớm hơn theo
+   bội số của LICH_STEP nếu trong ngày có chuyến khởi hành trước 05:00, để khối
+   chuyến không tràn khỏi lưới (mốc giờ sinh theo đúng nhịp lưới). */
+export type LichWindow = {
+  from: number;
+  to: number;
+  hours: string[];
+};
+
+export function buildLichWindow(dayTrips: ChuyenRecord[]): LichWindow {
+  let from = LICH_DAY_FROM;
+  dayTrips.forEach((trip) => {
+    const start = gioSangPhut(trip.gio);
+    if (start < from) from = start;
+  });
+  if (from < LICH_DAY_FROM) {
+    from = Math.max(
+      0,
+      LICH_DAY_FROM -
+        Math.ceil((LICH_DAY_FROM - from) / LICH_STEP) * LICH_STEP
+    );
+  }
+  const to = from + Math.ceil((LICH_DAY_TO - from) / LICH_STEP) * LICH_STEP;
+  const hours: string[] = [];
+  for (let phut = from; phut < to; phut += LICH_STEP) {
+    hours.push(phutSangGio(phut));
+  }
+  return { from, to, hours };
+}
 
 const NONE_DRIVER: LaneResource = {
   id: "chua-phan-cong",
@@ -102,12 +134,21 @@ export function metaLan(lane: LaneResource, list: ChuyenRecord[]) {
   return `${lane.meta} · Chạy ${phutSangGio(Math.min(...starts))}–${phutSangGio(Math.max(...ends))}`;
 }
 
-/* Vị trí % của khối chuyến trên trục thời gian của làn. */
-export function viTriKhoi(gio: string, thoiLuong: number) {
+/* Vị trí % của khối chuyến trên trục thời gian của làn (kẹp trong [0, 100]
+   để chuyến ngoài khung giờ không tràn khỏi lưới). */
+export function viTriKhoi(
+  gio: string,
+  thoiLuong: number,
+  window: LichWindow
+) {
   const start = gioSangPhut(gio);
   const dur = thoiLuong || 90;
-  const left = ((start - LICH_DAY_FROM) / LICH_SPAN) * 100;
-  const width = Math.min((dur / LICH_SPAN) * 100, 100 - left);
+  const span = window.to - window.from;
+  const left = Math.max(
+    0,
+    Math.min(((start - window.from) / span) * 100, 100)
+  );
+  const width = Math.max(0, Math.min((dur / span) * 100, 100 - left));
   return { left, width };
 }
 
@@ -126,19 +167,22 @@ export function prefillTheoLan(
 export function gioTuViTriTrack(
   clientX: number,
   left: number,
-  width: number
+  width: number,
+  window: LichWindow
 ): string | null {
   if (!width) return null;
+  const span = window.to - window.from;
   const ratio = (clientX - left) / width;
-  const phut = LICH_DAY_FROM + Math.round((ratio * LICH_SPAN) / 30) * 30;
-  return phutSangGio(Math.max(LICH_DAY_FROM, Math.min(phut, LICH_DAY_TO - 30)));
+  const phut = window.from + Math.round((ratio * span) / 30) * 30;
+  return phutSangGio(Math.max(window.from, Math.min(phut, window.to - 30)));
 }
 
 export function buildLaneViews(
   mode: LaneMode,
   xeOptions: XeOption[],
   taixeOptions: TaiXeOption[],
-  dayTrips: ChuyenRecord[]
+  dayTrips: ChuyenRecord[],
+  window: LichWindow
 ): LaneView[] {
   return buildLanes(mode, xeOptions, taixeOptions).map((lane) => {
     const list = tripsTheoLan(dayTrips, lane, mode);
@@ -146,8 +190,9 @@ export function buildLaneViews(
       ...lane,
       metaLabel: metaLan(lane, list),
       trips: list.map((trip) => {
-        const { left, width } = viTriKhoi(trip.gio, trip.thoiLuong);
+        const { left, width } = viTriKhoi(trip.gio, trip.thoiLuong, window);
         return {
+          id: trip.id,
           ma: trip.ma,
           tuyenNgan: tuyenNgan(trip.tuyen),
           trangThai: trip.trangThai,

@@ -114,27 +114,6 @@
   height: 15px;
 }
 
-.btn-danger {
-  background: var(--red-600);
-  color: #fff;
-  box-shadow: 0 12px 26px -14px rgba(220, 38, 38, 0.85);
-}
-
-.btn-danger:hover {
-  background: #b91c1c;
-  transform: translateY(-1px);
-}
-
-.btn-danger:active {
-  transform: translateY(0);
-}
-
-.btn-danger:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  transform: none;
-}
-
 /* Nút icon vuông trong ô thao tác (sửa/hủy chuyến) */
 .row-icon-btn {
   width: 42px;

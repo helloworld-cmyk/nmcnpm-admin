@@ -27,7 +27,6 @@ export type ChuyenRecord = {
      Các thao tác backend chưa hỗ trợ (hủy, sự cố, phân công) chỉ lưu cục bộ theo id này. */
   id: string;
   ma: string;
-  ngayKey: "hom-qua" | "hom-nay" | "ngay-mai" | "khac";
   ngayISO: string;
   gio: string;
   tuyenId: string;
@@ -91,13 +90,6 @@ export const TRANG_THAI_OPTIONS: {
   { value: "da-huy", label: "Đã hủy" },
 ];
 
-export const NGAY_OPTIONS: { value: string; label: string }[] = [
-  { value: "all", label: "Mọi ngày" },
-  { value: "hom-nay", label: "Hôm nay" },
-  { value: "ngay-mai", label: "Ngày mai" },
-  { value: "hom-qua", label: "Hôm qua" },
-];
-
 /* Giá trị sentinel cho bộ lọc tài xế (không phải id thật). */
 export const TAIXE_FILTER_ALL = "all";
 export const TAIXE_FILTER_UNASSIGNED = "chua-phan-cong";
@@ -158,17 +150,6 @@ export const bienPhapLabel = (value?: string) =>
 
 export const LICH_DAY_FROM = 5 * 60;
 export const LICH_DAY_TO = 23 * 60;
-export const LICH_HOURS = [
-  "05:00",
-  "07:00",
-  "09:00",
-  "11:00",
-  "13:00",
-  "15:00",
-  "17:00",
-  "19:00",
-  "21:00",
-];
 
 const chuCaiDau = (ten: string) =>
   ten
@@ -210,14 +191,6 @@ export const lechNgay = (ngayISO: string) => {
   const now = new Date();
   const moc = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return Math.round((target.getTime() - moc.getTime()) / 86400000);
-};
-
-export const isoSangNhan = (ngayISO: string) => {
-  const lech = lechNgay(ngayISO);
-  if (lech === 0) return "hom-nay";
-  if (lech === 1) return "ngay-mai";
-  if (lech === -1) return "hom-qua";
-  return "khac";
 };
 
 export const isoSangNhanSub = (ngayISO: string) => {

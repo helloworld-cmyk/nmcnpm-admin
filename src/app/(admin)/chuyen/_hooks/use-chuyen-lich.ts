@@ -10,6 +10,7 @@ import {
 } from "../_data/chuyen";
 import {
   buildLaneViews,
+  buildLichWindow,
   gioTuViTriTrack,
   prefillTheoLan,
   type LaneMode,
@@ -44,9 +45,11 @@ export function useChuyenLich({
     [trips, ngayISO]
   );
 
+  const lichWindow = useMemo(() => buildLichWindow(dayTrips), [dayTrips]);
+
   const lanes = useMemo(
-    () => buildLaneViews(mode, xeOptions, taixeOptions, dayTrips),
-    [mode, xeOptions, taixeOptions, dayTrips]
+    () => buildLaneViews(mode, xeOptions, taixeOptions, dayTrips, lichWindow),
+    [mode, xeOptions, taixeOptions, dayTrips, lichWindow]
   );
 
   const setNgay = useCallback((iso: string) => {
@@ -62,11 +65,16 @@ export function useChuyenLich({
   const handleTrackClick = useCallback(
     (event: MouseEvent<HTMLDivElement>, lane: LaneView) => {
       const rect = event.currentTarget.getBoundingClientRect();
-      const gio = gioTuViTriTrack(event.clientX, rect.left, rect.width);
+      const gio = gioTuViTriTrack(
+        event.clientX,
+        rect.left,
+        rect.width,
+        lichWindow
+      );
       if (!gio) return;
       onCreate({ ...prefillTheoLan(lane, mode, ngayISO), gio });
     },
-    [onCreate, mode, ngayISO]
+    [onCreate, mode, ngayISO, lichWindow]
   );
 
   return {
@@ -74,6 +82,7 @@ export function useChuyenLich({
     mode,
     hasTrips: dayTrips.length > 0,
     lanes,
+    lichWindow,
     setMode,
     setNgay,
     createFor,

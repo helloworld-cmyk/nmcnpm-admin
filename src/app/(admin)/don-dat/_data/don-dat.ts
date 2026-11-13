@@ -64,3 +64,9 @@ export const SO_DONG_MOI_TRANG = 10;
 
 /* Số ký tự tối đa của lý do hủy đơn (ràng buộc backend). */
 export const LY_DO_HUY_MAX = 500;
+
+/* Định dạng tiền theo tiền tệ của đơn (mặc định VND → hậu tố "đ"). */
+export function formatTien(value: number, currency = "VND"): string {
+  const amount = value.toLocaleString("vi-VN");
+  return currency === "VND" ? `${amount}đ` : `${amount} ${currency}`;
+}

@@ -1,5 +1,6 @@
 import { STORAGE_KEYS } from "@/config/constants/storage";
-import { getItem, setItem } from "@/config/storage";
+import { getItem } from "@/config/storage";
+import { useSessionStore } from "@/global-states/session-store";
 
 import { NoAuthClient } from "../../client/no-auth-client";
 import { APP_CODE, ApiError, wrapRequest } from "../../types";
@@ -17,7 +18,7 @@ export type RefreshResponse = {
 };
 
 /* Gọi API làm mới token bằng refresh token hiện có. */
-export async function requestNewTokensAPI(
+async function requestNewTokensAPI(
   refreshToken: string
 ): Promise<RefreshResponse> {
   const response = await NoAuthClient.post<RefreshResponse>(
@@ -28,9 +29,9 @@ export async function requestNewTokensAPI(
 }
 
 /* Gộp nhiều yêu cầu làm mới đồng thời thành một lần gọi API duy nhất. */
-let refreshPromise: Promise<string> | null = null;
+let refreshPromise: Promise<RefreshResponse> | null = null;
 
-async function refreshAccessTokenOnce(): Promise<string> {
+async function refreshSessionOnce(): Promise<RefreshResponse> {
   const refreshToken = getItem(STORAGE_KEYS.REFRESH_TOKEN);
   if (!refreshToken) {
     throw new ApiError(APP_CODE.INVALID_TOKEN, "Chưa có refresh token");
@@ -38,9 +39,12 @@ async function refreshAccessTokenOnce(): Promise<string> {
 
   try {
     const tokens = await requestNewTokensAPI(refreshToken);
-    setItem(STORAGE_KEYS.ACCESS_TOKEN, tokens.accessToken);
-    setItem(STORAGE_KEYS.REFRESH_TOKEN, tokens.refreshToken);
-    return tokens.accessToken;
+    useSessionStore.getState().applyTokens({
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      expiresIn: tokens.expiresIn,
+    });
+    return tokens;
   } catch (error) {
     if (error instanceof ApiError) throw error;
     throw new ApiError(
@@ -50,10 +54,10 @@ async function refreshAccessTokenOnce(): Promise<string> {
   }
 }
 
-/* Lấy access token mới; các lời gọi song song dùng chung một promise. */
-export function refreshAccessTokenAPI(): Promise<string> {
+/* Lấy cặp token mới; các lời gọi song song dùng chung một promise. */
+export function refreshAccessTokenAPI(): Promise<RefreshResponse> {
   if (!refreshPromise) {
-    refreshPromise = refreshAccessTokenOnce().finally(() => {
+    refreshPromise = refreshSessionOnce().finally(() => {
       refreshPromise = null;
     });
   }

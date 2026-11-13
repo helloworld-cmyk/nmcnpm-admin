@@ -5,9 +5,12 @@ import {
   type InternalAxiosRequestConfig,
 } from "axios";
 import { STORAGE_KEYS } from "@/config/constants/storage";
-import { getItem, removeItem } from "@/config/storage";
+import { getItem } from "@/config/storage";
+import { useSessionStore } from "@/global-states/session-store";
 
-import { refreshAccessTokenAPI } from "./auth/api/refresh";
+import { getQueryClient } from "./query-client-registry";
+
+import { refreshAccessTokenAPI, type RefreshResponse } from "./auth/api/refresh";
 import { AuthClient } from "./client/auth-client";
 import { NoAuthClient } from "./client/no-auth-client";
 import { APP_CODE, ApiError, type ApiEnvelope } from "./types";
@@ -77,9 +80,15 @@ function isAuthFailure(error: unknown): boolean {
   return false;
 }
 
-/* Kết thúc khả năng làm mới: bỏ refresh token để không thử lại lặp vô hạn. */
-function stopRefreshing(): void {
-  removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+/*
+ * Phiên không thể tiếp tục: xóa toàn bộ token, hồ sơ người dùng, hãng đang chọn
+ * và cache query (vd. ["me"]) để lần đăng nhập sau không dùng lại dữ liệu của
+ * người trước. Interceptor không có router nên chỉ cập nhật store — SessionGate
+ * thấy `user === null` sẽ tự chuyển về trang đăng nhập.
+ */
+function endSession(): void {
+  useSessionStore.getState().logout();
+  getQueryClient()?.clear();
 }
 
 /* Gắn access token hiện có vào mọi yêu cầu của client cần xác thực. */
@@ -96,7 +105,7 @@ function attachAuthRequestInterceptor(client: AxiosInstance): void {
 /* Gắn xử lý envelope chung; client cần xác thực truyền thêm hàm làm mới token. */
 function attachResponseInterceptor(
   client: AxiosInstance,
-  refreshToken?: () => Promise<string>
+  refreshToken?: () => Promise<RefreshResponse>
 ): void {
   /*
    * 1) Chuẩn hóa envelope TRƯỚC: lỗi nghiệp vụ (vd. code INVALID_TOKEN trả về
@@ -113,8 +122,8 @@ function attachResponseInterceptor(
       if (!original._retry && getItem(STORAGE_KEYS.REFRESH_TOKEN)) {
         original._retry = true;
         try {
-          const accessToken = await refreshToken();
-          original.headers.Authorization = `Bearer ${accessToken}`;
+          const tokens = await refreshToken();
+          original.headers.Authorization = `Bearer ${tokens.accessToken}`;
           return client(original);
         } catch {
           /* Làm mới thất bại -> kết thúc phiên ở dưới. */
@@ -125,7 +134,7 @@ function attachResponseInterceptor(
        * Không thể làm mới (hết refresh token / đã thử lại / refresh thất bại):
        * ngừng xoay token và báo người dùng đăng xuất rồi đăng nhập lại.
        */
-      stopRefreshing();
+      endSession();
       return Promise.reject(
         new ApiError(APP_CODE.INVALID_TOKEN, SESSION_EXPIRED_MESSAGE, 401)
       );

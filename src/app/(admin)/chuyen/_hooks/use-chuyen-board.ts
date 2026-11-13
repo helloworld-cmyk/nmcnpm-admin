@@ -33,7 +33,6 @@ import {
   TAIXE_FILTER_UNASSIGNED,
   coTheCongBo,
   coTheSua,
-  isoSangNhan,
   taoMaChuyen,
   type ChuyenFormTarget,
   type ChuyenLichPrefill,
@@ -53,7 +52,7 @@ import { useChuyenTabTrips } from "./use-chuyen-tab-trips";
 
 type FormState = { key: number; target: ChuyenFormTarget };
 
-type SucoState = { key: number; ma: string; step: "nhan" | "ket-qua" };
+type SucoState = { key: number; tripId: string; step: "nhan" | "ket-qua" };
 
 /*
  * Toàn bộ state + nghiệp vụ của màn Chuyến (truy vấn, lọc/sắp xếp, phân trang,
@@ -78,10 +77,10 @@ export function useChuyenBoard() {
   const [overrides, setOverrides] = useState<Record<string, Partial<ChuyenRecord>>>(
     {}
   );
-  const [detailMa, setDetailMa] = useState<string | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
   const [formState, setFormState] = useState<FormState | null>(null);
-  const [cancelMa, setCancelMa] = useState<string | null>(null);
-  const [deleteMa, setDeleteMa] = useState<string | null>(null);
+  const [cancelId, setCancelId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [sucoState, setSucoState] = useState<SucoState | null>(null);
   const [toast, setToast] = useState<ToastData | null>(null);
 
@@ -254,7 +253,15 @@ export function useChuyenBoard() {
       tab === "sap-toi"
         ? (tripsQuery.data ?? []).filter((trip) => trip.status === "DRAFT")
         : [];
-    return decorate([...tabSource.raw, ...drafts]);
+    /*
+     * Endpoint /upcoming có thể đã trả cả chuyến nháp, cộng thêm danh sách nháp
+     * ghép tay sẽ sinh dòng trùng (cùng id/mã) → gộp theo id trước khi hiển thị.
+     */
+    const byId = new Map<string, TripResponse>();
+    [...tabSource.raw, ...drafts].forEach((trip) => {
+      byId.set(trip.id, trip);
+    });
+    return decorate(Array.from(byId.values()));
   }, [tabSource.raw, tab, trips, tripsQuery.data, decorate]);
 
   const counts = useMemo(() => {
@@ -268,7 +275,7 @@ export function useChuyenBoard() {
   const filtered = useMemo(() => {
     const keyword = filters.search.trim().toLowerCase();
     return tabTrips.filter((trip) => {
-      if (filters.ngay !== "all" && trip.ngayKey !== filters.ngay) return false;
+      if (filters.ngay && trip.ngayISO !== filters.ngay) return false;
       if (filters.tuyen !== "all" && trip.tuyenId !== filters.tuyen) return false;
       if (filters.taixe !== "all") {
         const khop =
@@ -321,10 +328,10 @@ export function useChuyenBoard() {
     if (page > pageCount) setPage(pageCount);
   }, [page, pageCount, setPage]);
 
-  const detailTrip = trips.find((trip) => trip.ma === detailMa) ?? null;
-  const cancelTrip = trips.find((trip) => trip.ma === cancelMa) ?? null;
-  const deleteTrip = trips.find((trip) => trip.ma === deleteMa) ?? null;
-  const sucoTrip = trips.find((trip) => trip.ma === sucoState?.ma) ?? null;
+  const detailTrip = trips.find((trip) => trip.id === detailId) ?? null;
+  const cancelTrip = trips.find((trip) => trip.id === cancelId) ?? null;
+  const deleteTrip = trips.find((trip) => trip.id === deleteId) ?? null;
+  const sucoTrip = trips.find((trip) => trip.id === sucoState?.tripId) ?? null;
 
   const setOverride = useCallback(
     (tripId: string, patch: Partial<ChuyenRecord>) => {
@@ -346,44 +353,50 @@ export function useChuyenBoard() {
   }, []);
 
   const openEdit = useCallback((trip: ChuyenRecord) => {
-    setDetailMa(null);
+    setDetailId(null);
     setFormState((prev) => ({
       key: (prev?.key ?? 0) + 1,
       target: { mode: "edit", trip },
     }));
   }, []);
 
-  const openDetail = useCallback((ma: string) => setDetailMa(ma), []);
+  const openDetail = useCallback((tripId: string) => setDetailId(tripId), []);
 
-  const openCancelFromTable = useCallback((ma: string) => setCancelMa(ma), []);
+  const openCancelFromTable = useCallback(
+    (tripId: string) => setCancelId(tripId),
+    []
+  );
 
   const openCancelFromDrawer = useCallback((trip: ChuyenRecord) => {
-    setDetailMa(null);
-    setCancelMa(trip.ma);
+    setDetailId(null);
+    setCancelId(trip.id);
   }, []);
 
-  const openDeleteFromTable = useCallback((ma: string) => setDeleteMa(ma), []);
+  const openDeleteFromTable = useCallback(
+    (tripId: string) => setDeleteId(tripId),
+    []
+  );
 
   const openDeleteFromDrawer = useCallback((trip: ChuyenRecord) => {
-    setDetailMa(null);
-    setDeleteMa(trip.ma);
+    setDetailId(null);
+    setDeleteId(trip.id);
   }, []);
 
   const openSuco = useCallback(
     (trip: ChuyenRecord, step: "nhan" | "ket-qua") => {
       setSucoState((prev) => ({
         key: (prev?.key ?? 0) + 1,
-        ma: trip.ma,
+        tripId: trip.id,
         step,
       }));
     },
     []
   );
 
-  const closeDetail = useCallback(() => setDetailMa(null), []);
+  const closeDetail = useCallback(() => setDetailId(null), []);
   const closeForm = useCallback(() => setFormState(null), []);
-  const closeCancel = useCallback(() => setCancelMa(null), []);
-  const closeDelete = useCallback(() => setDeleteMa(null), []);
+  const closeCancel = useCallback(() => setCancelId(null), []);
+  const closeDelete = useCallback(() => setDeleteId(null), []);
   const closeSuco = useCallback(() => setSucoState(null), []);
 
   /*
@@ -405,7 +418,6 @@ export function useChuyenBoard() {
         : (trip?.tuyen ?? "");
       const patch: Partial<ChuyenRecord> = {
         ngayISO: values.ngay,
-        ngayKey: isoSangNhan(values.ngay),
         gio: values.gio,
         tuyenId: values.tuyen,
         tuyen: tuyenName || (trip?.tuyen ?? ""),
@@ -637,7 +649,7 @@ export function useChuyenBoard() {
             queryClient.invalidateQueries({
               queryKey: ["company-trip-bookings", companyId, cancelTrip.id],
             });
-            setCancelMa(null);
+            setCancelId(null);
             setToast({
               message: `Đã hủy chuyến ${cancelTrip.ma}. Vé liên quan đã chuyển sang Đã hủy.`,
               type: "success",
@@ -665,7 +677,7 @@ export function useChuyenBoard() {
           queryClient.invalidateQueries({
             queryKey: ["company-trip-assignment", companyId],
           });
-          setDeleteMa(null);
+          setDeleteId(null);
           setToast({
             message: `Đã xóa chuyến nháp ${temp?.ma ?? ""}.`,
             type: "success",
@@ -684,8 +696,8 @@ export function useChuyenBoard() {
 
   /* Sự cố: backend chưa có endpoint → giữ cục bộ, không persist. */
   const handleSucoNhan = useCallback(
-    (ma: string, data: { nguoi: string; bienPhap: string }) => {
-      const trip = trips.find((item) => item.ma === ma);
+    (tripId: string, data: { nguoi: string; bienPhap: string }) => {
+      const trip = trips.find((item) => item.id === tripId);
       if (trip?.suco) {
         setOverride(trip.id, {
           suco: {
@@ -698,7 +710,7 @@ export function useChuyenBoard() {
       }
       setSucoState(null);
       setToast({
-        message: `Đã nhận xử lý sự cố ${ma} (lưu tạm — backend chưa hỗ trợ)`,
+        message: `Đã nhận xử lý sự cố ${trip?.ma ?? ""} (lưu tạm — backend chưa hỗ trợ)`,
         type: "success",
       });
     },
@@ -706,8 +718,8 @@ export function useChuyenBoard() {
   );
 
   const handleSucoKetQua = useCallback(
-    (ma: string, data: { bienPhapThuc: string; ketQua: string }) => {
-      const trip = trips.find((item) => item.ma === ma);
+    (tripId: string, data: { bienPhapThuc: string; ketQua: string }) => {
+      const trip = trips.find((item) => item.id === tripId);
       if (trip?.suco) {
         setOverride(trip.id, {
           suco: {
@@ -721,7 +733,7 @@ export function useChuyenBoard() {
       }
       setSucoState(null);
       setToast({
-        message: `Đã ghi nhận kết quả và đóng sự cố ${ma} (lưu tạm — backend chưa hỗ trợ)`,
+        message: `Đã ghi nhận kết quả và đóng sự cố ${trip?.ma ?? ""} (lưu tạm — backend chưa hỗ trợ)`,
         type: "success",
       });
     },

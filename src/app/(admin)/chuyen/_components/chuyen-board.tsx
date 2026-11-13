@@ -172,7 +172,7 @@ export function ChuyenBoard() {
 
       {cancelTrip && (
         <ChuyenCancelModal
-          key={cancelTrip.ma}
+          key={cancelTrip.id}
           trip={cancelTrip}
           onClose={closeCancel}
           onConfirm={handleConfirmCancel}
@@ -182,7 +182,7 @@ export function ChuyenBoard() {
 
       {deleteTrip && (
         <ChuyenDeleteModal
-          key={deleteTrip.ma}
+          key={deleteTrip.id}
           trip={deleteTrip}
           onClose={closeDelete}
           onConfirm={handleConfirmDelete}

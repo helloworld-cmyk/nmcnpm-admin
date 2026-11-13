@@ -29,7 +29,7 @@ const NAV_ITEM_ACTIVE_CLASS =
   "bg-[var(--navy-700)] text-white before:absolute before:inset-y-[11px] before:left-0 before:w-[3px] before:rounded-[3px] before:bg-[var(--sky-500)] before:content-['']";
 
 const TOP_ICON_BUTTON_CLASS =
-  "grid h-11 w-11 flex-none place-items-center rounded-xl border border-[var(--border)] bg-white text-[var(--slate-600)] transition-colors hover:border-[var(--sky-300)] hover:bg-[var(--sky-50)] hover:text-[var(--sky-700)]";
+  "inline-flex h-11 w-11 flex-none items-center justify-center rounded-xl border border-[var(--border)] bg-white text-[var(--slate-600)] transition-colors hover:border-[var(--sky-300)] hover:bg-[var(--sky-50)] hover:text-[var(--sky-700)]";
 
 const SIDE_OPEN_CLASS =
   "max-[1024px]:translate-x-0 max-[1024px]:shadow-[var(--shadow-lg)]";

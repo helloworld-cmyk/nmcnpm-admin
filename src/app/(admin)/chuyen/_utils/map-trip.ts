@@ -9,7 +9,6 @@ import type { VehicleResponse } from "@/api/xe/api/types";
 import { routeLabel } from "@/utils/route-label";
 
 import {
-  isoSangNhan,
   type ChuyenRecord,
   type LenhPhanCong,
   type TrangThaiChuyen,
@@ -71,7 +70,6 @@ export function mapTrip(trip: TripResponse): ChuyenRecord {
   return {
     id: trip.id,
     ma: trip.tripCode,
-    ngayKey: isoSangNhan(ngayISO),
     ngayISO,
     gio,
     tuyenId: trip.routeId,

@@ -1,10 +1,11 @@
 import { Reveal } from "@/components/reveal";
+import { AuthGate } from "./_components/auth-gate";
 import { LoginForm } from "./_components/login-form";
 import "./_components/auth.css";
 
 export default function LoginPage() {
   return (
-    <>
+    <AuthGate>
       <a className="skip-link" href="#main">
         Bỏ qua điều hướng
       </a>
@@ -22,6 +23,6 @@ export default function LoginPage() {
           </Reveal>
         </div>
       </main>
-    </>
+    </AuthGate>
   );
 }

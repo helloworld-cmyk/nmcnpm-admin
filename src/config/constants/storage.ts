@@ -9,6 +9,8 @@ export const STORAGE_KEYS = {
   ACCESS_TOKEN: "vvv.auth.accessToken",
   /** Refresh token dùng để xoay vòng phiên khi access token hết hạn. */
   REFRESH_TOKEN: "vvv.auth.refreshToken",
+  /** Thời điểm access token hết hạn (epoch milliseconds) để làm mới chủ động. */
+  EXPIRES_AT: "vvv.auth.expiresAt",
   /** Hãng xe đang được chọn để quản lý (companyId). */
   SELECTED_COMPANY: "vvv.company.selected",
 } as const;

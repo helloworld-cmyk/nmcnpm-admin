@@ -26,7 +26,7 @@ const FORM_GRID_CLASS =
 
 type ChuyenFormBodyProps = {
   initial: ChuyenFormFields;
-  editingMa: string | null;
+  editingId: string | null;
   scheduleLocked: boolean;
   canPublish: boolean;
   trips: ChuyenRecord[];
@@ -40,7 +40,7 @@ type ChuyenFormBodyProps = {
 
 export function ChuyenFormBody({
   initial,
-  editingMa,
+  editingId,
   scheduleLocked,
   canPublish,
   trips,
@@ -74,7 +74,7 @@ export function ChuyenFormBody({
     taixeDangChon,
   } = useChuyenForm({
     initial,
-    editingMa,
+    editingId,
     trips,
     routeDurations,
     taixeOptions,

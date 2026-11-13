@@ -83,9 +83,9 @@ export function ChuyenFormModal({
     >
       {target && (
         <ChuyenFormBody
-          key={target.mode === "edit" ? `edit:${target.trip.ma}` : "create"}
+          key={target.mode === "edit" ? `edit:${target.trip.id}` : "create"}
           initial={toFormState(target)}
-          editingMa={target.mode === "edit" ? target.trip.ma : null}
+          editingId={target.mode === "edit" ? target.trip.id : null}
           /* Chuyến đã công bố không sửa được lịch chuyến — chỉ đổi xe/tài xế. */
           scheduleLocked={target.mode === "edit" && !coTheSua(target.trip)}
           canPublish={target.mode === "create" || coTheCongBo(target.trip)}

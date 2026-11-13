@@ -53,37 +53,6 @@
   margin-top: 22px;
 }
 
-.auth-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px 14px;
-}
-
-.auth-check {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 9px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--slate-600);
-  cursor: pointer;
-}
-
-.auth-check input {
-  flex: none;
-  width: 18px;
-  height: 18px;
-  margin-top: 2px;
-  accent-color: var(--sky-700);
-  cursor: pointer;
-}
-
-.auth-check.is-invalid {
-  color: var(--red-600);
-}
-
 .auth-submit {
   width: 100%;
   margin-top: 4px;

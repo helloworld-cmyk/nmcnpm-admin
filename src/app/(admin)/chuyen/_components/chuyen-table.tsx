@@ -74,10 +74,10 @@ type ChuyenTableProps = {
   total: number;
   page: number;
   pageCount: number;
-  onDetail: (ma: string) => void;
+  onDetail: (tripId: string) => void;
   onEdit: (trip: ChuyenRecord) => void;
-  onCancel: (ma: string) => void;
-  onDelete: (ma: string) => void;
+  onCancel: (tripId: string) => void;
+  onDelete: (tripId: string) => void;
   onReset: () => void;
   onPublish: (tripId: string) => void;
 };
@@ -175,7 +175,7 @@ export function ChuyenTable({
                 : LENH_CHUA_PHAN_CONG;
               const daHuy = trip.trangThai === "da-huy";
               return (
-                <tr key={trip.ma}>
+                <tr key={trip.id}>
                   <td data-label="Mã chuyến">
                     <strong className={MA_CHUYEN_CLASS}>{trip.ma}</strong>
                   </td>
@@ -284,7 +284,7 @@ export function ChuyenTable({
                         type="button"
                         className="btn btn-sm btn-ghost"
                         aria-label={`Xem chi tiết chuyến ${trip.ma}`}
-                        onClick={() => onDetail(trip.ma)}
+                        onClick={() => onDetail(trip.id)}
                       >
                         Chi tiết
                       </button>
@@ -337,7 +337,7 @@ export function ChuyenTable({
                               className="btn btn-sm btn-ghost row-icon-btn"
                               title="Xóa chuyến nháp"
                               aria-label={`Xóa chuyến nháp ${trip.ma}`}
-                              onClick={() => onDelete(trip.ma)}
+                              onClick={() => onDelete(trip.id)}
                             >
                               <Icon name="i-trash" />
                             </button>
@@ -347,7 +347,7 @@ export function ChuyenTable({
                               className="btn btn-sm btn-ghost row-icon-btn"
                               title="Hủy chuyến"
                               aria-label={`Hủy chuyến ${trip.ma}`}
-                              onClick={() => onCancel(trip.ma)}
+                              onClick={() => onCancel(trip.id)}
                             >
                               <Icon name="i-x-circle" />
                             </button>

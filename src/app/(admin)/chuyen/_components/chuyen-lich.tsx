@@ -3,7 +3,6 @@
 import { Icon } from "@/components/icons/icon";
 import { DatePicker } from "@/components/ui/form";
 import {
-  LICH_HOURS,
   type ChuyenLichPrefill,
   type ChuyenRecord,
   type TaiXeOption,
@@ -35,8 +34,18 @@ const LANE_NAME_CLASS = "text-[12.5px] font-bold text-[var(--ink)]";
 
 const LANE_META_CLASS = "text-[11px] text-[var(--slate-500)]";
 
-const TRACK_CLASS =
-  "relative h-[54px] cursor-pointer bg-[linear-gradient(to_right,var(--border-soft)_1px,transparent_1px)] bg-[length:calc(100%/9)_100%]";
+/* Bề rộng cột tài nguyên và bề rộng mỗi ô giờ trên trục thời gian (px). Cố định
+   để mỗi ô giờ đủ rộng đọc được giờ/nhãn chuyến; trục dài thì cuộn ngang. */
+const LANE_COL_WIDTH = 190;
+const HOUR_CELL_WIDTH = 80;
+
+const TRACK_CLASS = "relative h-[54px] cursor-pointer";
+
+/* Lưới giờ: vạch đậm ở mốc giờ, vạch mờ ở mốc nửa giờ (khớp bước bấm 30'). */
+const TRACK_STYLE = {
+  backgroundImage:
+    "linear-gradient(to right, var(--border-soft) 1px, transparent 1px), linear-gradient(to right, color-mix(in srgb, var(--border-soft) 55%, transparent) 1px, transparent 1px)",
+} as const;
 
 const BLOCK_BASE_CLASS =
   "absolute top-2 flex h-[38px] flex-col justify-center gap-px overflow-hidden rounded-[9px] px-2 text-left transition-transform duration-[var(--dur)] ease-[var(--ease)] hover:-translate-y-px";
@@ -49,7 +58,7 @@ type ChuyenLichProps = {
   trips: ChuyenRecord[];
   xeOptions: XeOption[];
   taixeOptions: TaiXeOption[];
-  onDetail: (ma: string) => void;
+  onDetail: (tripId: string) => void;
   onCreate: (prefill: ChuyenLichPrefill) => void;
 };
 
@@ -65,11 +74,21 @@ export function ChuyenLich({
     mode,
     hasTrips,
     lanes,
+    lichWindow,
     setMode,
     setNgay,
     createFor,
     handleTrackClick,
   } = useChuyenLich({ trips, xeOptions, taixeOptions, onCreate });
+
+  const soCot = lichWindow.hours.length;
+  const laneTemplate = `${LANE_COL_WIDTH}px 1fr`;
+  const hourTemplate = `repeat(${soCot}, minmax(${HOUR_CELL_WIDTH}px, 1fr))`;
+  const minWidth = LANE_COL_WIDTH + soCot * HOUR_CELL_WIDTH;
+  const trackStyle = {
+    ...TRACK_STYLE,
+    backgroundSize: `calc(100% / ${soCot}) 100%, calc(100% / ${soCot * 2}) 100%`,
+  };
 
   return (
     <section
@@ -120,7 +139,8 @@ export function ChuyenLich({
 
       <p className="lich-note text-[11.5px] text-[var(--slate-500)]">
         Bấm vào chuyến để mở chi tiết; bấm vào ô trống hoặc dấu + để xếp chuyến
-        mới. Ô trống nghĩa là tài nguyên đang rảnh trong khung giờ đó.
+        mới. Mỗi ô trên trục là 1 giờ (cuộn ngang để xem đủ giờ); ô trống nghĩa là
+        tài nguyên đang rảnh trong khung giờ đó.
       </p>
 
       {hasTrips ? (
@@ -130,25 +150,34 @@ export function ChuyenLich({
           aria-label="Lịch phân công theo khung giờ (cuộn ngang để xem đủ giờ)"
           tabIndex={0}
         >
-          <div className="min-w-[760px]">
-            <div className="grid grid-cols-[190px_repeat(9,1fr)] border-b border-[var(--border)]">
+          <div className="w-full" style={{ minWidth }}>
+            <div
+              className="grid border-b border-[var(--border)]"
+              style={{ gridTemplateColumns: laneTemplate }}
+            >
               <span className="py-2 pl-3 text-left text-[10.5px] font-bold text-[var(--slate-500)]">
                 Tài nguyên
               </span>
-              {LICH_HOURS.map((hour) => (
-                <span
-                  key={hour}
-                  className="border-r border-[var(--border-soft)] py-2 text-center text-[10.5px] font-bold text-[var(--slate-500)] last:border-r-0"
-                >
-                  {hour}
-                </span>
-              ))}
+              <div
+                className="grid"
+                style={{ gridTemplateColumns: hourTemplate }}
+              >
+                {lichWindow.hours.map((hour) => (
+                  <span
+                    key={hour}
+                    className="border-l border-[var(--border-soft)] py-2 text-center text-[10.5px] font-bold text-[var(--slate-500)]"
+                  >
+                    {hour}
+                  </span>
+                ))}
+              </div>
             </div>
 
             {lanes.map((lane) => (
               <div
                 key={lane.id}
-                className="grid grid-cols-[190px_1fr] border-b border-[var(--border-soft)] last:border-b-0"
+                className="grid border-b border-[var(--border-soft)] last:border-b-0"
+                style={{ gridTemplateColumns: laneTemplate }}
               >
                 <div className="grid content-center gap-1 border-r border-[var(--border-soft)] p-3">
                   <div className="flex items-center justify-between gap-2">
@@ -178,11 +207,12 @@ export function ChuyenLich({
                 </div>
                 <div
                   className={TRACK_CLASS}
+                  style={trackStyle}
                   onClick={(event) => handleTrackClick(event, lane)}
                 >
                   {lane.trips.map((trip) => (
                     <button
-                      key={trip.ma}
+                      key={trip.id}
                       type="button"
                       className={`${BLOCK_BASE_CLASS} ${BLOCK_CLASS[trip.trangThai]}`}
                       style={{
@@ -192,7 +222,7 @@ export function ChuyenLich({
                       title={trip.title}
                       onClick={(event) => {
                         event.stopPropagation();
-                        onDetail(trip.ma);
+                        onDetail(trip.id);
                       }}
                     >
                       <span className="text-[11px] font-extrabold">
