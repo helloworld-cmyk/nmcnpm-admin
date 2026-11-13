@@ -2,6 +2,7 @@
 
 import { Icon } from "@/components/icons/icon";
 import { useTuyenDuongFiltersStore } from "@/global-states/tuyen-duong-filters-store";
+import { pageIndexes } from "@/utils/table";
 import {
   formatDuration,
   formatMoney,
@@ -30,13 +31,6 @@ const SWITCH_OFF_CLASS = "before:bg-[var(--slate-300)]";
 
 const PAGE_GAP_CLASS =
   "px-0.5 font-bold text-[var(--slate-400)] max-[400px]:hidden";
-
-function pageIndexes(pageCount: number): (number | "gap")[] {
-  if (pageCount <= 6) {
-    return Array.from({ length: pageCount }, (_, index) => index + 1);
-  }
-  return [1, 2, 3, "gap", pageCount];
-}
 
 type TuyenDuongTableProps = {
   rows: TuyenDuong[];
@@ -171,9 +165,9 @@ export function TuyenDuongTable({
           <Icon name="i-arrow-right" className="icon rotate-180" />
         </button>
         <span className="page-nums">
-          {pageIndexes(pageCount).map((item) =>
+          {pageIndexes(pageCount, page).map((item, index) =>
             item === "gap" ? (
-              <span key="gap" className={PAGE_GAP_CLASS} aria-hidden="true">
+              <span key={`gap-${index}`} className={PAGE_GAP_CLASS} aria-hidden="true">
                 …
               </span>
             ) : (

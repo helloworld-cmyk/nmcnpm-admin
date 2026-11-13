@@ -1,0 +1,263 @@
+/* Màn Quản lý chuyến — chỉ style lặp lại nhiều chỗ trong màn:
+   badge nhỏ, thanh tiến độ lấp ghế (bảng + chi tiết), avatar viết tắt
+   (bảng + chi tiết + danh sách vé), nút chuyển chế độ xem (toolbar + lịch),
+   nút nguy hiểm (hủy chuyến) và bảng chuyển thẻ trên màn hẹp.
+   Import duy nhất trong page.tsx. */
+
+.badge--sm {
+  padding: 3px 8px;
+  font-size: 10.5px;
+}
+
+.badge--sm .icon {
+  width: 12px;
+  height: 12px;
+}
+
+.seat-bar {
+  display: block;
+  height: 6px;
+  width: 110px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--slate-200);
+}
+
+.seat-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--sky-500);
+  transition: width var(--dur) var(--ease);
+}
+
+.seat-bar-fill--warn {
+  background: var(--orange-500);
+}
+
+.seat-bar-fill--full {
+  background: var(--green-600);
+}
+
+.seat-bar-fill--muted {
+  background: var(--slate-400);
+}
+
+.seat-bar--wide {
+  width: 100%;
+  height: 7px;
+}
+
+.cv-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--navy-800), var(--sky-700));
+  font-family: var(--font-heading);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.cv-avatar--td {
+  width: 32px;
+  height: 32px;
+  font-size: 10px;
+}
+
+.cv-avatar--lg {
+  width: 38px;
+  height: 38px;
+  font-size: 12px;
+}
+
+.cv-switch {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+}
+
+.cv-switch-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 15px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--slate-600);
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+}
+
+.cv-switch-btn:hover {
+  color: var(--sky-700);
+}
+
+.cv-switch-btn.is-active {
+  background: var(--surface);
+  color: var(--sky-800);
+  box-shadow: var(--shadow-xs);
+}
+
+.cv-switch .icon {
+  width: 15px;
+  height: 15px;
+}
+
+.btn-danger {
+  background: var(--red-600);
+  color: #fff;
+  box-shadow: 0 12px 26px -14px rgba(220, 38, 38, 0.85);
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.btn-danger:active {
+  transform: translateY(0);
+}
+
+.btn-danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Nút icon vuông trong ô thao tác (sửa/hủy chuyến) */
+.row-icon-btn {
+  width: 42px;
+  padding: 0;
+}
+
+.table.chuyen-table {
+  min-width: 1020px;
+}
+
+.table.chuyen-table th.th-act,
+.table.chuyen-table td.t-act {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.table.chuyen-table td.t-act .btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+@keyframes cd-drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes cd-drawer-out {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes cd-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cd-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .table.chuyen-table,
+  .table.chuyen-table tbody,
+  .table.chuyen-table tbody tr,
+  .table.chuyen-table tbody td {
+    display: block;
+  }
+
+  .table.chuyen-table {
+    min-width: 0;
+  }
+
+  .table.chuyen-table thead {
+    display: none;
+  }
+
+  .table.chuyen-table tbody tr {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .table.chuyen-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .table.chuyen-table tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 7px 0;
+    border: 0;
+  }
+
+  .table.chuyen-table tbody td::before {
+    content: attr(data-label);
+    flex: none;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--slate-500);
+  }
+
+  .table.chuyen-table td.num {
+    text-align: left;
+  }
+
+  .table.chuyen-table td[data-label="Thao tác"] {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+  }
+
+  .table.chuyen-table td[data-label="Thao tác"]::before {
+    display: none;
+  }
+
+  .seat-bar {
+    width: 140px;
+  }
+}

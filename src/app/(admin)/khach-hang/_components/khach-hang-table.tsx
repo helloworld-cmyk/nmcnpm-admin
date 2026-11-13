@@ -1,0 +1,235 @@
+"use client";
+
+import { Icon } from "@/components/icons/icon";
+import {
+  useKhachHangFiltersStore,
+  type KhachHangSortKey,
+} from "@/global-states/khach-hang-filters-store";
+import { pageIndexes } from "@/utils/table";
+import {
+  TRANG_THAI_TAI_KHOAN_LABEL,
+  vietTatHoTen,
+  type KhachHang,
+} from "../_data/customers";
+
+const COLUMNS: {
+  label: string;
+  num?: boolean;
+  sortKey?: KhachHangSortKey;
+}[] = [
+  { label: "Khách hàng", sortKey: "ten" },
+  { label: "Số điện thoại" },
+  { label: "Email" },
+  { label: "Đặt gần nhất", sortKey: "ngayTao" },
+  { label: "Vé đã đặt", num: true, sortKey: "veDaDat" },
+  { label: "Trạng thái" },
+  { label: "Thao tác" },
+];
+
+const NUM_CELL =
+  "num [font-family:var(--font-heading)] font-bold tracking-[-0.01em] text-[var(--ink)]";
+
+const CELL_SUB = "mt-0.5 block text-[12px] font-medium text-[var(--slate-400)]";
+
+const PAGE_GAP =
+  "px-0.5 font-bold text-[var(--slate-400)] max-[400px]:hidden";
+
+const PAGINATION_BAR =
+  "flex flex-wrap items-center justify-between gap-2.5 border-t border-[var(--border-soft)] px-5 py-3";
+
+type KhachHangTableProps = {
+  rows: KhachHang[];
+  totalCount: number;
+  rangeStart: number;
+  rangeEnd: number;
+  page: number;
+  pageCount: number;
+  onOpenDetail: (khachHang: KhachHang) => void;
+};
+
+export function KhachHangTable({
+  rows,
+  totalCount,
+  rangeStart,
+  rangeEnd,
+  page,
+  pageCount,
+  onOpenDetail,
+}: KhachHangTableProps) {
+  const sortKey = useKhachHangFiltersStore((s) => s.sortKey);
+  const sortDir = useKhachHangFiltersStore((s) => s.sortDir);
+  const toggleSort = useKhachHangFiltersStore((s) => s.toggleSort);
+  const setPage = useKhachHangFiltersStore((s) => s.setPage);
+
+  return (
+    <section className="table-card" aria-label="Danh sách tài khoản khách hàng">
+      <div
+        className="table-scroll"
+        role="region"
+        aria-label="Bảng tài khoản khách hàng"
+        tabIndex={0}
+      >
+        <table className="table kh-table">
+          <caption className="sr-only">
+            Tài khoản khách hàng — kèm số điện thoại, email, ngày tạo, số vé
+            đã đặt và trạng thái tài khoản
+          </caption>
+          <thead>
+            <tr>
+              {COLUMNS.map((column) => {
+                const active = Boolean(
+                  column.sortKey && sortKey === column.sortKey
+                );
+                const headerClass = `${column.num ? "num" : ""}${
+                  column.sortKey ? " is-sortable" : ""
+                }${active ? " is-sorted" : ""}`;
+                if (!column.sortKey) {
+                  return (
+                    <th key={column.label} scope="col" className={headerClass}>
+                      {column.label}
+                    </th>
+                  );
+                }
+                return (
+                  <th
+                    key={column.label}
+                    scope="col"
+                    className={headerClass}
+                    aria-sort={
+                      active
+                        ? sortDir === "asc"
+                          ? "ascending"
+                          : "descending"
+                        : undefined
+                    }
+                  >
+                    <button
+                      type="button"
+                      onClick={() =>
+                        toggleSort(column.sortKey as KhachHangSortKey)
+                      }
+                      className="inline-flex items-center gap-1"
+                    >
+                      {column.label}
+                      {active ? (
+                        <Icon
+                          name="i-chevron-down"
+                          className={`icon h-3 w-3 ${sortDir === "asc" ? "rotate-180" : ""}`}
+                        />
+                      ) : (
+                        <Icon
+                          name="i-swap"
+                          className="icon h-3 w-3 opacity-50"
+                        />
+                      )}
+                    </button>
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((kh) => {
+              const locked = kh.trangThai === "locked";
+              return (
+                <tr key={kh.id} onClick={() => onOpenDetail(kh)}>
+                  <td data-label="Khách hàng">
+                    <div className="flex min-w-[190px] items-center gap-[11px]">
+                      <span className="kh-avatar">{vietTatHoTen(kh.ten)}</span>
+                      <span className="flex flex-col leading-[1.3]">
+                        <strong className="font-semibold text-[var(--ink)]">
+                          {kh.ten}
+                        </strong>
+                        <span className={CELL_SUB}>{kh.maKhach}</span>
+                      </span>
+                    </div>
+                  </td>
+                  <td data-label="Số điện thoại">{kh.soDienThoai}</td>
+                  <td data-label="Email">
+                    <span className="text-[13px] [word-break:break-word]">
+                      {kh.email}
+                    </span>
+                  </td>
+                  <td data-label="Ngày tạo">{kh.ngayTao}</td>
+                  <td data-label="Vé đã đặt" className={NUM_CELL}>
+                    {kh.veDaDat}
+                  </td>
+                  <td data-label="Trạng thái">
+                    <span
+                      className={`badge ${locked ? "badge--orange" : "badge--green"}`}
+                    >
+                      {locked && <Icon name="i-lock" />}
+                      {TRANG_THAI_TAI_KHOAN_LABEL[kh.trangThai]}
+                    </span>
+                  </td>
+                  <td data-label="Thao tác">
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onOpenDetail(kh);
+                      }}
+                    >
+                      <Icon name="i-eye" className="icon h-4 w-4" />
+                      Chi tiết
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className={PAGINATION_BAR}>
+        <p className="page-note">
+          {`Hiển thị ${rangeStart}–${rangeEnd} của ${totalCount} khách hàng`}
+        </p>
+        <nav className="pagination" aria-label="Phân trang danh sách">
+          <button
+            type="button"
+            className="page-btn"
+            aria-label="Trang trước"
+            disabled={page <= 1}
+            onClick={() => setPage(page - 1)}
+          >
+            <Icon name="i-chevron-right" className="icon rotate-180" />
+          </button>
+          <div className="page-nums">
+            {pageIndexes(pageCount, page).map((item, index) =>
+              item === "gap" ? (
+                <span
+                  key={`gap-${index}`}
+                  className={PAGE_GAP}
+                  aria-hidden="true"
+                >
+                  …
+                </span>
+              ) : (
+                <button
+                  key={item}
+                  type="button"
+                  className={`page-btn${item === page ? " is-active" : ""}`}
+                  aria-current={item === page ? "page" : undefined}
+                  onClick={() => setPage(item)}
+                >
+                  {item}
+                </button>
+              )
+            )}
+          </div>
+          <button
+            type="button"
+            className="page-btn"
+            aria-label="Trang sau"
+            disabled={page >= pageCount}
+            onClick={() => setPage(page + 1)}
+          >
+            <Icon name="i-chevron-right" className="icon" />
+          </button>
+        </nav>
+      </div>
+    </section>
+  );
+}

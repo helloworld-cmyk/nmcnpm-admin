@@ -9,7 +9,7 @@ import type {
   IncidentStatus,
 } from "@/api/tong-quan/api/types";
 
-import type { ChartPoint, StatKpi } from "../_data/tong-quan";
+import type { ChartPoint, StatKpi, TrendTone } from "../_data/tong-quan";
 
 export function formatVnd(value: number): string {
   return `${value.toLocaleString("vi-VN")}đ`;
@@ -36,7 +36,26 @@ function dayLabel(iso: string): string {
   return `${day}/${month}`;
 }
 
-/* DashboardSummaryResponse → 6 thẻ KPI của màn Tổng quan. */
+/*
+ * Nhãn xu hướng của một chỉ số so với kỳ trước, dựa trên % thay đổi backend trả.
+ * `invert` dùng cho chỉ số mà tăng là xấu (ví dụ chuyến đã huỷ).
+ */
+function changePill(
+  pct: number | null | undefined,
+  invert = false
+): { trend: TrendTone; trendIcon: string; trendText: string } {
+  if (pct === null || pct === undefined || Number.isNaN(pct)) {
+    return { trend: "muted", trendIcon: "i-chart", trendText: "Chưa có kỳ trước" };
+  }
+  const up = pct >= 0;
+  return {
+    trend: up !== invert ? "good" : "bad",
+    trendIcon: up ? "i-trending-up" : "i-trending-down",
+    trendText: `${up ? "+" : ""}${Math.round(pct)}%`,
+  };
+}
+
+/* DashboardSummaryResponse → 6 thẻ KPI của màn Tổng quan (kèm so sánh kỳ trước). */
 export function mapSummaryToKpis(summary: DashboardSummaryResponse): StatKpi[] {
   const total = summary.totalTrips;
   const share = (count: number) =>
@@ -49,10 +68,8 @@ export function mapSummaryToKpis(summary: DashboardSummaryResponse): StatKpi[] {
       icon: "i-car",
       iconTone: "sky",
       value: String(total),
-      trend: "muted",
-      trendIcon: "i-chart",
-      trendText: `${summary.completedTrips} hoàn thành`,
-      delta: rangeLabel(summary.from, summary.to),
+      ...changePill(summary.totalTripsChangePct),
+      delta: `${summary.completedTrips} hoàn thành · ${rangeLabel(summary.from, summary.to)}`,
     },
     {
       id: "in-progress",
@@ -60,9 +77,7 @@ export function mapSummaryToKpis(summary: DashboardSummaryResponse): StatKpi[] {
       icon: "i-clock",
       iconTone: "orange",
       value: String(summary.inProgressTrips),
-      trend: "muted",
-      trendIcon: "i-clock",
-      trendText: "đang chạy",
+      ...changePill(summary.inProgressTripsChangePct),
       delta: share(summary.inProgressTrips),
     },
     {
@@ -71,9 +86,7 @@ export function mapSummaryToKpis(summary: DashboardSummaryResponse): StatKpi[] {
       icon: "i-calendar",
       iconTone: "navy",
       value: String(summary.scheduledTrips),
-      trend: "muted",
-      trendIcon: "i-calendar",
-      trendText: "chờ khởi hành",
+      ...changePill(summary.scheduledTripsChangePct),
       delta: share(summary.scheduledTrips),
     },
     {
@@ -82,9 +95,7 @@ export function mapSummaryToKpis(summary: DashboardSummaryResponse): StatKpi[] {
       icon: "i-check-circle",
       iconTone: "green",
       value: String(summary.completedTrips),
-      trend: "good",
-      trendIcon: "i-check",
-      trendText: "hoàn thành",
+      ...changePill(summary.completedTripsChangePct),
       delta: share(summary.completedTrips),
     },
     {
@@ -93,9 +104,7 @@ export function mapSummaryToKpis(summary: DashboardSummaryResponse): StatKpi[] {
       icon: "i-x-circle",
       iconTone: "navy",
       value: String(summary.cancelledTrips),
-      trend: "bad",
-      trendIcon: "i-x-circle",
-      trendText: "đã huỷ",
+      ...changePill(summary.cancelledTripsChangePct, true),
       delta: share(summary.cancelledTrips),
     },
     {
@@ -104,26 +113,22 @@ export function mapSummaryToKpis(summary: DashboardSummaryResponse): StatKpi[] {
       icon: "i-ticket",
       iconTone: "navy",
       value: String(summary.confirmedTickets),
-      trend: "muted",
-      trendIcon: "i-ticket",
-      trendText: formatVnd(summary.confirmedTicketValue),
-      delta: summary.ticketValueNote,
+      ...changePill(summary.confirmedTicketsChangePct),
+      delta: formatVnd(summary.confirmedTicketValue),
     },
   ];
 }
 
 /*
- * DashboardTripPointResponse[] → điểm biểu đồ. Doanh thu theo ngày lấy từ báo
- * cáo doanh thu qua `revenueByDate` (ngày → giá trị vé VND), quy đổi sang triệu
- * đồng cho khớp trục biểu đồ; ngày không có trong báo cáo coi như 0.
+ * DashboardTripPointResponse[] → điểm biểu đồ. Doanh thu theo ngày lấy trực tiếp
+ * từ trường `revenue` (VND) của backend, quy đổi sang triệu đồng cho khớp trục.
  */
 export function mapTripPointsToChart(
-  points: DashboardTripPointResponse[],
-  revenueByDate: Map<string, number> = new Map()
+  points: DashboardTripPointResponse[]
 ): ChartPoint[] {
   return points.map((point, index) => ({
     label: dayLabel(point.date),
-    revenue: (revenueByDate.get(point.date) ?? 0) / 1_000_000,
+    revenue: point.revenue / 1_000_000,
     trips: point.totalTrips,
     today: index === points.length - 1,
   }));
@@ -135,6 +140,8 @@ export type TopDriverRow = {
   name: string;
   assigned: number;
   completed: number;
+  revenue: number;
+  rating: number | null;
 };
 
 /* DashboardDriverResponse[] → view-model bảng top tài xế. */
@@ -147,6 +154,8 @@ export function mapTopDrivers(
     name: driver.driverName,
     assigned: driver.assignedTrips,
     completed: driver.completedTrips,
+    revenue: driver.revenue,
+    rating: driver.rating,
   }));
 }
 

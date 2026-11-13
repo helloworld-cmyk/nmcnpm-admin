@@ -2,7 +2,7 @@ import { authApi } from "../../method";
 
 import type { RouteResponse } from "./types";
 
-/* Gọi API lấy chi tiết một tuyến thuộc hãng kèm điểm dừng mẫu. */
+/* Gọi API lấy chi tiết một tuyến thuộc hãng. */
 export function getRouteAPI(
   companyId: string,
   routeId: string

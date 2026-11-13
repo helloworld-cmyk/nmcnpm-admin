@@ -1,0 +1,119 @@
+/* Màn Quản lý đơn đặt — chỉ style lặp lại nhiều chỗ trong màn:
+   bảng vé (min-width, căn phải cột tiền/thao tác, bảng → thẻ trên mobile)
+   và hiệu ứng trượt của drawer chi tiết. Import duy nhất trong page.tsx. */
+
+@keyframes dd-drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes dd-drawer-out {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes dd-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dd-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.table.dd-table {
+  min-width: 1080px;
+}
+
+.table.dd-table th.th-money,
+.table.dd-table th.th-act,
+.table.dd-table td.t-act {
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .table.dd-table,
+  .table.dd-table tbody,
+  .table.dd-table tbody tr,
+  .table.dd-table tbody td {
+    display: block;
+  }
+
+  .table.dd-table {
+    min-width: 0;
+  }
+
+  .table.dd-table thead {
+    display: none;
+  }
+
+  .table.dd-table tbody tr {
+    margin: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  .table.dd-table tbody td {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    column-gap: 12px;
+    padding: 9px 14px;
+    text-align: right;
+  }
+
+  .table.dd-table tbody td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: left;
+    color: var(--slate-400);
+  }
+
+  .table.dd-table tbody td > * {
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  .table.dd-table tbody td[data-label="Mã vé"] {
+    background: var(--sky-50);
+  }
+
+  .table.dd-table td.t-act .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 400px) {
+  .table.dd-table tbody tr {
+    margin: 10px 8px;
+  }
+
+  .table.dd-table tbody td {
+    padding: 8px 12px;
+  }
+}

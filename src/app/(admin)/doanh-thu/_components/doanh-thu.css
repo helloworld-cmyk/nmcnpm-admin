@@ -1,0 +1,60 @@
+/* Vi Vu Việt — màn Doanh thu (§1.4: style riêng route).
+   .admin-card dùng chung ≥2 khối (biểu đồ ngày + theo tuyến);
+   các rule icon chỉ để thắng độ ưu tiên layer của class .icon trong globals. */
+
+.admin-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+}
+
+.admin-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.admin-card-head h2 {
+  font-size: 17.5px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.admin-card-head p {
+  margin-top: 3px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--slate-500);
+}
+
+.admin-card-body {
+  padding: 20px 22px;
+}
+
+.stat-delta .icon {
+  width: 13px;
+  height: 13px;
+}
+
+.kpi-icon .icon {
+  width: 19px;
+  height: 19px;
+}
+
+@media (max-width: 640px) {
+  .admin-card-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .admin-card-body {
+    padding: 16px;
+  }
+}

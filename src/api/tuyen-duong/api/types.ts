@@ -3,21 +3,6 @@
 /* Trạng thái hoạt động của tuyến. */
 export type RouteStatus = "ACTIVE" | "INACTIVE";
 
-/* Điểm dừng mẫu thuộc tuyến. */
-export type RouteStopResponse = {
-  id: string;
-  stopId: string;
-  stopName: string;
-  address: string;
-  areaId: string;
-  areaName: string;
-  sequenceNo: number;
-  arrivalOffsetMinutes: number | null;
-  departureOffsetMinutes: number | null;
-  pickupAllowed: boolean;
-  dropoffAllowed: boolean;
-};
-
 /* Thông tin tuyến đường của hãng. */
 export type RouteResponse = {
   id: string;
@@ -34,7 +19,6 @@ export type RouteResponse = {
   durationMinutes: number;
   baseFareAmount: number;
   status: RouteStatus;
-  stops: RouteStopResponse[];
   createdAt: string;
   updatedAt: string;
 };
@@ -62,17 +46,3 @@ export type UpdateRoutePayload = {
   status?: RouteStatus;
 };
 
-/* Một điểm dừng mẫu khi thay thế toàn bộ danh sách điểm của tuyến. */
-export type RouteStopInput = {
-  stopId: string;
-  sequenceNo: number;
-  arrivalOffsetMinutes?: number;
-  departureOffsetMinutes?: number;
-  pickupAllowed: boolean;
-  dropoffAllowed: boolean;
-};
-
-/* Body thay thế điểm dừng của tuyến (PUT /bus-companies/{id}/routes/{routeId}/stops). */
-export type ReplaceRouteStopsPayload = {
-  stops: RouteStopInput[];
-};

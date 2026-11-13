@@ -5,6 +5,7 @@ import {
   useXeFiltersStore,
   type XeSortKey,
 } from "@/global-states/xe-filters-store";
+import { pageIndexes } from "@/utils/table";
 import type { Xe } from "../_data/vehicles";
 
 const COLUMNS: { label: string; sortKey?: XeSortKey }[] = [
@@ -59,6 +60,8 @@ const SO_CHO_CLASS =
 const ACTIONS_CLASS =
   "flex flex-wrap items-center gap-1.5 max-[640px]:w-full max-[640px]:justify-end";
 
+const PAGE_GAP = "px-0.5 font-bold text-[var(--slate-400)] max-[400px]:hidden";
+
 const TABLE_FOOTER_CLASS = [
   "flex flex-wrap items-center justify-between gap-2.5",
   "border-t border-[var(--border-soft)] px-5 py-3",
@@ -91,8 +94,6 @@ export function XeTable({
   const sortDir = useXeFiltersStore((s) => s.sortDir);
   const toggleSort = useXeFiltersStore((s) => s.toggleSort);
   const setPage = useXeFiltersStore((s) => s.setPage);
-
-  const pages = Array.from({ length: pageCount }, (_, index) => index + 1);
 
   return (
     <section className="table-card" aria-labelledby="xe-table-title">
@@ -252,17 +253,23 @@ export function XeTable({
               <Icon name="i-chevron-right" className="icon rotate-180" />
             </button>
             <div className="page-nums">
-              {pages.map((pageNumber) => (
-                <button
-                  key={pageNumber}
-                  type="button"
-                  className={`page-btn${pageNumber === page ? " is-active" : ""}`}
-                  aria-current={pageNumber === page ? "page" : undefined}
-                  onClick={() => setPage(pageNumber)}
-                >
-                  {pageNumber}
-                </button>
-              ))}
+              {pageIndexes(pageCount, page).map((item, index) =>
+                item === "gap" ? (
+                  <span key={`gap-${index}`} className={PAGE_GAP} aria-hidden="true">
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={item}
+                    type="button"
+                    className={`page-btn${item === page ? " is-active" : ""}`}
+                    aria-current={item === page ? "page" : undefined}
+                    onClick={() => setPage(item)}
+                  >
+                    {item}
+                  </button>
+                )
+              )}
             </div>
             <button
               type="button"

@@ -9,7 +9,6 @@ import { useTripPoints } from "@/api/tong-quan/tanstack/use-trip-points";
 import { useTodayTrips } from "@/api/tong-quan/tanstack/use-today-trips";
 import { useTopRoutes } from "@/api/tong-quan/tanstack/use-top-routes";
 import { useOpenIncidents } from "@/api/tong-quan/tanstack/use-open-incidents";
-import { useRevenueReport } from "@/api/doanh-thu/tanstack/use-revenue-report";
 import { useCompanyStore } from "@/global-states/company-store";
 import {
   mapOpenIncidents,
@@ -32,7 +31,6 @@ export function useTongQuanDashboard() {
 
   const summaryQuery = useSummary(companyId);
   const pointsQuery = useTripPoints(companyId);
-  const revenueQuery = useRevenueReport(companyId);
   const driversQuery = useTopDrivers(companyId);
   const todayTripsQuery = useTodayTrips(companyId);
   const topRoutesQuery = useTopRoutes(companyId);
@@ -42,16 +40,9 @@ export function useTongQuanDashboard() {
     () => (summaryQuery.data ? mapSummaryToKpis(summaryQuery.data) : []),
     [summaryQuery.data]
   );
-  const revenueByDate = useMemo(() => {
-    const byDate = new Map<string, number>();
-    for (const period of revenueQuery.data?.periods ?? []) {
-      byDate.set(period.date, period.ticketValue);
-    }
-    return byDate;
-  }, [revenueQuery.data]);
   const points = useMemo(
-    () => mapTripPointsToChart(pointsQuery.data ?? [], revenueByDate),
-    [pointsQuery.data, revenueByDate]
+    () => mapTripPointsToChart(pointsQuery.data ?? []),
+    [pointsQuery.data]
   );
   const drivers = useMemo(
     () => mapTopDrivers(driversQuery.data ?? []),
@@ -76,9 +67,6 @@ export function useTongQuanDashboard() {
     });
     void queryClient.invalidateQueries({
       queryKey: ["company-trip-points", companyId],
-    });
-    void queryClient.invalidateQueries({
-      queryKey: ["company-revenue-report", companyId],
     });
     void queryClient.invalidateQueries({
       queryKey: ["company-top-drivers", companyId],

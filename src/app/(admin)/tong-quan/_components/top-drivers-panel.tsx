@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { Icon } from "@/components/icons/icon";
 
-import type { TopDriverRow } from "../_utils/map-dashboard";
+import { formatVnd, type TopDriverRow } from "../_utils/map-dashboard";
 
 const AVATAR_TILE_CLASS =
   "grid h-[38px] w-[38px] flex-none place-items-center rounded-full bg-[var(--sky-100)] [font-family:var(--font-heading)] text-[12.5px] font-bold uppercase text-[var(--sky-700)]";
@@ -53,6 +53,20 @@ export function TopDriversPanel({ drivers }: { drivers: TopDriverRow[] }) {
                 <span className={META_CLASS}>
                   <Icon name="i-check" className="h-[13px] w-[13px] flex-none" />
                   {driver.completed} chuyến hoàn thành
+                  {driver.rating !== null ? (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <Icon
+                        name="i-star"
+                        className="h-[13px] w-[13px] flex-none text-[var(--orange-500)]"
+                      />
+                      {driver.rating.toFixed(1)}
+                    </>
+                  ) : null}
+                </span>
+                <span className={META_CLASS}>
+                  <Icon name="i-wallet" className="h-[13px] w-[13px] flex-none" />
+                  {formatVnd(driver.revenue)}
                 </span>
               </div>
               <p className={COUNT_CLASS}>{driver.assigned} chuyến</p>

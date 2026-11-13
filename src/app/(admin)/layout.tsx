@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { AdminIconSprite } from "@/components/icons/sprite";
 import { AdminShell } from "@/components/layout/admin-shell";
+import { CompanyBootstrap } from "@/components/layout/company-bootstrap";
 import { SessionGate } from "@/components/layout/session-gate";
 
 export const metadata: Metadata = {
@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 export default function AdminLayout({ children }: LayoutProps<"/">) {
   return (
     <>
-      <AdminIconSprite />
       <SessionGate>
+        <CompanyBootstrap />
         <AdminShell>{children}</AdminShell>
       </SessionGate>
     </>

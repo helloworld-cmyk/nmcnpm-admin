@@ -63,70 +63,74 @@
   --dur: 0.24s;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/* Reset nằm trong @layer base để utility Tailwind (mx-*, mt-*, bg-*, border-*...)
+   vẫn thắng các reset này — nếu để ngoài layer thì reset đè hết utility. */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-html {
-  scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--header-h) + 20px);
-  -webkit-text-size-adjust: 100%;
-}
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--header-h) + 20px);
+    -webkit-text-size-adjust: 100%;
+  }
 
-body {
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.65;
-  color: var(--slate-600);
-  background: var(--bg);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  overflow-x: clip;
-}
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--slate-600);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
 
-h1,
-h2,
-h3,
-h4 {
-  margin: 0;
-  font-family: var(--font-heading);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-}
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0;
+    font-family: var(--font-heading);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
 
-p {
-  margin: 0;
-}
+  p {
+    margin: 0;
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 
-img,
-svg {
-  display: block;
-  max-width: 100%;
-}
+  img,
+  svg {
+    display: block;
+    max-width: 100%;
+  }
 
-button {
-  padding: 0;
-  font: inherit;
-  color: inherit;
-  background: none;
-  border: 0;
-  cursor: pointer;
-}
+  button {
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
 
-ul,
-ol {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+  ul,
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
 }
 
 input,
@@ -142,7 +146,6 @@ select {
 :focus-visible {
   outline: 3px solid rgba(14, 165, 233, 0.6);
   outline-offset: 3px;
-  border-radius: 6px;
 }
 
 .icon-sym {
@@ -157,13 +160,6 @@ select {
   fill: currentColor;
   stroke: none;
   stroke-width: 0;
-}
-
-.svg-sprite {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
 }
 
 .container {
@@ -294,77 +290,6 @@ select {
   border: 2px solid rgba(255, 255, 255, 0.4);
   border-top-color: #fff;
   animation: spin 0.7s linear infinite;
-}
-
-.field label {
-  display: block;
-  margin: 0 0 6px 2px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--slate-500);
-}
-
-.field-control {
-  position: relative;
-}
-
-.field-control .field-icon {
-  position: absolute;
-  left: 13px;
-  top: 50%;
-  width: 18px;
-  height: 18px;
-  transform: translateY(-50%);
-  color: var(--sky-600);
-  pointer-events: none;
-}
-
-.field input,
-.field select {
-  width: 100%;
-  height: 48px;
-  padding: 0 13px 0 40px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: #fafcfe;
-  font-family: var(--font-body);
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--ink);
-  color-scheme: light;
-  transition:
-    border-color var(--dur) var(--ease),
-    box-shadow var(--dur) var(--ease),
-    background var(--dur) var(--ease);
-}
-
-.field input::placeholder {
-  font-weight: 400;
-  color: var(--slate-400);
-}
-
-.field input:hover,
-.field select:hover {
-  border-color: var(--slate-300);
-}
-
-.field input:focus,
-.field select:focus {
-  outline: none;
-  border-color: var(--sky-500);
-  background: #fff;
-  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.13);
-}
-
-.field.is-invalid input {
-  border-color: #fca5a5;
-  background: #fff8f8;
-}
-
-.field.is-invalid input:focus {
-  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
 }
 
 .form-status {
@@ -577,6 +502,67 @@ select {
 .table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+
+/* ---------- Thanh cuộn dùng chéo ----------
+   Dùng cho mọi vùng cần cuộn: cuộn trang (html), bảng (.table-scroll),
+   sidebar, modal, drawer, dropdown, danh sách (.scroll-area).
+   Mặc định dùng .scroll-area; nền tối (sidebar) thêm .scroll-area--dark. */
+
+html,
+.scroll-area,
+.table-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--slate-300) transparent;
+}
+
+html::-webkit-scrollbar,
+.scroll-area::-webkit-scrollbar,
+.table-scroll::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+html::-webkit-scrollbar-track,
+.scroll-area::-webkit-scrollbar-track,
+.table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb,
+.scroll-area::-webkit-scrollbar-thumb,
+.table-scroll::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: var(--slate-300);
+  background-clip: padding-box;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+.scroll-area::-webkit-scrollbar-thumb:hover,
+.table-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--sky-500);
+  background-clip: padding-box;
+}
+
+html::-webkit-scrollbar-corner,
+.scroll-area::-webkit-scrollbar-corner,
+.table-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.scroll-area--dark {
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+
+.scroll-area--dark::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  background-clip: padding-box;
+}
+
+.scroll-area--dark::-webkit-scrollbar-thumb:hover {
+  background: rgba(226, 232, 240, 0.7);
+  background-clip: padding-box;
 }
 
 .table {
