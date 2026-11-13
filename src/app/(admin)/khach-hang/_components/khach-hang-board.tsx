@@ -2,16 +2,12 @@
 
 import { Icon } from "@/components/icons/icon";
 import { Reveal } from "@/components/reveal";
-import { Toast } from "@/components/ui/toast";
 import { useKhachHangBoard } from "../_hooks/use-khach-hang-board";
 import { KhachHangDetailModal } from "./khach-hang-detail-modal";
 import { KhachHangEmptyState } from "./khach-hang-empty-state";
 import { KhachHangErrorState } from "./khach-hang-error-state";
 import { KhachHangFilters } from "./khach-hang-filters";
-import { KhachHangLockModal } from "./khach-hang-lock-modal";
-import { KhachHangPassModal } from "./khach-hang-pass-modal";
 import { KhachHangTable } from "./khach-hang-table";
-import { KhachHangUnlockModal } from "./khach-hang-unlock-modal";
 
 const EMPTY_STATE_CLASS =
   "state-empty mb-2 rounded-[var(--radius-md)] border border-dashed border-[var(--border)] bg-[var(--surface)]";
@@ -33,13 +29,6 @@ export function KhachHangBoard() {
     detail,
     detailTicketsLoading,
     setDetailId,
-    activeModal,
-    setActiveModal,
-    toast,
-    setToast,
-    handleLock,
-    handleUnlock,
-    handlePassGenerated,
   } = useKhachHangBoard();
 
   const renderBody = () => {
@@ -118,41 +107,9 @@ export function KhachHangBoard() {
         <KhachHangDetailModal
           khachHang={detail}
           ticketsLoading={detailTicketsLoading}
-          onClose={() => {
-            setDetailId(null);
-            setActiveModal(null);
-          }}
-          onLockRequest={() => setActiveModal("lock")}
-          onUnlockRequest={() => setActiveModal("unlock")}
-          onPassRequest={() => setActiveModal("pass")}
+          onClose={() => setDetailId(null)}
         />
       )}
-
-      {detail && activeModal === "lock" && (
-        <KhachHangLockModal
-          khachHang={detail}
-          onClose={() => setActiveModal(null)}
-          onConfirm={handleLock}
-        />
-      )}
-
-      {detail && activeModal === "unlock" && (
-        <KhachHangUnlockModal
-          khachHang={detail}
-          onClose={() => setActiveModal(null)}
-          onConfirm={handleUnlock}
-        />
-      )}
-
-      {detail && activeModal === "pass" && (
-        <KhachHangPassModal
-          khachHang={detail}
-          onClose={() => setActiveModal(null)}
-          onGenerated={handlePassGenerated}
-        />
-      )}
-
-      <Toast toast={toast} onDone={() => setToast(null)} />
     </>
   );
 }

@@ -2,6 +2,8 @@
 
 import { Modal } from "@/components/ui/modal";
 import {
+  coTheCongBo,
+  coTheSua,
   homNayISO,
   type ChuyenFormTarget,
   type ChuyenRecord,
@@ -23,7 +25,11 @@ type ChuyenFormModalProps = {
   xeOptions: XeOption[];
   taixeOptions: TaiXeOption[];
   onClose: () => void;
-  onSave: (target: ChuyenFormTarget, values: ChuyenFormValues) => void;
+  onSave: (
+    target: ChuyenFormTarget,
+    values: ChuyenFormValues,
+    publish: boolean
+  ) => void;
 };
 
 function toFormState(target: ChuyenFormTarget): ChuyenFormFields {
@@ -64,7 +70,11 @@ export function ChuyenFormModal({
       size="lg"
       title={
         <span className="block">
-          {target?.mode === "edit" ? `Sửa chuyến ${target.trip.ma}` : "Tạo chuyến"}
+          {target?.mode === "edit"
+            ? coTheSua(target.trip)
+              ? `Sửa chuyến ${target.trip.ma}`
+              : `Đổi xe và tài xế · ${target.trip.ma}`
+            : "Tạo chuyến"}
           <span className="mt-1 block text-[12.5px] font-medium leading-snug tracking-normal text-[var(--slate-500)]">
             Hệ thống kiểm tra trùng lịch xe/tài xế và sức chứa khi lưu.
           </span>
@@ -76,13 +86,16 @@ export function ChuyenFormModal({
           key={target.mode === "edit" ? `edit:${target.trip.ma}` : "create"}
           initial={toFormState(target)}
           editingMa={target.mode === "edit" ? target.trip.ma : null}
+          /* Chuyến đã công bố không sửa được lịch chuyến — chỉ đổi xe/tài xế. */
+          scheduleLocked={target.mode === "edit" && !coTheSua(target.trip)}
+          canPublish={target.mode === "create" || coTheCongBo(target.trip)}
           trips={trips}
           tuyenOptions={tuyenOptions}
           routeDurations={routeDurations}
           xeOptions={xeOptions}
           taixeOptions={taixeOptions}
           onClose={onClose}
-          onSave={(values) => onSave(target, values)}
+          onSave={(values, publish) => onSave(target, values, publish)}
         />
       )}
     </Modal>

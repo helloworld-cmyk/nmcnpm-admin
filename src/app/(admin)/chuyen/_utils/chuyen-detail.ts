@@ -171,5 +171,14 @@ export function buildChuyenTimeline(
     { title: "Đã công bố bán vé", meta: "Khách bắt đầu đặt", state: "done" },
   ];
   timeline.push(LAST_STEP[trip.trangThai](ctx.timeText));
+  if (trip.trangThai === "da-huy") {
+    const parts: string[] = [];
+    if (trip.huyLuc) parts.push(`Hủy lúc ${trip.huyLuc}`);
+    if (trip.lyDoHuy) parts.push(trip.lyDoHuy);
+    if (parts.length > 0) {
+      const last = timeline[timeline.length - 1];
+      last.meta = `${parts.join(" · ")} · vé liên quan đã hủy`;
+    }
+  }
   return timeline;
 }

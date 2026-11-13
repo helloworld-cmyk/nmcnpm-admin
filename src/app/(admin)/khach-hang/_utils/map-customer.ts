@@ -5,7 +5,7 @@ import type {
 import type { TicketResponse } from "@/api/booking/types";
 import { routeLabel } from "@/utils/route-label";
 
-import type { HangThanhVien, KhachHang, TrangThaiVe, VeDaDat } from "../_data/customers";
+import type { KhachHang, TrangThaiVe, VeDaDat } from "../_data/customers";
 
 /* accountStatus của backend → trạng thái 2 mức đang dùng ở UI. */
 function mapTrangThai(accountStatus: CompanyCustomerResponse["accountStatus"]): KhachHang["trangThai"] {
@@ -25,17 +25,6 @@ function formatDate(value: string | null): string {
 /* Mã khách hiển thị — backend chưa trả mã riêng nên suy ra ổn định từ id. */
 function maKhach(id: string): string {
   return `KH-${id.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8).toUpperCase()}`;
-}
-
-/*
- * Hạng thành viên — backend chưa trả hạng nên suy ra tạm từ số vé đã đặt
- * để giữ đúng bố cục hiển thị.
- */
-function hangThanhVien(bookingCount: number): HangThanhVien {
-  if (bookingCount >= 20) return "Kim cương";
-  if (bookingCount >= 12) return "Vàng";
-  if (bookingCount >= 5) return "Bạc";
-  return "Đồng";
 }
 
 /* Trạng thái vé (đặt vé + đón/trả hành khách) → nhãn trạng thái vé ở UI. */
@@ -59,9 +48,7 @@ export function mapCustomer(customer: CompanyCustomerResponse): KhachHang {
     ngayTao: formatDate(customer.lastBookingAt),
     veDaDat: customer.bookingCount,
     tongChiTieu: 0,
-    hangThanhVien: hangThanhVien(customer.bookingCount),
     trangThai: mapTrangThai(customer.accountStatus),
-    lyDoKhoa: null,
     lichSuVe: [],
   };
 }
@@ -101,9 +88,7 @@ export function mapCustomerDetail(
     ngayTao: formatDate(detail.createdAt),
     veDaDat: detail.bookings.length,
     tongChiTieu,
-    hangThanhVien: hangThanhVien(detail.bookings.length),
     trangThai: mapTrangThai(detail.accountStatus),
-    lyDoKhoa: null,
     lichSuVe,
   };
 }

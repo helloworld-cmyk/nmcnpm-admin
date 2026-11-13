@@ -12,6 +12,11 @@ import {
   SO_DONG_MOI_TRANG,
   TRANG_THAI_HIENTHI,
   chuaKhoiHanh,
+  coTheCongBo,
+  coTheHuy,
+  coThePhanCong,
+  coTheSua,
+  coTheXoa,
   dinhDangTien,
   isoSangNhanNgan,
   isoSangNhanSub,
@@ -72,6 +77,7 @@ type ChuyenTableProps = {
   onDetail: (ma: string) => void;
   onEdit: (trip: ChuyenRecord) => void;
   onCancel: (ma: string) => void;
+  onDelete: (ma: string) => void;
   onReset: () => void;
   onPublish: (tripId: string) => void;
 };
@@ -84,6 +90,7 @@ export function ChuyenTable({
   onDetail,
   onEdit,
   onCancel,
+  onDelete,
   onReset,
   onPublish,
 }: ChuyenTableProps) {
@@ -173,8 +180,9 @@ export function ChuyenTable({
                     <strong className={MA_CHUYEN_CLASS}>{trip.ma}</strong>
                   </td>
                   <td data-label="Tuyến">
-                    <strong className={TD_STRONG_CLASS}>{trip.tuyen}</strong>
-                    <span className={TD_SUB_CLASS}>{trip.tuyenPhu}</span>
+                    <strong className={`${TD_STRONG_CLASS} whitespace-nowrap`}>
+                      {trip.tuyen}
+                    </strong>
                   </td>
                   <td data-label="Khởi hành">
                     <strong className={TD_STRONG_CLASS}>
@@ -280,48 +288,70 @@ export function ChuyenTable({
                       >
                         Chi tiết
                       </button>
-                      {!trip.daCongBo &&
-                        trip.trangThai === "sap-toi" &&
-                        chuaKhoiHanh(trip) && (
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-sky"
-                            title="Công bố chuyến — bật mở bán vé"
-                            aria-label={`Công bố chuyến ${trip.ma}`}
-                            onClick={() => onPublish(trip.id)}
-                          >
-                            <Icon name="i-publish" />
-                            Công bố
-                          </button>
-                        )}
+                      {coTheCongBo(trip) && chuaKhoiHanh(trip) && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-sky"
+                          title="Công bố chuyến — bật mở bán vé"
+                          aria-label={`Công bố chuyến ${trip.ma}`}
+                          onClick={() => onPublish(trip.id)}
+                        >
+                          <Icon name="i-publish" />
+                          Công bố
+                        </button>
+                      )}
                       {trip.trangThai === "sap-toi" && (
                         <>
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-ghost row-icon-btn"
-                            title={
-                              trip.taixe
-                                ? "Sửa chuyến"
-                                : "Phân công tài xế và xe"
-                            }
-                            aria-label={
-                              trip.taixe
-                                ? `Sửa chuyến ${trip.ma}`
-                                : `Phân công tài xế và xe cho ${trip.ma}`
-                            }
-                            onClick={() => onEdit(trip)}
-                          >
-                            <Icon name={trip.taixe ? "i-edit" : "i-users"} />
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-ghost row-icon-btn"
-                            title="Hủy chuyến"
-                            aria-label={`Hủy chuyến ${trip.ma}`}
-                            onClick={() => onCancel(trip.ma)}
-                          >
-                            <Icon name="i-trash" />
-                          </button>
+                          {(coTheSua(trip) || coThePhanCong(trip)) && (
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-ghost row-icon-btn"
+                              title={
+                                coTheSua(trip)
+                                  ? trip.taixe
+                                    ? "Sửa chuyến"
+                                    : "Phân công tài xế và xe"
+                                  : "Đổi xe và tài xế"
+                              }
+                              aria-label={
+                                coTheSua(trip)
+                                  ? trip.taixe
+                                    ? `Sửa chuyến ${trip.ma}`
+                                    : `Phân công tài xế và xe cho ${trip.ma}`
+                                  : `Đổi xe và tài xế cho ${trip.ma}`
+                              }
+                              onClick={() => onEdit(trip)}
+                            >
+                              <Icon
+                                name={
+                                  coTheSua(trip) && trip.taixe
+                                    ? "i-edit"
+                                    : "i-users"
+                                }
+                              />
+                            </button>
+                          )}
+                          {coTheXoa(trip) ? (
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-ghost row-icon-btn"
+                              title="Xóa chuyến nháp"
+                              aria-label={`Xóa chuyến nháp ${trip.ma}`}
+                              onClick={() => onDelete(trip.ma)}
+                            >
+                              <Icon name="i-trash" />
+                            </button>
+                          ) : coTheHuy(trip) ? (
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-ghost row-icon-btn"
+                              title="Hủy chuyến"
+                              aria-label={`Hủy chuyến ${trip.ma}`}
+                              onClick={() => onCancel(trip.ma)}
+                            >
+                              <Icon name="i-x-circle" />
+                            </button>
+                          ) : null}
                         </>
                       )}
                       {trip.trangThai === "dang-thuc-hien" && (

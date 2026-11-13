@@ -6,7 +6,7 @@ import type {
   TripResponse,
 } from "@/api/chuyen/api/types";
 import type { VehicleResponse } from "@/api/xe/api/types";
-import { routeLabel, routeLabelWithStation } from "@/utils/route-label";
+import { routeLabel } from "@/utils/route-label";
 
 import {
   isoSangNhan,
@@ -51,11 +51,20 @@ const mocTao = (createdAt: string) => {
   return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)} · ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 };
 
+/* Mốc hủy chuyến (ISO) → "dd/mm · HH:mm"; trả null khi chuyến chưa bị hủy. */
+const mocHuy = (iso: string | null) => {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)} · ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+};
+
 /*
  * TripResponse → ChuyenRecord (view-model tiếng Việt của màn Quản lý chuyến).
- * Backend /bus-companies/{id}/trips hiện KHÔNG trả: tài xế, xe, số ghế mở/đã đặt,
- * công tài xế, sự cố, mức trễ → các trường này dùng giá trị an toàn (null/0) và
- * chỉ được cập nhật cục bộ ở tầng UI (xem local override trong chuyen-board.tsx).
+ * Backend /bus-companies/{id}/trips hiện KHÔNG trả: tài xế, xe, số ghế đã đặt,
+ * sự cố, mức trễ → mapTrip dùng giá trị an toàn (null/0), sau đó hook màn chuyến
+ * ghép tài xế/xe (/assignments) và số ghế đã đặt (/bookings) vào danh sách
+ * (xem use-chuyen-board.ts).
  */
 export function mapTrip(trip: TripResponse): ChuyenRecord {
   const { ngayISO, gio } = ngayGioDiaPhuong(trip.departureAt);
@@ -67,10 +76,6 @@ export function mapTrip(trip: TripResponse): ChuyenRecord {
     gio,
     tuyenId: trip.routeId,
     tuyen: routeLabel(trip.originAreaName, trip.destinationAreaName),
-    tuyenPhu: routeLabelWithStation(
-      trip.originAreaName,
-      trip.destinationAreaName
-    ),
     /* Không có nguồn dữ liệu ở backend — giữ an toàn, cập nhật cục bộ khi cần. */
     taixeId: null,
     taixe: null,
@@ -81,12 +86,15 @@ export function mapTrip(trip: TripResponse): ChuyenRecord {
     sucChua: 0,
     daDat: 0,
     giaVe: trip.baseFareAmount,
-    congTaiXe: 0,
-    /* DRAFT = chưa công bố (nháp), các trạng khác = đã công bố. */
-    daCongBo: trip.status !== "DRAFT",
     trangThai: STATUS_TO_TRANG_THAI[trip.status],
+    trangThaiBackend: trip.status,
+    salesStatus: trip.salesStatus,
+    daKhoiHanh: trip.actualDepartureAt !== null,
     lenh: null,
     thoiLuong: thoiLuongPhut(trip.departureAt, trip.expectedArrivalAt),
+    huyLuc: mocHuy(trip.cancelledAt),
+    lyDoHuy: trip.cancellationReason,
+    moTaHuy: trip.cancellationDescription,
     taoLuc: mocTao(trip.createdAt),
   };
 }
@@ -144,18 +152,28 @@ export function applyTripAssignment(
   };
 }
 
-/* Ghép ngày (yyyy-mm-dd) + giờ (HH:mm) của form thành mốc ISO gửi backend. */
+/*
+ * Backend dùng java.time.LocalDateTime nên chỉ nhận "yyyy-mm-ddTHH:mm:ss"
+ * (giờ địa phương, KHÔNG kèm Z/offset). Dùng toISOString() sẽ quy đổi sang UTC
+ * và lệch múi giờ (01:00 → 18:00 hôm trước), nên phải format tay.
+ */
+const localDateTime = (d: Date) =>
+  `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(
+    d.getHours()
+  )}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+
+/* Ghép ngày (yyyy-mm-dd) + giờ (HH:mm) của form thành LocalDateTime gửi backend. */
 export function buildDepartureAt(ngayISO: string, gio: string) {
   const [y, m, d] = ngayISO.split("-").map(Number);
   const [h, mi] = gio.split(":").map(Number);
-  return new Date(y, m - 1, d, h, mi, 0, 0).toISOString();
+  return localDateTime(new Date(y, m - 1, d, h, mi, 0, 0));
 }
 
 /* Cộng thời lượng tuyến (phút) vào mốc khởi hành để có giờ đến dự kiến. */
 export function buildExpectedArrivalAt(departureAt: string, minutes: number) {
-  return new Date(
-    new Date(departureAt).getTime() + Math.max(0, minutes) * 60000
-  ).toISOString();
+  return localDateTime(
+    new Date(new Date(departureAt).getTime() + Math.max(0, minutes) * 60000)
+  );
 }
 
 /* Một vé chỉ "đã đón" khi hành khách đã lên (hoặc đã xuống) xe. */

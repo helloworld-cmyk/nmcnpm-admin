@@ -4,7 +4,6 @@ import {
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from "axios";
-import { useSessionStore } from "@/global-states/session-store";
 import { STORAGE_KEYS } from "@/config/constants/storage";
 import { getItem, removeItem } from "@/config/storage";
 
@@ -12,6 +11,17 @@ import { refreshAccessTokenAPI } from "./auth/api/refresh";
 import { AuthClient } from "./client/auth-client";
 import { NoAuthClient } from "./client/no-auth-client";
 import { APP_CODE, ApiError, type ApiEnvelope } from "./types";
+
+/* ApiError kèm config request gốc để có thể gửi lại sau khi làm mới token. */
+type RetryableApiError = ApiError & {
+  requestConfig?: InternalAxiosRequestConfig;
+};
+
+type RetryableConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+
+/* Thông điệp khi phiên hết hạn và không thể tự làm mới token. */
+const SESSION_EXPIRED_MESSAGE =
+  "Phiên đăng nhập đã hết hạn, vui lòng đăng xuất và đăng nhập lại (please logout and try again).";
 
 /* Bóc envelope { code, message, wsResponse }; lỗi nghiệp vụ reject thành ApiError. */
 function normalizeResponse<T>(
@@ -24,10 +34,52 @@ function normalizeResponse<T>(
       response.data = body.wsResponse as T;
       return response;
     }
-    return Promise.reject(new ApiError(body.code, body.message));
+    const apiError = new ApiError(
+      body.code,
+      body.message,
+      response.status
+    ) as RetryableApiError;
+    apiError.requestConfig = response.config;
+    return Promise.reject(apiError);
   }
 
   return response;
+}
+
+/* Lấy config request gốc của lỗi (AxiosError HTTP hoặc ApiError nghiệp vụ). */
+function getRequestConfig(error: unknown): RetryableConfig | undefined {
+  if (error instanceof ApiError) {
+    return (error as RetryableApiError).requestConfig as
+      | RetryableConfig
+      | undefined;
+  }
+  if (error instanceof AxiosError) {
+    return error.config as RetryableConfig | undefined;
+  }
+  return undefined;
+}
+
+/* Lỗi xác thực: HTTP 401 hoặc mã nghiệp vụ INVALID_TOKEN trong envelope. */
+function isAuthFailure(error: unknown): boolean {
+  if (error instanceof ApiError) {
+    return error.code === APP_CODE.INVALID_TOKEN;
+  }
+  if (error instanceof AxiosError) {
+    if (error.response?.status === 401) return true;
+    const body = error.response?.data as ApiEnvelope<unknown> | undefined;
+    return Boolean(
+      body &&
+        typeof body === "object" &&
+        "code" in body &&
+        body.code === APP_CODE.INVALID_TOKEN
+    );
+  }
+  return false;
+}
+
+/* Kết thúc khả năng làm mới: bỏ refresh token để không thử lại lặp vô hạn. */
+function stopRefreshing(): void {
+  removeItem(STORAGE_KEYS.REFRESH_TOKEN);
 }
 
 /* Gắn access token hiện có vào mọi yêu cầu của client cần xác thực. */
@@ -46,51 +98,53 @@ function attachResponseInterceptor(
   client: AxiosInstance,
   refreshToken?: () => Promise<string>
 ): void {
-  client.interceptors.response.use(
-    normalizeResponse,
-    async (error: AxiosError) => {
-      const original = error.config as
-        | (InternalAxiosRequestConfig & { _retry?: boolean })
-        | undefined;
-      const status = error.response?.status;
+  /*
+   * 1) Chuẩn hóa envelope TRƯỚC: lỗi nghiệp vụ (vd. code INVALID_TOKEN trả về
+   *    cùng HTTP 200) cũng bị reject và rơi vào bước xử lý lỗi bên dưới.
+   */
+  client.interceptors.response.use(normalizeResponse);
 
-      const shouldRefresh =
-        refreshToken &&
-        status === 401 &&
-        original &&
-        !original._retry &&
-        Boolean(getItem(STORAGE_KEYS.REFRESH_TOKEN));
+  /* 2) Gặp lỗi xác thực thì làm mới token rồi gửi lại request đúng một lần. */
+  client.interceptors.response.use(undefined, async (error) => {
+    const original = getRequestConfig(error);
 
-      if (shouldRefresh) {
+    if (refreshToken && original && isAuthFailure(error)) {
+      /* Còn refresh token và chưa thử lại -> làm mới phiên. */
+      if (!original._retry && getItem(STORAGE_KEYS.REFRESH_TOKEN)) {
         original._retry = true;
         try {
           const accessToken = await refreshToken();
           original.headers.Authorization = `Bearer ${accessToken}`;
           return client(original);
         } catch {
-          removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-          removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-          useSessionStore.getState().logout();
-          return Promise.reject(
-            new ApiError(
-              APP_CODE.INVALID_TOKEN,
-              "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại",
-              401
-            )
-          );
+          /* Làm mới thất bại -> kết thúc phiên ở dưới. */
         }
       }
 
-      const body = error.response?.data as ApiEnvelope<unknown> | undefined;
-      if (body && typeof body === "object" && "code" in body) {
-        return Promise.reject(
-          new ApiError(body.code, body.message, status ?? undefined)
-        );
-      }
+      /*
+       * Không thể làm mới (hết refresh token / đã thử lại / refresh thất bại):
+       * ngừng xoay token và báo người dùng đăng xuất rồi đăng nhập lại.
+       */
+      stopRefreshing();
+      return Promise.reject(
+        new ApiError(APP_CODE.INVALID_TOKEN, SESSION_EXPIRED_MESSAGE, 401)
+      );
+    }
 
+    if (error instanceof ApiError) {
       return Promise.reject(error);
     }
-  );
+
+    const axiosError = error as AxiosError;
+    const body = axiosError.response?.data as ApiEnvelope<unknown> | undefined;
+    if (body && typeof body === "object" && "code" in body) {
+      return Promise.reject(
+        new ApiError(body.code, body.message, axiosError.response?.status)
+      );
+    }
+
+    return Promise.reject(error);
+  });
 }
 
 /* AuthClient: gắn token + tự làm mới phiên khi gặp 401. */

@@ -10,6 +10,11 @@ export type VehicleResponse = {
   plateNumber: string;
   vehicleModel: string;
   passengerCapacity: number;
+  inspectionExpiresOn: string | null;
+  vehicleType: string | null;
+  manufacturingYear: number | null;
+  fuelType: string | null;
+  color: string | null;
   seatLayoutId: string | null;
   status: VehicleStatus;
   createdAt: string;
@@ -27,6 +32,11 @@ export type CreateVehiclePayload = {
   plateNumber: string;
   vehicleModel: string;
   passengerCapacity: number;
+  inspectionExpiresOn?: string;
+  vehicleType?: string;
+  manufacturingYear?: number;
+  fuelType?: string;
+  color?: string;
 };
 
 /* Body cập nhật xe; trường không gửi được giữ nguyên. */
@@ -34,6 +44,11 @@ export type UpdateVehiclePayload = {
   plateNumber?: string;
   vehicleModel?: string;
   passengerCapacity?: number;
+  inspectionExpiresOn?: string;
+  vehicleType?: string;
+  manufacturingYear?: number;
+  fuelType?: string;
+  color?: string;
   status?: VehicleStatus;
 };
 
@@ -61,4 +76,40 @@ export type VehicleSeatLayoutResponse = {
   seatLayoutId: string;
   name: string;
   seats: VehicleSeatResponse[];
+};
+
+/* Loại giấy tờ của xe. */
+export type VehicleDocumentType =
+  | "REGISTRATION"
+  | "INSPECTION"
+  | "LIABILITY_INSURANCE"
+  | "PHYSICAL_DAMAGE_INSURANCE";
+
+/* Trạng thái hiệu lực của giấy tờ xe. */
+export type VehicleDocumentStatus =
+  | "VALID"
+  | "EXPIRED"
+  | "NOT_YET_VALID"
+  | "UNKNOWN";
+
+/* Một giấy tờ của xe. */
+export type VehicleDocumentResponse = {
+  id: string;
+  type: VehicleDocumentType;
+  documentNumber: string | null;
+  issuer: string | null;
+  description: string | null;
+  issuedOn: string | null;
+  expiresOn: string | null;
+  status: VehicleDocumentStatus;
+  updatedAt: string;
+};
+
+/* Body thêm hoặc cập nhật giấy tờ xe; trường không gửi được giữ nguyên. */
+export type VehicleDocumentPayload = {
+  documentNumber?: string;
+  issuer?: string;
+  description?: string;
+  issuedOn?: string;
+  expiresOn?: string;
 };

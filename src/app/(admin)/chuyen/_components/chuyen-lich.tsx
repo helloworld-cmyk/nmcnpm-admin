@@ -1,6 +1,7 @@
 "use client";
 
 import { Icon } from "@/components/icons/icon";
+import { DatePicker } from "@/components/ui/form";
 import {
   LICH_HOURS,
   type ChuyenLichPrefill,
@@ -60,14 +61,12 @@ export function ChuyenLich({
   onCreate,
 }: ChuyenLichProps) {
   const {
-    offset,
+    ngayISO,
     mode,
-    dateLabel,
     hasTrips,
     lanes,
     setMode,
-    goPrev,
-    goNext,
+    setNgay,
     createFor,
     handleTrackClick,
   } = useChuyenLich({ trips, xeOptions, taixeOptions, onCreate });
@@ -80,28 +79,15 @@ export function ChuyenLich({
       <h2 className="sr-only">Lịch điều phối tài nguyên</h2>
 
       <div className="lich-bar flex flex-wrap items-center justify-between gap-2.5">
-        <div className="inline-flex items-center gap-2">
-          <button
-            type="button"
-            className="page-btn h-10 w-10"
-            aria-label="Ngày trước"
-            onClick={goPrev}
-          >
-            <Icon name="i-chevron-right" className="icon rotate-180" />
-          </button>
-          <span className="lich-date min-w-[150px] text-[13.5px] font-bold text-[var(--ink)]">
-            {offset === 0 ? "Hôm nay · " : ""}
-            {dateLabel}
-          </span>
-          <button
-            type="button"
-            className="page-btn h-10 w-10"
-            aria-label="Ngày sau"
-            onClick={goNext}
-          >
-            <Icon name="i-chevron-right" className="icon" />
-          </button>
-        </div>
+        <DatePicker
+          id="lichNgay"
+          value={ngayISO}
+          onChange={setNgay}
+          icon="i-calendar"
+          clearable={false}
+          placeholder="Chọn ngày"
+          className="w-[190px]"
+        />
 
         <div className="cv-switch" role="group" aria-label="Nhóm tài nguyên">
           <button
@@ -229,8 +215,8 @@ export function ChuyenLich({
           </span>
           <h3>Ngày này chưa có chuyến nào</h3>
           <p>
-            Chọn ngày khác bằng mũi tên để xem lịch, hoặc bấm Tạo chuyến để
-            xếp chuyến mới cho ngày đang xem.
+            Chọn ngày khác ở ô chọn ngày phía trên để xem lịch, hoặc bấm Tạo
+            chuyến để xếp chuyến mới cho ngày đang xem.
           </p>
         </div>
       )}

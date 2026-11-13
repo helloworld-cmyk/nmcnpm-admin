@@ -6,6 +6,7 @@ import {
   Select,
   TimePicker,
 } from "@/components/ui/form";
+import { Icon } from "@/components/icons/icon";
 import type {
   ChuyenRecord,
   ChuyenTuyenOption,
@@ -26,18 +27,22 @@ const FORM_GRID_CLASS =
 type ChuyenFormBodyProps = {
   initial: ChuyenFormFields;
   editingMa: string | null;
+  scheduleLocked: boolean;
+  canPublish: boolean;
   trips: ChuyenRecord[];
   tuyenOptions: ChuyenTuyenOption[];
   routeDurations: Record<string, number>;
   xeOptions: XeOption[];
   taixeOptions: TaiXeOption[];
   onClose: () => void;
-  onSave: (values: ChuyenFormValues) => void;
+  onSave: (values: ChuyenFormValues, publish: boolean) => void;
 };
 
 export function ChuyenFormBody({
   initial,
   editingMa,
+  scheduleLocked,
+  canPublish,
   trips,
   tuyenOptions,
   routeDurations,
@@ -52,6 +57,7 @@ export function ChuyenFormBody({
     status,
     updateField,
     handleSubmit,
+    handleSaveAndPublish,
     tuyenRef,
     ngayRef,
     gioRef,
@@ -77,6 +83,15 @@ export function ChuyenFormBody({
 
   return (
     <form className="grid gap-3.5" noValidate onSubmit={handleSubmit}>
+      {scheduleLocked && (
+        <p
+          role="note"
+          className="rounded-[var(--radius-sm)] border border-[var(--sky-100)] bg-[var(--sky-50)] p-3 text-[12.5px] leading-[1.55] text-[var(--slate-700)]"
+        >
+          Chuyến đã công bố nên không sửa được tuyến/ngày/giờ khởi hành, chỉ có
+          thể thay xe và tài xế.
+        </p>
+      )}
       <div className={FORM_GRID_CLASS}>
         <FormField
           id="fTuyenChon"
@@ -90,6 +105,7 @@ export function ChuyenFormBody({
             id="fTuyenChon"
             name="tuyen"
             icon="i-route"
+            disabled={scheduleLocked}
             aria-invalid={invalid.tuyen}
             invalid={invalid.tuyen}
             value={values.tuyen}
@@ -115,6 +131,7 @@ export function ChuyenFormBody({
             ref={ngayRef}
             id="fNgayDi"
             icon="i-calendar"
+            disabled={scheduleLocked}
             aria-invalid={invalid.ngay}
             invalid={invalid.ngay}
             value={values.ngay}
@@ -132,6 +149,7 @@ export function ChuyenFormBody({
             ref={gioRef}
             id="fGioDi"
             icon="i-clock"
+            disabled={scheduleLocked}
             aria-invalid={invalid.gio}
             invalid={invalid.gio}
             value={values.gio}
@@ -245,6 +263,16 @@ export function ChuyenFormBody({
         <button type="submit" className="btn btn-primary">
           Lưu chuyến
         </button>
+        {canPublish && (
+          <button
+            type="button"
+            className="btn btn-sky"
+            onClick={handleSaveAndPublish}
+          >
+            <Icon name="i-publish" />
+            Lưu và công bố chuyến
+          </button>
+        )}
       </div>
     </form>
   );

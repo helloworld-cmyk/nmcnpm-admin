@@ -6,6 +6,10 @@ import {
   LENH_CHUA_PHAN_CONG,
   LENH_HIENTHI,
   TRANG_THAI_HIENTHI,
+  coTheHuy,
+  coThePhanCong,
+  coTheSua,
+  coTheXoa,
   dinhDangTien,
   isoSangNhanNgan,
   isoSangNhanSub,
@@ -36,7 +40,6 @@ export type ChuyenDetailView = {
   tyLe: number;
   seatVariant: string;
   giaVeText: string;
-  congTaiXeText: string;
   driverName: string | null;
   driverPhone: string | null;
   driverInitial: string;
@@ -50,7 +53,10 @@ export type ChuyenDetailView = {
     sub: string;
   } | null;
   steps: Record<string, StepState>;
-  canOperate: boolean;
+  canEdit: boolean;
+  canAssign: boolean;
+  canCancel: boolean;
+  canDelete: boolean;
   treText: string | null;
   sucoState: { title: string; chip: string; chipClass: string } | null;
   timeline: TimelineItem[];
@@ -105,7 +111,10 @@ export function useChuyenDetailDrawer(trip: ChuyenRecord | null) {
         : null
       : LENH_CHUA_PHAN_CONG;
     const steps = lenhStepsFor(driverName ? trip.lenh : null, trip.trangThai);
-    const canOperate = trip.trangThai === "sap-toi";
+    const canEdit = coTheSua(trip);
+    const canAssign = coThePhanCong(trip);
+    const canCancel = coTheHuy(trip);
+    const canDelete = coTheXoa(trip);
     const treText = trip.tre
       ? trip.trangThai === "dang-thuc-hien"
         ? `Chuyến đang trễ ${trip.tre} phút so với kế hoạch hành trình.`
@@ -120,7 +129,6 @@ export function useChuyenDetailDrawer(trip: ChuyenRecord | null) {
       tyLe,
       seatVariant: seatBarVariant(trip.trangThai, tyLe),
       giaVeText: dinhDangTien(trip.giaVe),
-      congTaiXeText: dinhDangTien(trip.congTaiXe),
       driverName,
       driverPhone,
       driverInitial: driverName ? vietTat(driverName) : "?",
@@ -129,7 +137,10 @@ export function useChuyenDetailDrawer(trip: ChuyenRecord | null) {
       hasAssignment,
       lenhInfo,
       steps,
-      canOperate,
+      canEdit,
+      canAssign,
+      canCancel,
+      canDelete,
       treText,
       sucoState: trip.suco ? SUCO_STATE[trip.suco.trangThai] : null,
       timeline: buildChuyenTimeline(trip, {

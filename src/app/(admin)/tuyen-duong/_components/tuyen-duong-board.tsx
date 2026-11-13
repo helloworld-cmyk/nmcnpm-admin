@@ -26,6 +26,11 @@ export function TuyenDuongBoard() {
     rawRoutes,
     areas,
     areasLoading,
+    areasError,
+    areasErrorText,
+    areasRetrying,
+    refetchAreas,
+    hasNoRoutes,
     filtered,
     rows,
     pageCount,
@@ -87,7 +92,10 @@ export function TuyenDuongBoard() {
     if (filtered.length === 0) {
       return (
         <Reveal>
-          <TuyenDuongEmptyState />
+          <TuyenDuongEmptyState
+            variant={hasNoRoutes ? "no-routes" : "no-match"}
+            onAddRoute={() => setFormTarget({ mode: "add" })}
+          />
         </Reveal>
       );
     }
@@ -140,6 +148,12 @@ export function TuyenDuongBoard() {
         routes={rawRoutes}
         areas={areas}
         areasLoading={areasLoading}
+        areasError={areasError}
+        areasErrorText={areasErrorText}
+        areasRetrying={areasRetrying}
+        onRetryAreas={() => {
+          void refetchAreas();
+        }}
         onClose={() => setFormTarget(null)}
         onSave={handleFormSave}
       />

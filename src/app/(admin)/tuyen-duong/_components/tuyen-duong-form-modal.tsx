@@ -16,6 +16,10 @@ type TuyenDuongFormModalProps = {
   routes: RouteResponse[];
   areas: AreaResponse[];
   areasLoading: boolean;
+  areasError: boolean;
+  areasErrorText: string;
+  areasRetrying: boolean;
+  onRetryAreas: () => void;
   onClose: () => void;
   onSave: (values: TuyenDuongFormValues) => Promise<void>;
 };
@@ -25,6 +29,10 @@ export function TuyenDuongFormModal({
   routes,
   areas,
   areasLoading,
+  areasError,
+  areasErrorText,
+  areasRetrying,
+  onRetryAreas,
   onClose,
   onSave,
 }: TuyenDuongFormModalProps) {
@@ -66,6 +74,10 @@ export function TuyenDuongFormModal({
         routes={routes}
         areas={areas}
         areasLoading={areasLoading}
+        areasError={areasError}
+        areasErrorText={areasErrorText}
+        areasRetrying={areasRetrying}
+        onRetryAreas={onRetryAreas}
         onClose={onClose}
         onSave={onSave}
       />

@@ -4,18 +4,21 @@ import { useRef, useState } from "react";
 import { Icon } from "@/components/icons/icon";
 import { Modal } from "@/components/ui/modal";
 import { FormField, Select, TextArea } from "@/components/ui/form";
+import type { CancelTripPayload } from "@/api/chuyen/api/types";
 import { LY_DO_HUY, type ChuyenRecord } from "../_data/chuyen";
 
 type ChuyenCancelModalProps = {
   trip: ChuyenRecord | null;
   onClose: () => void;
-  onConfirm: (ma: string) => void;
+  onConfirm: (payload: CancelTripPayload) => void;
+  submitting?: boolean;
 };
 
 export function ChuyenCancelModal({
   trip,
   onClose,
   onConfirm,
+  submitting = false,
 }: ChuyenCancelModalProps) {
   const [lyDo, setLyDo] = useState("");
   const [moTa, setMoTa] = useState("");
@@ -31,7 +34,10 @@ export function ChuyenCancelModal({
       lyDoRef.current?.focus();
       return;
     }
-    onConfirm(trip.ma);
+    onConfirm({
+      reason: LY_DO_HUY.find((item) => item.value === lyDo)?.label ?? lyDo,
+      description: moTa.trim() || undefined,
+    });
   };
 
   return (
@@ -55,15 +61,21 @@ export function ChuyenCancelModal({
       }
       footer={
         <>
-          <button type="button" className="btn btn-ghost" onClick={onClose}>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={onClose}
+            disabled={submitting}
+          >
             Giữ chuyến
           </button>
           <button
             type="button"
             className="btn btn-danger"
             onClick={handleConfirm}
+            disabled={submitting}
           >
-            Xác nhận hủy chuyến
+            {submitting ? "Đang hủy..." : "Xác nhận hủy chuyến"}
           </button>
         </>
       }

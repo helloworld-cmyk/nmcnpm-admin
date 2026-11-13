@@ -1,7 +1,7 @@
 "use client";
 
 import { Modal } from "@/components/ui/modal";
-import type { TaiXe } from "../_data/tai-xe";
+import type { TaiXe } from "../_utils/tai-xe";
 import type { TaiXeConfirmMode } from "../_utils/tai-xe-form";
 import { TaiXeConfirmBody } from "./tai-xe-confirm-body";
 

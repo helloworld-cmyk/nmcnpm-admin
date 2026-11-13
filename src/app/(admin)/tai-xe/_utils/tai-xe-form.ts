@@ -1,9 +1,17 @@
-import {
-  GPLX_HANG_OPTIONS,
-  type GplxHang,
-  type TaiXe,
-  type TaiXeFormValues,
-} from "../_data/tai-xe";
+import type { TaiXe } from "./tai-xe";
+
+/* Hạng giấy phép lái xe hợp lệ (khớp backend). */
+export const GPLX_HANG_OPTIONS = ["B1", "B2", "C1", "C", "D1", "D2", "E"] as const;
+export type GplxHang = (typeof GPLX_HANG_OPTIONS)[number];
+
+export type TaiXeFormValues = {
+  fullName: string;
+  phone: string;
+  email: string;
+  licenseNumber: string;
+  licenseClass: GplxHang;
+  licenseExpiresOn: string;
+};
 
 export type TaiXeFormState = {
   fullName: string;

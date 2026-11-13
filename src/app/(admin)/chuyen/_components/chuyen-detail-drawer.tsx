@@ -20,6 +20,7 @@ type ChuyenDetailDrawerProps = {
   onClose: () => void;
   onEdit: (trip: ChuyenRecord) => void;
   onCancel: (trip: ChuyenRecord) => void;
+  onDelete: (trip: ChuyenRecord) => void;
   onSuco: (trip: ChuyenRecord, step: "nhan" | "ket-qua") => void;
 };
 
@@ -32,10 +33,10 @@ const DOT_STATE_CLASS: Record<TimelineState, string> = {
 };
 
 const TIMELINE_ITEM_CLASS =
-  "relative grid grid-cols-[18px_1fr] gap-x-3 pb-3.5 last:pb-0";
+  "relative grid grid-cols-[11px_1fr] gap-x-3.5 pb-3.5 last:pb-0";
 
 const TIMELINE_LINE_CLASS =
-  "before:absolute before:bottom-0 before:left-[8px] before:top-[15px] before:w-[2px] before:-translate-x-1/2 before:bg-[repeating-linear-gradient(to_bottom,var(--slate-200)_0_4px,transparent_4px_8px)] before:content-[''] last:before:hidden";
+  "before:absolute before:bottom-0 before:left-[5px] before:top-[9px] before:w-[2px] before:-translate-x-1/2 before:bg-[repeating-linear-gradient(to_bottom,var(--slate-200)_0_4px,transparent_4px_8px)] before:content-[''] last:before:hidden";
 
 const STEP_STATE_CLASS: Record<StepState, string> = {
   done: "border-[var(--green-100)] bg-[var(--green-50)] text-[var(--green-700)]",
@@ -66,6 +67,7 @@ export function ChuyenDetailDrawer({
   onClose,
   onEdit,
   onCancel,
+  onDelete,
   onSuco,
 }: ChuyenDetailDrawerProps) {
   const {
@@ -145,19 +147,15 @@ export function ChuyenDetailDrawer({
                 </span>
               )}
             </div>
-            <p className="flex min-w-0 items-center gap-1.5 text-[12px] text-[var(--slate-600)]">
-              <Icon name="i-pin" className="h-3.5 w-3.5 flex-none text-[var(--sky-600)]" />
-              <span className="[overflow-wrap:anywhere]">{trip.tuyenPhu}</span>
-            </p>
           </div>
         </header>
 
         <div className="scroll-area flex flex-1 flex-col gap-[18px] overflow-y-auto px-5 py-[18px] max-[560px]:px-4">
           <section
-            className="grid grid-cols-[repeat(3,minmax(0,1fr))] gap-2.5 max-[560px]:grid-cols-2"
+            className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-2.5 max-[560px]:grid-cols-1"
             aria-label="Tóm tắt chuyến"
           >
-            <div className="grid min-w-0 content-start gap-1 rounded-xl border border-[var(--border-soft)] bg-[var(--bg)] p-3 max-[560px]:col-span-2">
+            <div className="grid min-w-0 content-start gap-1 rounded-xl border border-[var(--border-soft)] bg-[var(--bg)] p-3">
               <span className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[var(--slate-500)]">
                 Lấp ghế
               </span>
@@ -187,17 +185,6 @@ export function ChuyenDetailDrawer({
               </strong>
               <span className="text-[11.5px] text-[var(--slate-500)]">
                 mỗi ghế
-              </span>
-            </div>
-            <div className="grid min-w-0 content-start gap-1 rounded-xl border border-[var(--border-soft)] bg-[var(--bg)] p-3">
-              <span className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-[var(--slate-500)]">
-                Tiền công
-              </span>
-              <strong className="[font-family:var(--font-heading)] text-[20px] font-extrabold leading-[1.2] tracking-[-0.02em] text-[var(--ink)] [font-variant-numeric:tabular-nums]">
-                {detail.congTaiXeText}
-              </strong>
-              <span className="text-[11.5px] text-[var(--slate-500)]">
-                trả tài xế
               </span>
             </div>
           </section>
@@ -430,6 +417,40 @@ export function ChuyenDetailDrawer({
             </section>
           )}
 
+          {trip.trangThai === "da-huy" && (trip.lyDoHuy || trip.huyLuc) && (
+            <section
+              className="flex gap-3 rounded-xl border border-[var(--border-soft)] bg-[var(--bg)] p-3.5"
+              aria-label="Thông tin hủy chuyến"
+            >
+              <span
+                className="grid h-[34px] w-[34px] flex-none place-items-center rounded-[10px] bg-[var(--red-50)] text-[var(--red-600)]"
+                aria-hidden="true"
+              >
+                <Icon name="i-x-circle" className="h-[18px] w-[18px]" />
+              </span>
+              <div className="grid min-w-0 gap-[5px]">
+                <strong className="text-[13.5px] text-[var(--ink)]">
+                  Hãng đã hủy chuyến
+                </strong>
+                {trip.lyDoHuy && (
+                  <p className="text-[12.5px] leading-[1.55] text-[var(--slate-600)]">
+                    Lý do: {trip.lyDoHuy}
+                  </p>
+                )}
+                {trip.moTaHuy && (
+                  <p className="text-[12.5px] leading-[1.55] text-[var(--slate-600)]">
+                    {trip.moTaHuy}
+                  </p>
+                )}
+                {trip.huyLuc && (
+                  <span className="text-[11px] text-[var(--slate-500)]">
+                    Hủy lúc {trip.huyLuc}
+                  </span>
+                )}
+              </div>
+            </section>
+          )}
+
           <section className="grid gap-2.5" aria-label="Hành khách và vé">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -532,7 +553,7 @@ export function ChuyenDetailDrawer({
                 >
                   <span
                     aria-hidden="true"
-                    className={`mt-1 h-[11px] w-[11px] rounded-full ${DOT_STATE_CLASS[item.state]}`}
+                    className={`relative z-10 mt-1 h-[11px] w-[11px] rounded-full ${DOT_STATE_CLASS[item.state]}`}
                   />
                   <div>
                     <strong className="block text-[13.5px] font-bold text-[var(--ink)]">
@@ -556,34 +577,39 @@ export function ChuyenDetailDrawer({
             <button type="button" className="btn btn-ghost" onClick={onClose}>
               Đóng
             </button>
-            <button
-              type="button"
-              className="btn btn-ghost"
-              disabled={!detail.canOperate}
-              title={
-                detail.canOperate
-                  ? "Sửa chuyến này"
-                  : "Chỉ sửa được khi chuyến chưa khởi hành"
-              }
-              onClick={() => onEdit(trip)}
-            >
-              {detail.canOperate && !detail.hasAssignment
-                ? "Phân công chuyến"
-                : "Sửa chuyến"}
-            </button>
-            <button
-              type="button"
-              className="btn btn-danger"
-              disabled={!detail.canOperate}
-              title={
-                detail.canOperate
-                  ? "Hủy chuyến này"
-                  : "Chỉ hủy được khi chuyến chưa khởi hành"
-              }
-              onClick={() => onCancel(trip)}
-            >
-              Hủy chuyến
-            </button>
+            {(detail.canEdit || detail.canAssign) && (
+              <button
+                type="button"
+                className="btn btn-ghost"
+                title={detail.canEdit ? "Sửa chuyến này" : "Đổi xe và tài xế"}
+                onClick={() => onEdit(trip)}
+              >
+                {detail.canEdit && !detail.hasAssignment
+                  ? "Phân công chuyến"
+                  : detail.canEdit
+                    ? "Sửa chuyến"
+                    : "Đổi xe và tài xế"}
+              </button>
+            )}
+            {detail.canDelete ? (
+              <button
+                type="button"
+                className="btn btn-danger"
+                title="Xóa chuyến nháp này"
+                onClick={() => onDelete(trip)}
+              >
+                Xóa nháp
+              </button>
+            ) : detail.canCancel ? (
+              <button
+                type="button"
+                className="btn btn-danger"
+                title="Hủy chuyến này"
+                onClick={() => onCancel(trip)}
+              >
+                Hủy chuyến
+              </button>
+            ) : null}
           </div>
         </footer>
       </div>

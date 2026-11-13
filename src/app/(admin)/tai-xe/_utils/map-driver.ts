@@ -1,6 +1,6 @@
 import type { CompanyDriverResponse } from "@/api/tai-xe/api/types";
 
-import { formatNgay, nhomGplx, type TaiXe } from "../_data/tai-xe";
+import { formatNgay, nhomGplx, type TaiXe } from "./tai-xe";
 
 /* CompanyDriverResponse → TaiXe (view-model của màn Quản lý tài xế). */
 export function mapDriver(driver: CompanyDriverResponse): TaiXe {
@@ -9,10 +9,10 @@ export function mapDriver(driver: CompanyDriverResponse): TaiXe {
     ten: driver.fullName,
     soDienThoai: driver.phone,
     email: driver.email ?? "",
-    gplx: nhomGplx(driver.licenseNumber),
-    gplxRaw: driver.licenseNumber,
-    hangGplx: driver.licenseClass,
-    hanGplx: driver.licenseExpiresOn,
+    gplx: driver.licenseNumber ? nhomGplx(driver.licenseNumber) : "—",
+    gplxRaw: driver.licenseNumber ?? "",
+    hangGplx: driver.licenseClass ?? "",
+    hanGplx: driver.licenseExpiresOn ?? "",
     trips30Days: driver.tripCount30Days,
     trangThai: driver.status === "ACTIVE" ? "active" : "locked",
     statusNote: driver.statusNote ?? "",

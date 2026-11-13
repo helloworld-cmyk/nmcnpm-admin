@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Icon } from "@/components/icons/icon";
 import { useSessionStore } from "@/global-states/session-store";
-import { useLogout } from "@/api/auth/tanstack/use-logout";
+import { useAdminLogout } from "@/hooks/use-admin-logout";
 
 const NAV_ITEMS = [
   { href: "/tong-quan", label: "Tổng quan", icon: "i-grid" },
@@ -37,11 +37,9 @@ const SIDE_OPEN_CLASS =
 const SIDE_CLOSED_CLASS = "max-[1024px]:-translate-x-[104%]";
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
   const pathname = usePathname();
   const user = useSessionStore((s) => s.user);
-  const clearSession = useSessionStore((s) => s.logout);
-  const logoutMutation = useLogout();
+  const { logout: handleLogout, isPending: loggingOut } = useAdminLogout();
   const [sideOpen, setSideOpen] = useState(false);
 
   useEffect(() => {
@@ -62,15 +60,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
   const userName = user?.name?.trim() || "Quản trị viên";
   const initial = (user?.name ?? "").trim().charAt(0).toUpperCase() || "A";
-
-  const handleLogout = () => {
-    logoutMutation.mutate(undefined, {
-      onSettled: () => {
-        clearSession();
-        router.push("/");
-      },
-    });
-  };
 
   /** Điều hướng trong sidebar (mobile) xong phải đóng drawer để thấy trang mới. */
   const closeSide = () => setSideOpen(false);
@@ -153,7 +142,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex min-h-[44px] w-full items-center justify-center gap-[9px] rounded-[11px] border border-[var(--navy-700)] text-[13.5px] font-bold text-[var(--slate-300)] transition-colors hover:border-[var(--sky-300)] hover:bg-[var(--navy-800)] hover:text-white"
+            disabled={loggingOut}
+            className="flex min-h-[44px] w-full items-center justify-center gap-[9px] rounded-[11px] border border-[var(--navy-700)] text-[13.5px] font-bold text-[var(--slate-300)] transition-colors hover:border-[var(--sky-300)] hover:bg-[var(--navy-800)] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             <Icon name="i-logout" className="icon h-[17px] w-[17px]" />
             Đăng xuất
@@ -218,7 +208,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
               type="button"
               aria-label="Đăng xuất"
               onClick={handleLogout}
-              className="grid h-11 w-11 flex-none place-items-center rounded-[10px] text-[var(--slate-500)] transition-colors hover:bg-[var(--red-50)] hover:text-[var(--red-600)]"
+              disabled={loggingOut}
+              className="grid h-11 w-11 flex-none place-items-center rounded-[10px] text-[var(--slate-500)] transition-colors hover:bg-[var(--red-50)] hover:text-[var(--red-600)] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Icon name="i-logout" className="icon" />
             </button>

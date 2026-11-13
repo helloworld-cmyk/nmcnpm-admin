@@ -5,15 +5,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useCustomer } from "@/api/khach-hang/tanstack/use-customer";
 import { useCustomers } from "@/api/khach-hang/tanstack/use-customers";
 import { ApiError } from "@/api/types";
-import type { ToastData } from "@/components/ui/toast";
 import { useCompanyStore } from "@/global-states/company-store";
 import { useKhachHangFiltersStore } from "@/global-states/khach-hang-filters-store";
-import { soSanhNgay, type KhachHang } from "../_data/customers";
+import { soSanhNgay } from "../_data/customers";
 import { mapCustomerDetail, mapCustomers } from "../_utils/map-customer";
 
 const PAGE_SIZE = 5;
-
-export type KhachHangModalKind = "lock" | "unlock" | "pass";
 
 function apiMessage(error: unknown): string {
   return error instanceof ApiError
@@ -23,8 +20,7 @@ function apiMessage(error: unknown): string {
 
 /*
  * Toàn bộ state + nghiệp vụ của màn Khách hàng (truy vấn, lọc/sắp xếp, phân
- * trang, chi tiết, khóa/mở khóa/đặt lại mật khẩu). Component `KhachHangBoard`
- * chỉ còn render UI.
+ * trang, chi tiết). Component `KhachHangBoard` chỉ còn render UI.
  */
 export function useKhachHangBoard() {
   const companyId = useCompanyStore((s) => s.companyId) ?? "";
@@ -33,15 +29,7 @@ export function useKhachHangBoard() {
   const { data, isLoading, isError, error, isFetching, refetch } =
     useCustomers(companyId);
 
-  /* Khóa/mở khóa chưa có API backend — giữ cục bộ theo phiên. */
-  const [overrides, setOverrides] = useState<Record<string, Partial<KhachHang>>>(
-    {}
-  );
   const [detailId, setDetailId] = useState<string | null>(null);
-  const [activeModal, setActiveModal] = useState<KhachHangModalKind | null>(
-    null
-  );
-  const [toast, setToast] = useState<ToastData | null>(null);
 
   const search = useKhachHangFiltersStore((s) => s.search);
   const trangThai = useKhachHangFiltersStore((s) => s.trangThai);
@@ -50,12 +38,7 @@ export function useKhachHangBoard() {
   const sortDir = useKhachHangFiltersStore((s) => s.sortDir);
   const setPage = useKhachHangFiltersStore((s) => s.setPage);
 
-  const customers = useMemo(() => {
-    const mapped = mapCustomers(data ?? []);
-    return mapped.map((kh) =>
-      overrides[kh.id] ? { ...kh, ...overrides[kh.id] } : kh
-    );
-  }, [data, overrides]);
+  const customers = useMemo(() => mapCustomers(data ?? []), [data]);
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -102,43 +85,8 @@ export function useKhachHangBoard() {
     return {
       ...detailBase,
       ...mapCustomerDetail(detailQuery.data),
-      ...overrides[detailBase.id],
     };
-  }, [detailBase, detailQuery.data, overrides]);
-
-  const setOverride = (id: string, patch: Partial<KhachHang>) => {
-    setOverrides((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
-  };
-
-  const handleLock = (reason: string, note: string) => {
-    if (!detail) return;
-    const ghiChu = note.trim();
-    const lyDo = ghiChu ? `${reason} — ${ghiChu}` : reason;
-    setOverride(detail.id, { trangThai: "locked", lyDoKhoa: lyDo });
-    setActiveModal(null);
-    setToast({
-      message: `Đã khóa tài khoản ${detail.ten} (lưu tạm — backend chưa hỗ trợ).`,
-      type: "success",
-    });
-  };
-
-  const handleUnlock = () => {
-    if (!detail) return;
-    setOverride(detail.id, { trangThai: "active", lyDoKhoa: null });
-    setActiveModal(null);
-    setToast({
-      message: `Đã mở khóa tài khoản ${detail.ten} (lưu tạm — backend chưa hỗ trợ).`,
-      type: "success",
-    });
-  };
-
-  const handlePassGenerated = () => {
-    if (!detail) return;
-    setToast({
-      message: `Đã đặt lại mật khẩu cho ${detail.ten} (lưu tạm — backend chưa hỗ trợ).`,
-      type: "success",
-    });
-  };
+  }, [detailBase, detailQuery.data]);
 
   return {
     companyId,
@@ -157,12 +105,5 @@ export function useKhachHangBoard() {
     detailTicketsLoading: detailQuery.isLoading,
     detailId,
     setDetailId,
-    activeModal,
-    setActiveModal,
-    toast,
-    setToast,
-    handleLock,
-    handleUnlock,
-    handlePassGenerated,
   };
 }

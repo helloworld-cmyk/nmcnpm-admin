@@ -26,25 +26,16 @@ const NO_TICKET_CLASS =
 const DRAWER_LINK_CLASS =
   "inline-flex min-h-[44px] items-center gap-1.5 text-[12.5px] font-bold text-[var(--sky-700)] transition-colors hover:text-[var(--sky-800)]";
 
-const LY_DO_KHOA_MAC_DINH =
-  "Khách không thể đăng nhập và đặt vé mới cho tới khi được mở khóa.";
-
 type KhachHangDetailModalProps = {
   khachHang: KhachHang;
   ticketsLoading?: boolean;
   onClose: () => void;
-  onLockRequest: () => void;
-  onUnlockRequest: () => void;
-  onPassRequest: () => void;
 };
 
 export function KhachHangDetailModal({
   khachHang,
   ticketsLoading = false,
   onClose,
-  onLockRequest,
-  onUnlockRequest,
-  onPassRequest,
 }: KhachHangDetailModalProps) {
   const locked = khachHang.trangThai === "locked";
 
@@ -54,7 +45,6 @@ export function KhachHangDetailModal({
     { label: "Ngày tạo tài khoản", value: khachHang.ngayTao },
     { label: "Số vé đã đặt", value: String(khachHang.veDaDat) },
     { label: "Tổng chi tiêu", value: formatVnd(khachHang.tongChiTieu) },
-    { label: "Hạng thành viên", value: khachHang.hangThanhVien },
   ];
 
   return (
@@ -86,22 +76,6 @@ export function KhachHangDetailModal({
           </span>
         </div>
       }
-      footer={
-        <div className="flex w-full flex-wrap justify-between gap-2.5 max-[520px]:justify-end">
-          <button type="button" className="btn btn-ghost" onClick={onPassRequest}>
-            <Icon name="i-refresh" />
-            Đặt lại mật khẩu
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={locked ? onUnlockRequest : onLockRequest}
-          >
-            <Icon name="i-lock" />
-            {locked ? "Mở khóa" : "Khóa tài khoản"}
-          </button>
-        </div>
-      }
     >
       <ul className="grid gap-2.5 [grid-template-columns:1fr_1fr] max-[560px]:[grid-template-columns:1fr]">
         {infoItems.map((item) => (
@@ -117,7 +91,9 @@ export function KhachHangDetailModal({
           <Icon name="i-lock" />
           <p>
             <strong>Tài khoản đang bị khóa.</strong>{" "}
-            <span>{khachHang.lyDoKhoa ?? LY_DO_KHOA_MAC_DINH}</span>
+            <span>
+              Khách không thể đăng nhập và đặt vé mới cho tới khi được mở khóa.
+            </span>
           </p>
         </div>
       )}

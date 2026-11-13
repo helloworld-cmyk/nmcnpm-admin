@@ -48,8 +48,8 @@ const EMPTY_INVALID: TuyenDuongFormInvalid = {
 };
 
 /*
- * Tên tuyến chỉ để hiển thị, luôn suy ra từ tên điểm đi – điểm đến đang chọn và
- * KHÔNG gửi lên BE (BE tự sinh `route.name` từ 2 khu vực).
+ * Tên tuyến chỉ để hiển thị, luôn suy ra từ tên điểm đi – điểm đến đang chọn.
+ * Khi lưu, hook màn sẽ gửi kèm `name` (cùng cách suy ra) vì backend yêu cầu.
  */
 export function toTuyenDuongFormState(route: RouteResponse): TuyenDuongFormState {
   return {

@@ -1,3 +1,5 @@
+import type { TripSalesStatus, TripStatus } from "@/api/chuyen/api/types";
+
 export type TrangThaiChuyen =
   | "sap-toi"
   | "dang-thuc-hien"
@@ -30,7 +32,6 @@ export type ChuyenRecord = {
   gio: string;
   tuyenId: string;
   tuyen: string;
-  tuyenPhu: string;
   taixeId: string | null;
   taixe: string | null;
   /* id xe từ backend (VehicleResponse.id) — dùng cho select + API phân công. */
@@ -41,13 +42,21 @@ export type ChuyenRecord = {
   sucChua: number;
   daDat: number;
   giaVe: number;
-  congTaiXe: number;
   trangThai: TrangThaiChuyen;
-  /* true khi backend đã công bố (status ≠ DRAFT) — điều khiển nút "Công bố" trên bảng. */
-  daCongBo: boolean;
+  /* Trạng thái vận hành gốc của backend (DRAFT/SCHEDULED/IN_PROGRESS/...) —
+     nguồn sự thật thay cho việc suy đoán từ nhãn UI. */
+  trangThaiBackend: TripStatus;
+  /* Trạng thái mở bán của backend (CLOSED/OPEN/PAUSED). */
+  salesStatus: TripSalesStatus;
+  /* Chuyến đã thực sự khởi hành (TripResponse.actualDepartureAt ≠ null). */
+  daKhoiHanh: boolean;
   lenh: LenhPhanCong | null;
   /* Thời lượng tuyến (phút), suy ra từ departureAt → expectedArrivalAt của backend. */
   thoiLuong: number;
+  /* Thông tin hủy chuyến do hãng thực hiện (backend TripResponse.cancellation*). */
+  huyLuc: string | null;
+  lyDoHuy: string | null;
+  moTaHuy: string | null;
   tre?: number;
   suco?: SuCo | null;
   ghiChu?: string;
@@ -235,6 +244,40 @@ export const mocKhoiHanh = (ngayISO: string, gio: string) => {
 /* Chuyến chưa tới giờ khởi hành — chỉ chuyến như vậy mới còn công bố mở bán. */
 export const chuaKhoiHanh = (trip: ChuyenRecord) =>
   mocKhoiHanh(trip.ngayISO, trip.gio).getTime() > Date.now();
+
+/*
+ * Các điều kiện thao tác suy trực tiếp từ điều kiện backend
+ * (TripServiceImpl) để UI không lệch nguồn sự thật:
+ * - update / publish / delete: DRAFT + salesStatus CLOSED;
+ * - cancel: DRAFT/SCHEDULED và chưa khởi hành thực tế;
+ * - assign: mọi chuyến chưa kết thúc/hủy.
+ */
+
+/* Chuyến nháp chưa công bố (backend: DRAFT + CLOSED). */
+export const laChuyenNhap = (trip: ChuyenRecord) =>
+  trip.trangThaiBackend === "DRAFT" && trip.salesStatus === "CLOSED";
+
+/* Sửa lịch chuyến — backend updateTrip chỉ cho chuyến nháp. */
+export const coTheSua = laChuyenNhap;
+
+/* Công bố mở bán — backend publishTrip chỉ cho chuyến nháp còn hạn chót đặt vé. */
+export const coTheCongBo = laChuyenNhap;
+
+/* Hủy chuyến — backend cancelTrip cho chuyến chưa thực sự khởi hành. */
+export const coTheHuy = (trip: ChuyenRecord) =>
+  (trip.trangThaiBackend === "DRAFT" ||
+    trip.trangThaiBackend === "SCHEDULED") &&
+  !trip.daKhoiHanh;
+
+/* Xóa chuyến nháp — backend deleteTrip chỉ cho chuyến nháp chưa khởi hành. */
+export const coTheXoa = (trip: ChuyenRecord) =>
+  laChuyenNhap(trip) && !trip.daKhoiHanh;
+
+/* Phân công/đổi xe & tài xế — backend assignTrip chặn chuyến đã kết thúc/hủy. */
+export const coThePhanCong = (trip: ChuyenRecord) =>
+  trip.trangThaiBackend !== "COMPLETED" &&
+  trip.trangThaiBackend !== "CANCELLED" &&
+  trip.trangThaiBackend !== "TERMINATED";
 
 export const taoMaChuyen = (trips: ChuyenRecord[]) => {
   const maxSo = trips.reduce((so, trip) => {

@@ -9,10 +9,8 @@ import {
   formatNgay,
   laSapHetHan,
   soNgayConLai,
-  vietTatHoTen,
   type TaiXe,
-} from "../_data/tai-xe";
-import { tintFor } from "../_utils/tai-xe-avatar";
+} from "../_utils/tai-xe";
 
 type TaiXeDetailModalProps = {
   taiXe: TaiXe | null;
@@ -90,23 +88,13 @@ export function TaiXeDetailModal({
       onClose={onClose}
       size="lg"
       title={
-        <div className="flex items-center gap-3">
-          <span
-            className={`tx-avatar tx-avatar--${taiXe ? tintFor(taiXe.id) : "sky"} h-11 w-11 text-[15px]`}
-            aria-hidden="true"
-          >
-            {taiXe ? vietTatHoTen(taiXe.ten) : ""}
+        <div className="flex flex-col gap-1.5">
+          <span className="[font-family:var(--font-heading)] text-[18.5px] font-bold leading-[1.2] tracking-[-0.02em] text-[var(--ink)]">
+            {taiXe?.ten ?? "Tài xế"}
           </span>
-          <span className="flex flex-col gap-1.5">
-            <span className="[font-family:var(--font-heading)] text-[18.5px] font-bold leading-[1.2] tracking-[-0.02em] text-[var(--ink)]">
-              {taiXe?.ten ?? "Tài xế"}
-            </span>
-            <span
-              className={`badge ${locked ? "badge--red" : "badge--green"}`}
-            >
-              <span className="tx-dot" aria-hidden="true" />
-              {taiXe ? TRANG_THAI_TAI_XE_LABEL[taiXe.trangThai] : ""}
-            </span>
+          <span className={`badge ${locked ? "badge--red" : "badge--green"}`}>
+            <span className="tx-dot" aria-hidden="true" />
+            {taiXe ? TRANG_THAI_TAI_XE_LABEL[taiXe.trangThai] : ""}
           </span>
         </div>
       }
@@ -130,7 +118,9 @@ export function TaiXeDetailModal({
             <div>
               <dt className={DETAIL_DT}>Giấy phép lái xe</dt>
               <dd className={DETAIL_DD}>
-                {taiXe.hangGplx} · {taiXe.gplx}
+                {taiXe.hangGplx
+                  ? `${taiXe.hangGplx} · ${taiXe.gplx}`
+                  : taiXe.gplx}
               </dd>
             </div>
             <div>

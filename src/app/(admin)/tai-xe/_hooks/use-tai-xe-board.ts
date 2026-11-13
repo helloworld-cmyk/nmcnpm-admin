@@ -20,8 +20,9 @@ import { TAI_XE_PAGE_SIZE, computePageCount } from "../_utils/tai-xe-list";
 import type {
   TaiXeConfirmMode,
   TaiXeFormTarget,
+  TaiXeFormValues,
 } from "../_utils/tai-xe-form";
-import type { TaiXe, TaiXeFormValues } from "../_data/tai-xe";
+import type { TaiXe } from "../_utils/tai-xe";
 
 function apiMessage(error: unknown): string {
   return error instanceof ApiError
@@ -88,23 +89,26 @@ export function useTaiXeBoard() {
 
   const detailTrips = useDriverTrips(companyId, detail?.id ?? "", 0, 5);
 
-  /* Chi tiết tài xế luôn lấy dữ liệu tươi từ API khi mở modal (tránh stale). */
+  /* Chi tiết tài xế đọc từ API theo id; sau thao tác ghi (sửa/khóa/đặt lại) sẽ
+     được invalidate nên mở lại là dữ liệu mới, kể cả trong khoảng staleTime. */
   const detailQuery = useDriver(companyId, detail?.id ?? "");
   const detailTaiXe = useMemo(
     () => (detailQuery.data ? mapDriver(detailQuery.data) : null),
     [detailQuery.data]
   );
 
-  const invalidate = () => {
+  /* Làm mới danh sách; khi có `driverId` thì làm mới luôn chi tiết + chuyến của
+     tài xế đó — cần thiết khi sửa/khóa từ modal chi tiết đã đóng. */
+  const invalidate = (driverId?: string) => {
     void queryClient.invalidateQueries({
       queryKey: ["company-drivers", companyId],
     });
-    if (detail) {
+    if (driverId) {
       void queryClient.invalidateQueries({
-        queryKey: ["company-driver-trips", companyId, detail.id],
+        queryKey: ["company-driver", companyId, driverId],
       });
       void queryClient.invalidateQueries({
-        queryKey: ["company-driver", companyId, detail.id],
+        queryKey: ["company-driver-trips", companyId, driverId],
       });
     }
   };
@@ -125,11 +129,15 @@ export function useTaiXeBoard() {
 
   const handleSave = async (values: TaiXeFormValues) => {
     if (!companyId) return;
+    /* Chụp id ngay từ đầu: modal chi tiết đã đóng trước khi lưu nên không thể
+       dựa vào state `detail` để biết cần làm mới chi tiết nào. */
+    const editingId =
+      formTarget?.mode === "edit" ? formTarget.taiXe.id : undefined;
     setSaving(true);
     try {
-      if (formTarget?.mode === "edit") {
+      if (editingId) {
         await updateDriver.mutateAsync({
-          driverId: formTarget.taiXe.id,
+          driverId: editingId,
           payload: values,
         });
         setToast({
@@ -148,7 +156,7 @@ export function useTaiXeBoard() {
           type: "success",
         });
       }
-      invalidate();
+      invalidate(editingId);
       setFormTarget(null);
     } catch (err) {
       setToast({ message: apiMessage(err), type: "error" });
@@ -197,7 +205,7 @@ export function useTaiXeBoard() {
           type: "success",
         });
       }
-      invalidate();
+      invalidate(target.id);
       closeConfirm();
     } catch (err) {
       setToast({ message: apiMessage(err), type: "error" });

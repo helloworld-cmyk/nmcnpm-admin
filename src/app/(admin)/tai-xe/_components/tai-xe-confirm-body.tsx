@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Icon } from "@/components/icons/icon";
 import { FormField, TextInput } from "@/components/ui/form";
-import type { TaiXe } from "../_data/tai-xe";
+import type { TaiXe } from "../_utils/tai-xe";
 import type { TaiXeConfirmMode } from "../_utils/tai-xe-form";
 
 const SUBMIT_LABEL: Record<TaiXeConfirmMode, string> = {

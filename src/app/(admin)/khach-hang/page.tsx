@@ -5,7 +5,7 @@ import "./_components/khach-hang.css";
 export const metadata: Metadata = {
   title: "Quản lý khách hàng — Vi Vu Việt",
   description:
-    "Tra cứu tài khoản khách, xem chi tiết và lịch sử vé, khóa/mở khóa tài khoản.",
+    "Tra cứu tài khoản khách, xem chi tiết và lịch sử vé.",
 };
 
 export default async function KhachHangPage({}: PageProps<"/khach-hang">) {

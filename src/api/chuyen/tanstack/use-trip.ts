@@ -3,11 +3,11 @@
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 
 import { getTripAPI } from "../api/get-trip";
-import type { TripResponse } from "../api/types";
+import type { TripDetailResponse } from "../api/types";
 import { ApiError } from "../../types";
 
 type UseTripOptions = Omit<
-  UseQueryOptions<TripResponse, ApiError>,
+  UseQueryOptions<TripDetailResponse, ApiError>,
   "queryKey" | "queryFn"
 >;
 
@@ -17,7 +17,7 @@ export function useTrip(
   tripId: string,
   options?: UseTripOptions
 ) {
-  return useQuery<TripResponse, ApiError>({
+  return useQuery<TripDetailResponse, ApiError>({
     queryKey: ["company-trip", companyId, tripId],
     queryFn: () => getTripAPI(companyId, tripId),
     enabled: companyId.length > 0 && tripId.length > 0,

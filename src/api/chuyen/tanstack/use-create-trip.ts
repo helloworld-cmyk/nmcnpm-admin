@@ -6,11 +6,11 @@ import {
 } from "@tanstack/react-query";
 
 import { createTripAPI } from "../api/create-trip";
-import type { CreateTripPayload, TripResponse } from "../api/types";
+import type { CreateTripPayload, CreateTripResponse } from "../api/types";
 import { ApiError } from "../../types";
 
 type UseCreateTripOptions = Omit<
-  UseMutationOptions<TripResponse, ApiError, CreateTripPayload>,
+  UseMutationOptions<CreateTripResponse, ApiError, CreateTripPayload>,
   "mutationFn"
 >;
 
@@ -19,7 +19,7 @@ export function useCreateTrip(
   companyId: string,
   options?: UseCreateTripOptions
 ) {
-  return useMutation<TripResponse, ApiError, CreateTripPayload>({
+  return useMutation<CreateTripResponse, ApiError, CreateTripPayload>({
     mutationFn: (payload) => createTripAPI(companyId, payload),
     ...options,
   });

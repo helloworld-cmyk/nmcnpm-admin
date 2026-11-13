@@ -5,6 +5,7 @@ import { Reveal } from "@/components/reveal";
 import { Toast } from "@/components/ui/toast";
 import { useXeBoard } from "../_hooks/use-xe-board";
 import { XeDeleteModal } from "./xe-delete-modal";
+import { XeDocumentModal } from "./xe-document-modal";
 import { XeEmptyState } from "./xe-empty-state";
 import { XeErrorState } from "./xe-error-state";
 import { XeFilters } from "./xe-filters";
@@ -41,6 +42,8 @@ export function XeBoard() {
     setDeleteTarget,
     seatTarget,
     setSeatTarget,
+    docTarget,
+    setDocTarget,
     toast,
     setToast,
     handleSave,
@@ -92,6 +95,13 @@ export function XeBoard() {
           onDelete={(xe) => setDeleteTarget(xe)}
           onSeat={(xe) =>
             setSeatTarget({
+              vehicleId: xe.id,
+              bienSo: xe.bienSo,
+              loaiXe: xe.loaiXe,
+            })
+          }
+          onDocs={(xe) =>
+            setDocTarget({
               vehicleId: xe.id,
               bienSo: xe.bienSo,
               loaiXe: xe.loaiXe,
@@ -152,6 +162,15 @@ export function XeBoard() {
         onClose={() => setSeatTarget(null)}
         onSaved={(message) => {
           setSeatTarget(null);
+          setToast({ message, type: "success" });
+        }}
+      />
+      <XeDocumentModal
+        target={docTarget}
+        companyId={companyId}
+        onClose={() => setDocTarget(null)}
+        onSaved={(message) => {
+          setDocTarget(null);
           setToast({ message, type: "success" });
         }}
       />

@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState, type MouseEvent } from "react";
 import {
-  isoSangNhanNgan,
+  homNayISO,
   type ChuyenLichPrefill,
   type ChuyenRecord,
   type TaiXeOption,
@@ -10,16 +10,14 @@ import {
 } from "../_data/chuyen";
 import {
   buildLaneViews,
-  congNgay,
   gioTuViTriTrack,
-  ngayISOLech,
   prefillTheoLan,
   type LaneMode,
   type LaneView,
 } from "../_utils/chuyen-lich";
 
 /* Mốc "hôm nay" cố định theo lần tải màn — giữ nguyên hành vi lịch hiện tại. */
-const NGAY_HIEN_TAI = new Date();
+const NGAY_HIEN_TAI = homNayISO();
 
 type UseChuyenLichOptions = {
   trips: ChuyenRecord[];
@@ -38,13 +36,8 @@ export function useChuyenLich({
   taixeOptions,
   onCreate,
 }: UseChuyenLichOptions) {
-  const [offset, setOffset] = useState(0);
+  const [ngayISO, setNgayISO] = useState(NGAY_HIEN_TAI);
   const [mode, setMode] = useState<LaneMode>("taixe");
-
-  const ngayISO = useMemo(
-    () => ngayISOLech(NGAY_HIEN_TAI, offset),
-    [offset]
-  );
 
   const dayTrips = useMemo(
     () => trips.filter((trip) => trip.ngayISO === ngayISO),
@@ -56,10 +49,10 @@ export function useChuyenLich({
     [mode, xeOptions, taixeOptions, dayTrips]
   );
 
-  const dateLabel = `${isoSangNhanNgan(ngayISO)}/${congNgay(NGAY_HIEN_TAI, offset).getFullYear()}`;
-
-  const goPrev = useCallback(() => setOffset((prev) => prev - 1), []);
-  const goNext = useCallback(() => setOffset((prev) => prev + 1), []);
+  const setNgay = useCallback((iso: string) => {
+    if (!iso) return;
+    setNgayISO(iso);
+  }, []);
 
   const createFor = useCallback(
     (lane: LaneView) => onCreate(prefillTheoLan(lane, mode, ngayISO)),
@@ -77,14 +70,12 @@ export function useChuyenLich({
   );
 
   return {
-    offset,
+    ngayISO,
     mode,
-    dateLabel,
     hasTrips: dayTrips.length > 0,
     lanes,
     setMode,
-    goPrev,
-    goNext,
+    setNgay,
     createFor,
     handleTrackClick,
   };

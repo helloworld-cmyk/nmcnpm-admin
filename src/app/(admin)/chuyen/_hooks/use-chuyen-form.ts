@@ -36,7 +36,7 @@ type UseChuyenFormOptions = {
   trips: ChuyenRecord[];
   routeDurations?: Record<string, number>;
   taixeOptions: TaiXeOption[];
-  onSave: (values: ChuyenFormValues) => void;
+  onSave: (values: ChuyenFormValues, publish: boolean) => void;
 };
 
 const REQUIRED_FIELDS: {
@@ -145,9 +145,7 @@ export function useChuyenForm({
     taixeOptions.find((option) => option.value === values.taixe)?.label ?? ""
   ).replace(/\s*·.*$/, "");
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const submit = (publish: boolean) => {
     const nextInvalid: Record<string, boolean> = {};
     const missing: { key: keyof ChuyenFormFields; label: string }[] = [];
     REQUIRED_FIELDS.forEach((field) => {
@@ -175,14 +173,24 @@ export function useChuyenForm({
       return;
     }
 
-    onSave({
-      tuyen: values.tuyen,
-      ngay: values.ngay,
-      gio: values.gio,
-      xe: values.xe,
-      taixe: values.taixe,
-    });
+    onSave(
+      {
+        tuyen: values.tuyen,
+        ngay: values.ngay,
+        gio: values.gio,
+        xe: values.xe,
+        taixe: values.taixe,
+      },
+      publish
+    );
   };
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    submit(false);
+  };
+
+  const handleSaveAndPublish = () => submit(true);
 
   return {
     values,
@@ -190,6 +198,7 @@ export function useChuyenForm({
     status,
     updateField,
     handleSubmit,
+    handleSaveAndPublish,
     tuyenRef,
     ngayRef,
     gioRef,

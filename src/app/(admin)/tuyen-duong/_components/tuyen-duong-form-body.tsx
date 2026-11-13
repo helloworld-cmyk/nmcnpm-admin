@@ -1,6 +1,7 @@
 "use client";
 
 import { FormField, Select, TextInput } from "@/components/ui/form";
+import { Icon } from "@/components/icons/icon";
 import type { AreaResponse } from "@/api/area/api/get-areas";
 import type { RouteResponse } from "@/api/tuyen-duong/api/types";
 import type { TuyenDuongFormValues } from "../_data/tuyen-duong";
@@ -12,6 +13,9 @@ const FIELD_GRID_CLASS =
 
 const FULL_ROW_CLASS = "[grid-column:1/-1]";
 
+const AREAS_ERROR_CLASS =
+  "flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-[10px] bg-[var(--red-50)] px-3 py-2.5 text-[12.5px] font-semibold text-[var(--red-600)]";
+
 type TuyenDuongFormBodyProps = {
   initial: TuyenDuongFormState;
   isEdit: boolean;
@@ -19,6 +23,10 @@ type TuyenDuongFormBodyProps = {
   routes: RouteResponse[];
   areas: AreaResponse[];
   areasLoading: boolean;
+  areasError: boolean;
+  areasErrorText: string;
+  areasRetrying: boolean;
+  onRetryAreas: () => void;
   onClose: () => void;
   onSave: (values: TuyenDuongFormValues) => Promise<void>;
 };
@@ -30,6 +38,10 @@ export function TuyenDuongFormBody({
   routes,
   areas,
   areasLoading,
+  areasError,
+  areasErrorText,
+  areasRetrying,
+  onRetryAreas,
   onClose,
   onSave,
 }: TuyenDuongFormBodyProps) {
@@ -48,8 +60,30 @@ export function TuyenDuongFormBody({
     priceRef,
   } = useTuyenDuongForm({ initial, excludeId, routes, onSave });
 
+  const areasLocked = areasLoading || areasError;
+  const areasPlaceholder = areasLoading
+    ? "Đang tải địa điểm..."
+    : "Không tải được địa điểm";
+
   return (
     <form className="grid gap-3.5" noValidate onSubmit={handleSubmit}>
+      {areasError && (
+        <div className={AREAS_ERROR_CLASS} role="alert">
+          <Icon name="i-alert" className="icon h-4 w-4 flex-none" />
+          <span className="flex-1">
+            {areasErrorText || "Không tải được danh sách địa điểm."}
+          </span>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={onRetryAreas}
+            disabled={areasRetrying}
+          >
+            <Icon name="i-refresh" />
+            {areasRetrying ? "Đang tải..." : "Thử lại"}
+          </button>
+        </div>
+      )}
       <div className={FIELD_GRID_CLASS}>
         <FormField
           id="td-rf-code"
@@ -82,14 +116,14 @@ export function TuyenDuongFormBody({
             id="td-rf-from"
             aria-invalid={invalid.origin}
             invalid={invalid.origin}
-            disabled={areasLoading}
+            disabled={areasLocked}
             value={values.originAreaId}
             onChange={(value) => updateField("originAreaId", value)}
-            placeholder={areasLoading ? "Đang tải địa điểm..." : "— Chọn điểm đi —"}
+            placeholder={areasLocked ? areasPlaceholder : "— Chọn điểm đi —"}
             options={[
               {
                 value: "",
-                label: areasLoading ? "Đang tải địa điểm..." : "— Chọn điểm đi —",
+                label: areasLocked ? areasPlaceholder : "— Chọn điểm đi —",
               },
               ...areas.map((area) => ({
                 value: area.id,
@@ -110,14 +144,14 @@ export function TuyenDuongFormBody({
             id="td-rf-to"
             aria-invalid={invalid.destination}
             invalid={invalid.destination}
-            disabled={areasLoading}
+            disabled={areasLocked}
             value={values.destinationAreaId}
             onChange={(value) => updateField("destinationAreaId", value)}
-            placeholder={areasLoading ? "Đang tải địa điểm..." : "— Chọn điểm đến —"}
+            placeholder={areasLocked ? areasPlaceholder : "— Chọn điểm đến —"}
             options={[
               {
                 value: "",
-                label: areasLoading ? "Đang tải địa điểm..." : "— Chọn điểm đến —",
+                label: areasLocked ? areasPlaceholder : "— Chọn điểm đến —",
               },
               ...areas.map((area) => ({
                 value: area.id,

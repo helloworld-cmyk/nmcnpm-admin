@@ -22,13 +22,14 @@ export type LicenseClass = "B1" | "B2" | "C1" | "C" | "D1" | "D2" | "E";
 export type CompanyDriverResponse = {
   driverId: string;
   companyId: string;
-  profileId: string;
+  /* Tài xế "legacy" chưa có hồ sơ → các trường dưới đây có thể null. */
+  profileId: string | null;
   fullName: string;
   phone: string;
   email: string | null;
-  licenseNumber: string;
-  licenseClass: string;
-  licenseExpiresOn: string;
+  licenseNumber: string | null;
+  licenseClass: string | null;
+  licenseExpiresOn: string | null;
   status: CompanyDriverStatus;
   statusNote: string | null;
   tripCount30Days: number;

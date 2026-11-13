@@ -1,11 +1,11 @@
 "use client";
 
 import { Modal } from "@/components/ui/modal";
-import type { TaiXeFormValues } from "../_data/tai-xe";
 import {
   EMPTY_TAI_XE_FORM,
   toTaiXeFormState,
   type TaiXeFormTarget,
+  type TaiXeFormValues,
 } from "../_utils/tai-xe-form";
 import { TaiXeFormBody } from "./tai-xe-form-body";
 

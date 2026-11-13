@@ -6,8 +6,11 @@ import {
   Select,
   TextInput,
 } from "@/components/ui/form";
-import { GPLX_HANG_OPTIONS, type TaiXeFormValues } from "../_data/tai-xe";
-import type { TaiXeFormState } from "../_utils/tai-xe-form";
+import {
+  GPLX_HANG_OPTIONS,
+  type TaiXeFormState,
+  type TaiXeFormValues,
+} from "../_utils/tai-xe-form";
 import { useTaiXeForm } from "../_hooks/use-tai-xe-form";
 
 const FIELD_GRID_CLASS = [

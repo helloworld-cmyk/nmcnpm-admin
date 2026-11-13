@@ -6,11 +6,10 @@ import { pageIndexes } from "@/utils/table";
 import {
   TRANG_THAI_TAI_XE_LABEL,
   daHetHan,
+  formatNgay,
   laSapHetHan,
-  vietTatHoTen,
   type TaiXe,
-} from "../_data/tai-xe";
-import { tintFor } from "../_utils/tai-xe-avatar";
+} from "../_utils/tai-xe";
 
 const COLUMNS = [
   "Tài xế",
@@ -99,37 +98,27 @@ export function TaiXeTable({
               return (
                 <tr key={taiXe.id} onClick={() => onOpenDetail(taiXe)}>
                   <td data-label="Tài xế">
-                    <div className="flex min-w-[190px] items-center gap-[11px]">
-                      <span
-                        className={`tx-avatar tx-avatar--${tintFor(taiXe.id)}`}
-                        aria-hidden="true"
-                      >
-                        {vietTatHoTen(taiXe.ten)}
-                      </span>
-                      <span className="flex flex-col leading-[1.3]">
-                        <strong className="font-semibold text-[var(--ink)]">
-                          {taiXe.ten}
-                        </strong>
-                        <span className={CELL_SUB}>
-                          {taiXe.email || "—"}
-                        </span>
-                      </span>
+                    <div className="flex min-w-[190px] flex-col leading-[1.3]">
+                      <strong className="font-semibold text-[var(--ink)]">
+                        {taiXe.ten}
+                      </strong>
+                      <span className={CELL_SUB}>{taiXe.email || "—"}</span>
                     </div>
                   </td>
                   <td data-label="SĐT">{taiXe.soDienThoai}</td>
                   <td data-label="Giấy phép">
                     <span className="flex flex-col leading-[1.3]">
                       <strong className="font-semibold text-[var(--ink)]">
-                        {taiXe.hangGplx} · {taiXe.gplx}
+                        {taiXe.hangGplx
+                          ? `${taiXe.hangGplx} · ${taiXe.gplx}`
+                          : taiXe.gplx}
                       </strong>
                       <span className={CELL_SUB}>Giấy phép lái xe</span>
                     </span>
                   </td>
                   <td data-label="Hạn GPLX">
                     <span className="inline-flex flex-wrap items-center gap-2">
-                      {new Date(`${taiXe.hanGplx}T00:00:00`).toLocaleDateString(
-                        "vi-VN"
-                      )}
+                      {formatNgay(taiXe.hanGplx)}
                       {hetHan ? (
                         <span className="badge badge--red">Đã hết hạn</span>
                       ) : sapHetHan ? (

@@ -45,6 +45,9 @@ export type TripResponse = {
   baseFareAmount: number;
   status: TripStatus;
   salesStatus: TripSalesStatus;
+  cancelledAt: string | null;
+  cancellationReason: string | null;
+  cancellationDescription: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -90,6 +93,12 @@ export type AssignTripPayload = {
   driverId: string;
 };
 
+/* Body hủy chuyến chưa bắt đầu (DRAFT/SCHEDULED). */
+export type CancelTripPayload = {
+  reason: string;
+  description?: string;
+};
+
 /* Một đặt vé kèm danh sách hành khách và ghế trên chuyến. */
 export type TripPassengerBookingResponse = {
   id: string;
@@ -100,4 +109,77 @@ export type TripPassengerBookingResponse = {
   contactEmail: string;
   createdAt: string;
   passengers: TicketResponse[];
+};
+
+/* Chuyến nháp trả về sau khi tạo, kèm tiền công tài xế theo chuyến nếu đã nhập. */
+export type CreateTripResponse = TripResponse & {
+  driverWage: number | null;
+};
+
+/* Số ghế của chuyến tính từ inventory chụp; occupancyRate là phần trăm 0–100. */
+export type TripSeatSummary = {
+  totalSeats: number;
+  confirmedSeats: number;
+  heldSeats: number;
+  occupiedSeats: number;
+  availableSeats: number;
+  occupancyRate: number;
+};
+
+/* Phân công xe/tài xế hiện tại kèm trạng thái phân công của chuyến. */
+export type TripDetailAssignment = TripAssignmentResponse & {
+  assignmentStatus: DriverAssignmentStatus;
+  acceptedAt: string | null;
+  rejectionReason: string | null;
+  assignedBy: string | null;
+  assignedByName: string | null;
+  plateNumber: string | null;
+  vehicleModel: string | null;
+  passengerCapacity: number | null;
+  /* false nếu phân công đã bị từ chối hoặc thay thế. */
+  active: boolean;
+};
+
+/* Một hành khách trong chi tiết chuyến. */
+export type TripDetailPassenger = TicketResponse & {
+  bookingId: string;
+  bookingCode: string;
+  bookingStatus: BookingStatus;
+  contactName: string;
+  contactPhone: string;
+};
+
+/* Một mốc lịch sử trạng thái của chuyến. */
+export type TripDetailHistoryItem = {
+  eventType: string;
+  title: string | null;
+  occurredAt: string | null;
+  expectedAt: string | null;
+  actorId: string | null;
+  actorName: string | null;
+  description: string | null;
+  state: "DONE" | "PENDING";
+};
+
+/* Khả năng thao tác của chuyến theo trạng thái. */
+export type TripDetailActions = {
+  canEdit: boolean;
+  canAssign: boolean;
+  canPublish: boolean;
+  canCancel: boolean;
+};
+
+/* Dữ liệu đầy đủ cho ngăn chi tiết chuyến của admin hãng. */
+export type TripDetailResponse = TripResponse & {
+  timezone: string;
+  currency: string;
+  seats: TripSeatSummary;
+  assignment: TripDetailAssignment | null;
+  ticketCount: number;
+  activeTicketCount: number;
+  passengers: TripDetailPassenger[];
+  history: TripDetailHistoryItem[];
+  /* false nếu chuyến có trước khi hệ thống bắt đầu lưu lịch sử sự kiện. */
+  historyComplete: boolean;
+  actions: TripDetailActions;
 };

@@ -18,14 +18,20 @@ export type RouteResponse = {
   distanceKm: number;
   durationMinutes: number;
   baseFareAmount: number;
+  /* Tổng số chuyến đã tạo cho tuyến, gồm mọi trạng thái. */
+  tripCount: number;
   status: RouteStatus;
   createdAt: string;
   updatedAt: string;
 };
 
-/* Body tạo tuyến mới (POST /bus-companies/{id}/routes). Không gửi `name` — BE tự sinh từ 2 khu vực. */
+/*
+ * Body tạo tuyến mới (POST /bus-companies/{id}/routes).
+ * `name` là bắt buộc ở backend — FE suy ra từ tên điểm đi – điểm đến đang chọn.
+ */
 export type CreateRoutePayload = {
   code: string;
+  name: string;
   originAreaId: string;
   destinationAreaId: string;
   distanceKm: number;
@@ -33,9 +39,13 @@ export type CreateRoutePayload = {
   baseFareAmount: number;
 };
 
-/* Body cập nhật tuyến; trường không gửi được giữ nguyên. Không gửi `name` — BE tự sinh từ 2 khu vực. */
+/*
+ * Body cập nhật tuyến; trường không gửi được giữ nguyên.
+ * Gửi kèm `name` (suy ra từ 2 khu vực) khi đổi điểm đi/điểm đến để backend ghi đè.
+ */
 export type UpdateRoutePayload = {
   code?: string;
+  name?: string;
   originAreaId?: string;
   destinationAreaId?: string;
   distanceKm?: number;

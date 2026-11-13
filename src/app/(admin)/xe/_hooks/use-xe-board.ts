@@ -18,6 +18,7 @@ import type {
   XeFormValues,
 } from "../_data/vehicles";
 import type { XeSeatTarget } from "../_data/seats";
+import type { XeDocumentTarget } from "../_data/documents";
 import {
   XE_TRANG_THAI_TO_STATUS,
   mapVehicles,
@@ -58,6 +59,7 @@ export function useXeBoard() {
   const [formTarget, setFormTarget] = useState<XeFormTarget | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Xe | null>(null);
   const [seatTarget, setSeatTarget] = useState<XeSeatTarget | null>(null);
+  const [docTarget, setDocTarget] = useState<XeDocumentTarget | null>(null);
   const [toast, setToast] = useState<ToastData | null>(null);
 
   const search = useXeFiltersStore((s) => s.search);
@@ -80,7 +82,9 @@ export function useXeBoard() {
     () =>
       (driversQuery.data?.content ?? []).map((driver) => ({
         value: driver.driverId,
-        label: `${driver.fullName} · ${driver.licenseClass}`,
+        label: driver.licenseClass
+          ? `${driver.fullName} · ${driver.licenseClass}`
+          : driver.fullName,
         name: driver.fullName,
       })),
     [driversQuery.data]
@@ -212,6 +216,8 @@ export function useXeBoard() {
     setDeleteTarget,
     seatTarget,
     setSeatTarget,
+    docTarget,
+    setDocTarget,
     toast,
     setToast,
     handleSave,

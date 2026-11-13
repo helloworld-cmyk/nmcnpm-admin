@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   title: "Đăng nhập quản trị — Vi Vu Việt",
   description:
     "Đăng nhập trang quản trị Vi Vu Việt để quản lý chuyến đi, tài xế và vận hành hệ thống.",
+  icons: {
+    icon: "/assets/favicon.svg",
+  },
 };
 
 export const viewport: Viewport = {

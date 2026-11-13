@@ -36,8 +36,9 @@ export function SessionGate({ children }: { children: ReactNode }) {
   }, [hydrated, user, clearSession, router]);
 
   useEffect(() => {
-    if (!me) return;
-    if (me.id !== user?.id || me.fullName !== user?.name) {
+    // Bỏ qua khi đã đăng xuất: `me` còn cache sẽ ghi đè lại phiên vừa xóa và gây vòng lặp vô hạn.
+    if (!me || !user || !hasStoredToken()) return;
+    if (me.id !== user.id || me.fullName !== user.name) {
       setUser({
         id: me.id,
         name: me.fullName,
@@ -45,7 +46,7 @@ export function SessionGate({ children }: { children: ReactNode }) {
         phone: me.phone,
       });
     }
-  }, [me, user?.id, user?.name, setUser]);
+  }, [me, user, setUser]);
 
   if (!hydrated) {
     return (

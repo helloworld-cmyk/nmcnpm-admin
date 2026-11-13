@@ -2,7 +2,6 @@ import {
   LICH_DAY_FROM,
   LICH_DAY_TO,
   gioSangPhut,
-  ngaySangISO,
   phutSangGio,
   vietTat,
   type ChuyenLichPrefill,
@@ -51,15 +50,6 @@ const NONE_VEHICLE: LaneResource = {
   name: "Chưa gán xe",
   meta: "Cần gán xe",
 };
-
-export const congNgay = (moc: Date, offset: number) => {
-  const d = new Date(moc.getTime());
-  d.setDate(d.getDate() + offset);
-  return d;
-};
-
-export const ngayISOLech = (moc: Date, offset: number) =>
-  ngaySangISO(congNgay(moc, offset));
 
 export const tuyenNgan = (tuyen: string) => {
   const parts = tuyen.split("→").map((part) => part.trim());

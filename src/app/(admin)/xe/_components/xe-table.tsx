@@ -41,6 +41,12 @@ const CELL_ACTION_SEAT = [
   "hover:text-[var(--navy-800)]",
 ].join(" ");
 
+const CELL_ACTION_DOC = [
+  CELL_ACTION_BASE,
+  "text-[var(--slate-600)] hover:bg-[var(--sky-50)]",
+  "hover:text-[var(--sky-800)]",
+].join(" ");
+
 const CELL_ACTION_DELETE = [
   CELL_ACTION_BASE,
   "text-[var(--red-600)] hover:bg-[var(--red-50)]",
@@ -77,6 +83,7 @@ type XeTableProps = {
   onEdit: (xe: Xe) => void;
   onDelete: (xe: Xe) => void;
   onSeat: (xe: Xe) => void;
+  onDocs: (xe: Xe) => void;
 };
 
 export function XeTable({
@@ -89,6 +96,7 @@ export function XeTable({
   onEdit,
   onDelete,
   onSeat,
+  onDocs,
 }: XeTableProps) {
   const sortKey = useXeFiltersStore((s) => s.sortKey);
   const sortDir = useXeFiltersStore((s) => s.sortDir);
@@ -211,6 +219,14 @@ export function XeTable({
                       >
                         <Icon name="i-grid" className="icon h-4 w-4" />
                         Sơ đồ ghế
+                      </button>
+                      <button
+                        type="button"
+                        className={CELL_ACTION_DOC}
+                        onClick={() => onDocs(xe)}
+                      >
+                        <Icon name="i-shield" className="icon h-4 w-4" />
+                        Giấy tờ
                       </button>
                       <button
                         type="button"

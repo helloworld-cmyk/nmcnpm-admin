@@ -1,5 +1,4 @@
 export type TrangThaiTaiKhoan = "active" | "locked";
-export type HangThanhVien = "Đồng" | "Bạc" | "Vàng" | "Kim cương";
 export type TrangThaiVe =
   | "Hoàn thành"
   | "Đã hủy"
@@ -25,18 +24,9 @@ export type KhachHang = {
   ngayTao: string;
   veDaDat: number;
   tongChiTieu: number;
-  hangThanhVien: HangThanhVien;
   trangThai: TrangThaiTaiKhoan;
-  lyDoKhoa: string | null;
   lichSuVe: VeDaDat[];
 };
-
-export const KH_LY_DO_KHOA_OPTIONS = [
-  "Nghi ngờ gian lận đặt vé",
-  "Khách yêu cầu khóa tài khoản",
-  "Thông tin tài khoản không hợp lệ",
-  "Khác",
-] as const;
 
 export const TRANG_THAI_TAI_KHOAN_LABEL: Record<TrangThaiTaiKhoan, string> = {
   active: "Đang hoạt động",

@@ -5,6 +5,7 @@ import { Reveal } from "@/components/reveal";
 import { Toast } from "@/components/ui/toast";
 import { useChuyenBoard } from "../_hooks/use-chuyen-board";
 import { ChuyenCancelModal } from "./chuyen-cancel-modal";
+import { ChuyenDeleteModal } from "./chuyen-delete-modal";
 import { ChuyenDetailDrawer } from "./chuyen-detail-drawer";
 import { ChuyenFormModal } from "./chuyen-form-modal";
 import { ChuyenLich } from "./chuyen-lich";
@@ -35,6 +36,9 @@ export function ChuyenBoard() {
     pageCount,
     detailTrip,
     cancelTrip,
+    deleteTrip,
+    cancelPending,
+    deletePending,
     sucoTrip,
     sucoState,
     formState,
@@ -46,13 +50,17 @@ export function ChuyenBoard() {
     openDetail,
     openCancelFromTable,
     openCancelFromDrawer,
+    openDeleteFromTable,
+    openDeleteFromDrawer,
     openSuco,
     closeDetail,
     closeForm,
     closeCancel,
+    closeDelete,
     closeSuco,
     handleSaveForm,
     handleConfirmCancel,
+    handleConfirmDelete,
     handleSucoNhan,
     handleSucoKetQua,
     handlePublish,
@@ -115,6 +123,7 @@ export function ChuyenBoard() {
         onDetail={openDetail}
         onEdit={openEdit}
         onCancel={openCancelFromTable}
+        onDelete={openDeleteFromTable}
         onReset={handleReset}
         onPublish={handlePublish}
       />
@@ -143,6 +152,7 @@ export function ChuyenBoard() {
         onClose={closeDetail}
         onEdit={openEdit}
         onCancel={openCancelFromDrawer}
+        onDelete={openDeleteFromDrawer}
         onSuco={openSuco}
       />
 
@@ -166,6 +176,17 @@ export function ChuyenBoard() {
           trip={cancelTrip}
           onClose={closeCancel}
           onConfirm={handleConfirmCancel}
+          submitting={cancelPending}
+        />
+      )}
+
+      {deleteTrip && (
+        <ChuyenDeleteModal
+          key={deleteTrip.ma}
+          trip={deleteTrip}
+          onClose={closeDelete}
+          onConfirm={handleConfirmDelete}
+          submitting={deletePending}
         />
       )}
 

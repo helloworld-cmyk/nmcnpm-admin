@@ -13,32 +13,6 @@
   transform: translateY(-1px);
 }
 
-/* Ảnh đại diện chữ viết tắt — lặp ở bảng + modal chi tiết */
-
-.tx-avatar {
-  display: grid;
-  place-items: center;
-  flex: none;
-  border-radius: 50%;
-  font-family: var(--font-heading);
-  font-weight: 700;
-}
-
-.tx-avatar--sky {
-  background: var(--sky-100);
-  color: var(--sky-700);
-}
-
-.tx-avatar--orange {
-  background: var(--orange-100);
-  color: var(--orange-700);
-}
-
-.tx-avatar--green {
-  background: var(--green-100);
-  color: var(--green-700);
-}
-
 /* Dấu chấm trạng thái trong badge — lặp ở bảng + modal chi tiết */
 
 .tx-dot {

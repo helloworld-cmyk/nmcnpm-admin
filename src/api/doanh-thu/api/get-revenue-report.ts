@@ -14,6 +14,7 @@ export function getRevenueReportAPI(
         from: query?.from,
         to: query?.to,
         status: query?.status,
+        route_id: query?.routeId,
       },
     }
   );

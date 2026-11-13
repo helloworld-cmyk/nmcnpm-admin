@@ -24,6 +24,7 @@ export function useRevenueReport(
       query?.from,
       query?.to,
       query?.status,
+      query?.routeId,
     ],
     queryFn: () => getRevenueReportAPI(companyId, query),
     enabled: companyId.length > 0,

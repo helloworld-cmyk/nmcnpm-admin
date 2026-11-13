@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import type { TaiXeFormValues } from "../_data/tai-xe";
 import {
   validateTaiXeForm,
   type TaiXeFormInvalid,
   type TaiXeFormState,
+  type TaiXeFormValues,
 } from "../_utils/tai-xe-form";
 
 type UseTaiXeFormOptions = {

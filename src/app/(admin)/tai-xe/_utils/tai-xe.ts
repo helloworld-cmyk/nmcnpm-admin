@@ -1,8 +1,7 @@
-export type TaiXeTrangThai = "active" | "locked";
+import type { CompanyDriverStatus } from "@/api/tai-xe/api/types";
 
-/* Hạng giấy phép lái xe hợp lệ (khớp backend). */
-export const GPLX_HANG_OPTIONS = ["B1", "B2", "C1", "C", "D1", "D2", "E"] as const;
-export type GplxHang = (typeof GPLX_HANG_OPTIONS)[number];
+/* View-model trạng thái tài khoản tài xế dùng ở màn Quản lý tài xế. */
+export type TaiXeTrangThai = "active" | "locked";
 
 /* View-model một tài xế dùng ở màn Quản lý tài xế. */
 export type TaiXe = {
@@ -24,39 +23,23 @@ export type TaiXe = {
   ngayTao: string;
 };
 
-export type TaiXeFormValues = {
-  fullName: string;
-  phone: string;
-  email: string;
-  licenseNumber: string;
-  licenseClass: GplxHang;
-  licenseExpiresOn: string;
-};
-
 export const TRANG_THAI_TAI_XE_LABEL: Record<TaiXeTrangThai, string> = {
   active: "Đang hoạt động",
   locked: "Bị khóa",
 };
 
-export const TRANG_THAI_TAI_XE_OPTIONS: { value: TaiXeTrangThai; label: string }[] =
-  [
-    { value: "active", label: "Đang hoạt động" },
-    { value: "locked", label: "Bị khóa" },
-  ];
+/* Lựa chọn lọc theo trạng thái; value khớp thẳng API, không suy diễn từ nhãn. */
+export const TRANG_THAI_TAI_XE_OPTIONS: {
+  value: CompanyDriverStatus;
+  label: string;
+}[] = [
+  { value: "ACTIVE", label: TRANG_THAI_TAI_XE_LABEL.active },
+  { value: "LOCKED", label: TRANG_THAI_TAI_XE_LABEL.locked },
+];
 
 /* Cửa sổ cảnh báo GPLX sắp hết hạn (ngày). */
 const GPLX_WARNING_DAYS = 45;
 const DAY_MS = 24 * 60 * 60 * 1000;
-
-export function vietTatHoTen(ten: string): string {
-  return ten
-    .trim()
-    .split(/\s+/)
-    .slice(-2)
-    .map((part) => part.charAt(0))
-    .join("")
-    .toUpperCase();
-}
 
 /* Nhóm 12 chữ số GPLX thành 3 nhóm 4 để dễ đọc. */
 export function nhomGplx(digits: string): string {

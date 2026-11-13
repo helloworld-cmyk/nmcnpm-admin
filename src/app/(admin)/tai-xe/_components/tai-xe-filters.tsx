@@ -2,8 +2,9 @@
 
 import { Icon } from "@/components/icons/icon";
 import { FormField, Select, TextInput } from "@/components/ui/form";
+import type { CompanyDriverStatus } from "@/api/tai-xe/api/types";
 import { useTaiXeFiltersStore } from "@/global-states/tai-xe-filters-store";
-import { TRANG_THAI_TAI_XE_OPTIONS } from "../_data/tai-xe";
+import { TRANG_THAI_TAI_XE_OPTIONS } from "../_utils/tai-xe";
 
 const GRID_CLASS = [
   "grid items-end gap-3.5",
@@ -43,14 +44,11 @@ export function TaiXeFilters({ totalCount }: TaiXeFiltersProps) {
             id="tx-trang-thai"
             value={trangThai}
             onChange={(value) =>
-              setTrangThai(value as "" | "ACTIVE" | "LOCKED")
+              setTrangThai(value as CompanyDriverStatus | "")
             }
             options={[
               { value: "", label: "Tất cả trạng thái" },
-              ...TRANG_THAI_TAI_XE_OPTIONS.map((option) => ({
-                value: option.value.toUpperCase(),
-                label: option.label,
-              })),
+              ...TRANG_THAI_TAI_XE_OPTIONS,
             ]}
           />
         </FormField>
