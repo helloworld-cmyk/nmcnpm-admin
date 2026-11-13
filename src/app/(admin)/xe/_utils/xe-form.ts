@@ -6,8 +6,6 @@ export type XeFormState = {
   soCho: string;
   taiXe: string;
   trangThai: XeFormValues["trangThai"];
-  dangKiem: string;
-  baoHiem: string;
 };
 
 export type XeFormInvalid = {
@@ -30,8 +28,6 @@ export const EMPTY_XE_FORM: XeFormState = {
   soCho: "",
   taiXe: "",
   trangThai: "Đang hoạt động",
-  dangKiem: "",
-  baoHiem: "",
 };
 
 const SO_CHO_MIN = 1;
@@ -42,10 +38,8 @@ export function toXeFormState(xe: Xe): XeFormState {
     bienSo: xe.bienSo,
     loaiXe: xe.loaiXe,
     soCho: String(xe.soCho),
-    taiXe: xe.taiXe ?? "",
+    taiXe: xe.taiXeId ?? "",
     trangThai: xe.trangThai,
-    dangKiem: xe.dangKiem,
-    baoHiem: xe.baoHiem,
   };
 }
 
@@ -98,10 +92,8 @@ export function validateXeForm(
       bienSo,
       loaiXe,
       soCho,
-      taiXe: state.taiXe || null,
+      taiXeId: state.taiXe || null,
       trangThai: state.trangThai,
-      dangKiem: state.dangKiem,
-      baoHiem: state.baoHiem,
     },
     errors: [],
     invalid,

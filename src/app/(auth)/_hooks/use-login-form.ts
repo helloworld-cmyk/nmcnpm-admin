@@ -9,13 +9,9 @@ type StatusType = "is-success" | "is-error" | "is-info";
 
 export type LoginStatus = { message: string; type: StatusType } | null;
 
-const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-
+/* BE (LoginRequest) chỉ yêu cầu identifier không để trống; không ràng buộc định dạng email/SĐT. */
 function validIdentifier(value: string) {
-  const v = value.trim();
-  if (!v) return false;
-  if (v.includes("@")) return EMAIL_PATTERN.test(v);
-  return v.replace(/\D/g, "").length >= 9;
+  return value.trim().length > 0;
 }
 
 export function useLoginForm(onAuthenticated: () => void) {

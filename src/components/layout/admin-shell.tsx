@@ -72,6 +72,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     });
   };
 
+  /** Điều hướng trong sidebar (mobile) xong phải đóng drawer để thấy trang mới. */
   const closeSide = () => setSideOpen(false);
 
   return (
@@ -96,6 +97,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           <Link
             href="/tong-quan"
             aria-label="Vi Vu Việt — Tổng quan"
+            onClick={closeSide}
             className="flex min-h-[44px] items-center gap-[11px] px-3.5"
           >
             <span className="grid h-10 w-10 flex-none place-items-center rounded-xl bg-white">
@@ -118,6 +120,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
+                onClick={closeSide}
                 className={`${NAV_ITEM_CLASS}${active ? ` ${NAV_ITEM_ACTIVE_CLASS}` : ""}`}
               >
                 <Icon

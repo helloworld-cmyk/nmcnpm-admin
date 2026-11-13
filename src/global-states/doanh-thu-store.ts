@@ -18,42 +18,60 @@ export const DOANH_THU_PERIOD_OPTIONS: {
   { value: "tuy-chon", label: "Tuỳ chọn" },
 ];
 
-const PERIOD_RANGES: Record<
-  Exclude<DoanhThuPeriod, "tuy-chon">,
-  { from: string; to: string }
-> = {
-  "hom-nay": { from: "2026-10-31", to: "2026-10-31" },
-  "tuan-nay": { from: "2026-10-26", to: "2026-10-31" },
-  "thang-nay": { from: "2026-10-01", to: "2026-10-31" },
-  "thang-truoc": { from: "2026-09-01", to: "2026-09-30" },
-};
+const pad2 = (value: number) => String(value).padStart(2, "0");
+
+const isoOf = (date: Date) =>
+  `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+
+/* Khoảng ngày (yyyy-MM-dd) cho từng kỳ, tính theo ngày hiện tại. */
+function rangeFor(period: Exclude<DoanhThuPeriod, "tuy-chon">): {
+  from: string;
+  to: string;
+} {
+  const now = new Date();
+  if (period === "hom-nay") {
+    const today = isoOf(now);
+    return { from: today, to: today };
+  }
+  if (period === "tuan-nay") {
+    const day = (now.getDay() + 6) % 7;
+    const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day);
+    return { from: isoOf(monday), to: isoOf(now) };
+  }
+  if (period === "thang-nay") {
+    const first = new Date(now.getFullYear(), now.getMonth(), 1);
+    return { from: isoOf(first), to: isoOf(now) };
+  }
+  const firstPrev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastPrev = new Date(now.getFullYear(), now.getMonth(), 0);
+  return { from: isoOf(firstPrev), to: isoOf(lastPrev) };
+}
+
+const DEFAULT_PERIOD: DoanhThuPeriod = "thang-nay";
+const DEFAULT_RANGE = rangeFor(DEFAULT_PERIOD);
 
 type DoanhThuFilterState = {
   period: DoanhThuPeriod;
   from: string;
   to: string;
-  route: string;
   setPeriod: (period: DoanhThuPeriod) => void;
   setCustomRange: (from: string, to: string) => void;
-  setRoute: (route: string) => void;
 };
 
 export const useDoanhThuStore = create<DoanhThuFilterState>((set) => ({
-  period: "thang-nay",
-  from: "2026-10-01",
-  to: "2026-10-31",
-  route: "all",
+  period: DEFAULT_PERIOD,
+  from: DEFAULT_RANGE.from,
+  to: DEFAULT_RANGE.to,
 
   setPeriod: (period) =>
-    set((state) => ({
-      period,
-      from: period === "tuy-chon" ? state.from : PERIOD_RANGES[period].from,
-      to: period === "tuy-chon" ? state.to : PERIOD_RANGES[period].to,
-    })),
+    set(() => {
+      if (period === "tuy-chon") return { period };
+      return { period, ...rangeFor(period) };
+    }),
 
   setCustomRange: (from, to) =>
     set(() => {
-      const nextFrom = from || "2026-10-01";
+      const nextFrom = from || DEFAULT_RANGE.from;
       const nextTo = to || nextFrom;
       return {
         period: "tuy-chon" as DoanhThuPeriod,
@@ -61,6 +79,4 @@ export const useDoanhThuStore = create<DoanhThuFilterState>((set) => ({
         to: nextFrom > nextTo ? nextFrom : nextTo,
       };
     }),
-
-  setRoute: (route) => set({ route }),
 }));

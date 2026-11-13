@@ -28,7 +28,7 @@ const STAT_VALUE_CLASS = [
 ].join(" ");
 
 const STATS_GRID_CLASS = [
-  "mb-[22px] grid grid-cols-4 gap-3.5",
+  "mb-[22px] grid grid-cols-3 gap-3.5",
   "max-[1080px]:grid-cols-2 max-[640px]:gap-2.5",
   "max-[400px]:grid-cols-1",
 ].join(" ");
@@ -55,12 +55,6 @@ export function XeStats({ stats }: { stats: XeStatsData }) {
       tone: "orange",
       value: stats.baoTri,
       label: "Đang bảo trì",
-    },
-    {
-      icon: "i-clock",
-      tone: "orange",
-      value: stats.giayToCanhBao,
-      label: "Giấy tờ sắp hết hạn",
     },
   ];
 

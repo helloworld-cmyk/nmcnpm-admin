@@ -2,13 +2,12 @@ import type {
   XeSortDir,
   XeSortKey,
 } from "@/global-states/xe-filters-store";
-import { isDocExpiringSoon, type Xe } from "../_data/vehicles";
+import type { Xe } from "../_data/vehicles";
 
 export type XeStatsData = {
   total: number;
   hoatDong: number;
   baoTri: number;
-  giayToCanhBao: number;
 };
 
 export type XeFilterValues = {
@@ -64,12 +63,5 @@ export function computeXeStats(vehicles: Xe[]): XeStatsData {
     total: vehicles.length,
     hoatDong: vehicles.filter((xe) => xe.trangThai === "Đang hoạt động").length,
     baoTri: vehicles.filter((xe) => xe.trangThai === "Đang bảo trì").length,
-    giayToCanhBao: vehicles.reduce(
-      (count, xe) =>
-        count +
-        (isDocExpiringSoon(xe.dangKiem) ? 1 : 0) +
-        (isDocExpiringSoon(xe.baoHiem) ? 1 : 0),
-      0
-    ),
   };
 }

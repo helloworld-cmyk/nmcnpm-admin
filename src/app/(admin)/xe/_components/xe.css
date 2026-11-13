@@ -14,12 +14,6 @@
   padding: 14px 16px;
 }
 
-/* Select không có icon bên trái như input — bỏ padding 40px của .field */
-.xe-toolbar select,
-.xe-form-grid select {
-  padding-left: 13px;
-}
-
 @media (max-width: 640px) {
   .xe-table {
     min-width: 0;

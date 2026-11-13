@@ -5,17 +5,12 @@ import {
   useXeFiltersStore,
   type XeSortKey,
 } from "@/global-states/xe-filters-store";
-import {
-  formatDocDate,
-  isDocExpiringSoon,
-  type Xe,
-} from "../_data/vehicles";
+import type { Xe } from "../_data/vehicles";
 
 const COLUMNS: { label: string; sortKey?: XeSortKey }[] = [
   { label: "Xe", sortKey: "bienSo" },
   { label: "Sức chứa", sortKey: "soCho" },
   { label: "Tài xế phụ trách", sortKey: "taiXe" },
-  { label: "Giấy tờ" },
   { label: "Tình trạng", sortKey: "trangThai" },
   { label: "Thao tác" },
 ];
@@ -44,11 +39,6 @@ const CELL_ACTION_DELETE = [
   "text-[var(--red-600)] hover:bg-[var(--red-50)]",
   "hover:text-[var(--red-600)]",
 ].join(" ");
-
-const DOC_CLASS =
-  "flex items-center gap-[5px] text-[12.5px] leading-[1.5] text-[var(--slate-500)]";
-
-const DOC_WARN_CLASS = "font-semibold text-[var(--orange-700)]";
 
 const TH_CLASS = "is-sortable";
 
@@ -104,7 +94,7 @@ export function XeTable({
             Danh sách xe
           </h2>
           <p className="table-sub">
-            Tình trạng và giấy tờ cập nhật sau mỗi chuyến hoàn thành.
+            Tình trạng xe cập nhật sau mỗi chuyến hoàn thành.
           </p>
         </div>
       </div>
@@ -117,8 +107,8 @@ export function XeTable({
       >
         <table className="table xe-table">
           <caption className="sr-only">
-            Danh sách xe của đội: biển số, sức chứa, tài xế phụ trách, giấy tờ
-            và tình trạng
+            Danh sách xe của đội: biển số, sức chứa, tài xế phụ trách và tình
+            trạng
           </caption>
           <thead>
             <tr>
@@ -162,10 +152,6 @@ export function XeTable({
           </thead>
           <tbody>
             {rows.map((xe) => {
-              const docs = [
-                { ten: "Đăng kiểm", hetHan: xe.dangKiem },
-                { ten: "Bảo hiểm", hetHan: xe.baoHiem },
-              ];
               return (
                 <tr key={xe.id}>
                   <td data-label="Xe">
@@ -187,25 +173,6 @@ export function XeTable({
                     {xe.taiXe ?? (
                       <span className="text-[var(--slate-400)]">— Chưa gán</span>
                     )}
-                  </td>
-                  <td data-label="Giấy tờ">
-                    {docs.map((doc) => {
-                      const warning = isDocExpiringSoon(doc.hetHan);
-                      return (
-                        <p
-                          key={doc.ten}
-                          className={`${DOC_CLASS}${warning ? ` ${DOC_WARN_CLASS}` : ""}`}
-                        >
-                          {warning && (
-                            <Icon
-                              name="i-alert"
-                              className="icon h-3.5 w-3.5 flex-none text-[var(--orange-600)]"
-                            />
-                          )}
-                          {doc.ten} · {formatDocDate(doc.hetHan, warning)}
-                        </p>
-                      );
-                    })}
                   </td>
                   <td data-label="Tình trạng">
                     <span className={`badge ${STATUS_BADGE_CLASS[xe.trangThai]}`}>
