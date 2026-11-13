@@ -1,36 +1,22 @@
-/* Hạng ghế và trạng thái trình cấu hình sơ đồ ghế của xe. */
+/* Hằng số và state trình cấu hình sơ đồ ghế một tầng của xe. */
 
-export type SeatTone = "sky" | "orange" | "green" | "slate";
+/*
+ * Sơ đồ ghế một tầng, không phân hạng ghế (theo ConfigureVehicleSeatsRequest).
+ * Mỗi ô chỉ có hai trạng thái: có ghế hoặc ô trống (lối đi/khoảng trống).
+ */
+export const SEAT_FILLED = "SEAT";
 
-export type SeatClassOption = {
-  value: string;
-  label: string;
-  tone: SeatTone;
-};
-
-/* Giá trị seatClass đặc biệt: ô trống (lối đi/khoảng trống) — không gửi lên API. */
+/* Ô trống (lối đi/khoảng trống) — không gửi lên API. */
 export const SEAT_EMPTY = "EMPTY";
 
 export const DEFAULT_SEAT_NAME = "Sơ đồ ghế mặc định";
 
-/*
- * Hạng ghế gợi ý. Backend nhận seatClass là chuỗi tự do (<=30 ký tự, tự viết
- * hoa, mặc định "STANDARD") nên đây chỉ là bộ chọn nhanh ở UI.
- */
-export const SEAT_CLASS_OPTIONS: SeatClassOption[] = [
-  { value: "STANDARD", label: "Ghế thường", tone: "sky" },
-  { value: "VIP", label: "Ghế VIP", tone: "orange" },
-  { value: "SLEEPER", label: "Giường nằm", tone: "green" },
-];
-
 /* Giới hạn theo ràng buộc backend (ConfigureVehicleSeatsRequest) + tiện dụng UI. */
 export const SEAT_LIMITS = {
-  decks: { min: 1, max: 2 },
   rows: { min: 1, max: 20 },
   columns: { min: 1, max: 5 },
   nameMax: 120,
   seatsMax: 100,
-  seatClassMax: 30,
   seatCodeMax: 20,
 };
 
@@ -44,10 +30,9 @@ export type XeSeatTarget = {
   loaiXe: string;
 };
 
-/* Trạng thái trình cấu hình; `cells` khóa theo `${deck}-${row}-${col}` (1-based). */
+/* Trạng thái trình cấu hình; `cells` khóa theo `${row}-${col}` (1-based). */
 export type XeSeatEditorState = {
   name: string;
-  decks: number;
   rows: number;
   cols: number;
   cells: Record<string, string>;

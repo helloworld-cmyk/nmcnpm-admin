@@ -7,14 +7,17 @@ import { useConfigureVehicleSeats } from "@/api/xe/tanstack/use-configure-vehicl
 import { useVehicleSeats } from "@/api/xe/tanstack/use-vehicle-seats";
 import { ApiError } from "@/api/types";
 
-import { SEAT_EMPTY, type XeSeatEditorState } from "../_data/seats";
+import {
+  SEAT_EMPTY,
+  SEAT_FILLED,
+  type XeSeatEditorState,
+} from "../_data/seats";
 import {
   countSeats,
-  deckSeatCells,
-  defaultSeatClass,
   emptyEditorState,
   fillCells,
   seatCellKey,
+  seatGridCells,
   seatLayoutFromResponse,
   toSeatPayload,
   validateSeatEditor,
@@ -27,10 +30,10 @@ type UseXeSeatFormOptions = {
 };
 
 /*
- * State + nghiệp vụ trình cấu hình sơ đồ ghế: nạp sơ đồ hiện tại từ API, tô
- * hạng ghế theo ô, dựng payload và lưu qua PUT. Component chỉ render UI.
- * Body của trình cấu hình được mount lại (key = vehicleId) mỗi khi đổi xe nên
- * state luôn khởi tạo mới, không cần effect reset.
+ * State + nghiệp vụ trình cấu hình sơ đồ ghế một tầng: nạp sơ đồ hiện tại từ
+ * API, tô ô có ghế / ô trống, dựng payload và lưu qua PUT. Component chỉ render
+ * UI. Body của trình cấu hình được mount lại (key = vehicleId) mỗi khi đổi xe
+ * nên state luôn khởi tạo mới, không cần effect reset.
  */
 export function useXeSeatForm({
   companyId,
@@ -42,8 +45,7 @@ export function useXeSeatForm({
   const configure = useConfigureVehicleSeats(companyId, vehicleId);
 
   const [state, setState] = useState<XeSeatEditorState>(emptyEditorState);
-  const [activeDeckState, setActiveDeckState] = useState(1);
-  const [brush, setBrush] = useState<string>(defaultSeatClass());
+  const [brush, setBrush] = useState<string>(SEAT_FILLED);
   const [error, setError] = useState<string | null>(null);
   const [nameInvalid, setNameInvalid] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -56,27 +58,21 @@ export function useXeSeatForm({
     setState(seatLayoutFromResponse(seatsQuery.data));
   }, [seatsQuery.isSuccess, seatsQuery.data]);
 
-  /* Số tầng có thể giảm sau khi sửa → luôn kẹp tầng đang chọn trong phạm vi. */
-  const activeDeck = Math.min(activeDeckState, state.decks);
-
-  const cells = useMemo(
-    () => deckSeatCells(state, activeDeck),
-    [state, activeDeck]
-  );
+  const cells = useMemo(() => seatGridCells(state), [state]);
   const totalSeats = useMemo(() => countSeats(state), [state]);
 
   const patchState = useCallback((patch: Partial<XeSeatEditorState>) => {
-    setState((prev) => fillCells({ ...prev, ...patch }, defaultSeatClass()));
+    setState((prev) => fillCells({ ...prev, ...patch }, SEAT_FILLED));
     setError(null);
     if (patch.name !== undefined) setNameInvalid(false);
   }, []);
 
   const paintCell = useCallback(
     (row: number, col: number) => {
-      const key = seatCellKey(activeDeck, row, col);
+      const key = seatCellKey(row, col);
       setState((prev) => ({ ...prev, cells: { ...prev.cells, [key]: brush } }));
     },
-    [activeDeck, brush]
+    [brush]
   );
 
   const paintAll = useCallback(() => {
@@ -129,8 +125,6 @@ export function useXeSeatForm({
   return {
     state,
     cells,
-    activeDeck,
-    setActiveDeck: setActiveDeckState,
     brush,
     setBrush,
     totalSeats,

@@ -1,0 +1,58 @@
+/* Style riêng lặp lại của màn Quản lý tài xế (§1.4) — chỉ import trong page.tsx */
+
+/* Nút nhấn màu cam (thao tác khóa) — lặp ở modal chi tiết + modal xác nhận */
+
+.btn-accent {
+  background: var(--orange-500);
+  color: #10203a;
+  box-shadow: 0 14px 32px -14px rgba(249, 115, 22, 0.85);
+}
+
+.btn-accent:hover {
+  background: #fb923c;
+  transform: translateY(-1px);
+}
+
+/* Ảnh đại diện chữ viết tắt — lặp ở bảng + modal chi tiết */
+
+.tx-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  font-family: var(--font-heading);
+  font-weight: 700;
+}
+
+.tx-avatar--sky {
+  background: var(--sky-100);
+  color: var(--sky-700);
+}
+
+.tx-avatar--orange {
+  background: var(--orange-100);
+  color: var(--orange-700);
+}
+
+.tx-avatar--green {
+  background: var(--green-100);
+  color: var(--green-700);
+}
+
+/* Dấu chấm trạng thái trong badge — lặp ở bảng + modal chi tiết */
+
+.tx-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Nút thao tác trong dòng bảng */
+
+.tx-actions .btn {
+  height: 38px;
+  padding: 0 11px;
+  font-size: 12.5px;
+  white-space: nowrap;
+}

@@ -11,7 +11,7 @@ type UseDriverOptions = Omit<
   "queryKey" | "queryFn"
 >;
 
-/* Query chi tiết tài xế; chỉ gọi khi có đủ companyId và driverId. */
+/* Query chi tiết tài xế theo id; chỉ gọi khi có đủ companyId và driverId. */
 export function useDriver(
   companyId: string,
   driverId: string,

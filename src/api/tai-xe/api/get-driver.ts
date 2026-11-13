@@ -2,7 +2,7 @@ import { authApi } from "../../method";
 
 import type { CompanyDriverResponse } from "./types";
 
-/* Gọi API lấy chi tiết một tài xế của hãng. */
+/* Gọi API lấy chi tiết một tài xế thuộc hãng. */
 export function getDriverAPI(
   companyId: string,
   driverId: string
