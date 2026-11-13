@@ -45,10 +45,10 @@ export function Modal({
       <div
         role="dialog"
         aria-modal="true"
-        className={`relative flex max-h-[min(720px,100%)] animate-[panelIn_0.28s_var(--ease)] flex-col overflow-y-auto rounded-[var(--radius-lg)] bg-[var(--surface)] shadow-[var(--shadow-lg)] ${SIZE_CLASS[size]}`}
+        className={`relative flex max-h-[min(720px,100%)] animate-[panelIn_0.28s_var(--ease)] flex-col overflow-hidden rounded-[var(--radius-lg)] bg-[var(--surface)] shadow-[var(--shadow-lg)] ${SIZE_CLASS[size]}`}
       >
         {title !== undefined && (
-          <div className="flex items-start justify-between gap-3.5 px-[22px] pb-3.5 pt-5">
+          <div className="flex flex-none items-start justify-between gap-3.5 px-[22px] pb-3.5 pt-5">
             <div className="[font-family:var(--font-heading)] text-[18.5px] font-bold leading-[1.2] tracking-[-0.02em] text-[var(--ink)]">
               {title}
             </div>
@@ -58,10 +58,12 @@ export function Modal({
           </div>
         )}
 
-        <div className="grid gap-3.5 px-[22px] pb-5 pt-1.5">{children}</div>
+        <div className="scroll-area min-h-0 flex-1 overflow-y-auto px-[22px] pb-5 pt-1.5">
+          <div className="grid gap-3.5">{children}</div>
+        </div>
 
         {footer !== undefined && (
-          <div className="flex flex-wrap justify-end gap-2.5 border-t border-[var(--border-soft)] px-[22px] pb-5 pt-4">
+          <div className="flex flex-none flex-wrap justify-end gap-2.5 border-t border-[var(--border-soft)] px-[22px] pb-5 pt-4">
             {footer}
           </div>
         )}

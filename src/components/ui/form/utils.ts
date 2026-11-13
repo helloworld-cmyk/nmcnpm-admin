@@ -11,6 +11,6 @@ export const CONTROL_INVALID =
 export const CONTROL_ICON_PADDING = "pl-11";
 
 export const PANEL_SHELL =
-  "fixed z-[120] overflow-y-auto rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-md)] animate-[panelIn_0.18s_var(--ease)]";
+  "scroll-area fixed z-[120] overflow-y-auto rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-md)] animate-[panelIn_0.18s_var(--ease)]";
 
 export const PANEL_CLASS = `${PANEL_SHELL} p-1.5`;

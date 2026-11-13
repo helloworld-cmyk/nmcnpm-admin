@@ -2,7 +2,7 @@ import { authApi } from "../../method";
 
 import type { TripResponse } from "./types";
 
-/* Gọi API lấy chi tiết một chuyến thuộc hãng kèm điểm dừng đã chụp. */
+/* Gọi API lấy chi tiết một chuyến thuộc hãng. */
 export function getTripAPI(
   companyId: string,
   tripId: string

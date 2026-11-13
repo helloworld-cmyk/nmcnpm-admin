@@ -3,11 +3,13 @@
 import { Icon } from "@/components/icons/icon";
 import { Reveal } from "@/components/reveal";
 import { Toast } from "@/components/ui/toast";
-import { useXeFiltersStore } from "@/global-states/xe-filters-store";
 import { useXeBoard } from "../_hooks/use-xe-board";
 import { XeDeleteModal } from "./xe-delete-modal";
+import { XeEmptyState } from "./xe-empty-state";
+import { XeErrorState } from "./xe-error-state";
 import { XeFilters } from "./xe-filters";
 import { XeFormModal } from "./xe-form-modal";
+import { XeSeatModal } from "./xe-seat-modal";
 import { XeStats } from "./xe-stats";
 import { XeTable } from "./xe-table";
 
@@ -16,52 +18,6 @@ const EMPTY_STATE_CLASS = [
   "border border-dashed border-[var(--border)]",
   "bg-[var(--surface)]",
 ].join(" ");
-
-function XeEmptyState() {
-  const reset = useXeFiltersStore((s) => s.reset);
-
-  return (
-    <section aria-label="Không có kết quả" className={EMPTY_STATE_CLASS}>
-      <span className="state-empty-icon">
-        <Icon name="i-car" />
-      </span>
-      <h3>Không có xe nào khớp bộ lọc</h3>
-      <p>Thử đổi từ khóa tìm kiếm hoặc xóa bộ lọc để xem toàn bộ đội xe.</p>
-      <button type="button" className="btn btn-ghost btn-sm" onClick={reset}>
-        Xóa lọc
-      </button>
-    </section>
-  );
-}
-
-function XeErrorState({
-  message,
-  onRetry,
-  retrying,
-}: {
-  message: string;
-  onRetry: () => void;
-  retrying: boolean;
-}) {
-  return (
-    <section aria-label="Lỗi tải dữ liệu" className={EMPTY_STATE_CLASS}>
-      <span className="state-empty-icon text-[var(--red-600)]">
-        <Icon name="i-alert" />
-      </span>
-      <h3>Không tải được danh sách xe</h3>
-      <p>{message}</p>
-      <button
-        type="button"
-        className="btn btn-ghost btn-sm"
-        onClick={onRetry}
-        disabled={retrying}
-      >
-        <Icon name="i-refresh" />
-        {retrying ? "Đang tải..." : "Thử lại"}
-      </button>
-    </section>
-  );
-}
 
 export function XeBoard() {
   const {
@@ -84,6 +40,8 @@ export function XeBoard() {
     setFormTarget,
     deleteTarget,
     setDeleteTarget,
+    seatTarget,
+    setSeatTarget,
     toast,
     setToast,
     handleSave,
@@ -133,6 +91,13 @@ export function XeBoard() {
           page={safePage}
           onEdit={(xe) => setFormTarget({ mode: "edit", xe })}
           onDelete={(xe) => setDeleteTarget(xe)}
+          onSeat={(xe) =>
+            setSeatTarget({
+              vehicleId: xe.id,
+              bienSo: xe.bienSo,
+              loaiXe: xe.loaiXe,
+            })
+          }
         />
       </Reveal>
     );
@@ -182,6 +147,15 @@ export function XeBoard() {
         target={deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
+      />
+      <XeSeatModal
+        target={seatTarget}
+        companyId={companyId}
+        onClose={() => setSeatTarget(null)}
+        onSaved={(message) => {
+          setSeatTarget(null);
+          setToast({ message, type: "success" });
+        }}
       />
       <Toast toast={toast} onDone={() => setToast(null)} />
     </>

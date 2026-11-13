@@ -1,0 +1,75 @@
+/* ================= Tổng quan — style lặp lại giữa các khối của màn ================= */
+
+/* Khối panel dùng chung bởi các phần: biểu đồ, hàng chờ, bảng, sự cố, cảnh báo,
+   dòng thời gian (§1.4 — lặp lại ở nhiều component của cùng màn) */
+
+.tq-panel {
+  min-width: 0;
+  padding: clamp(16px, 2vw, 22px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.tq-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.tq-panel-title {
+  font-size: 16.5px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.tq-panel-sub {
+  margin-top: 3px;
+  font-size: 12.5px;
+  color: var(--slate-500);
+}
+
+/* Liên kết dạng chữ + mũi tên (head của 5 panel) */
+
+.tq-text-link {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 0;
+  border-bottom: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--sky-700);
+  white-space: nowrap;
+  transition:
+    gap var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+}
+
+.tq-text-link:hover {
+  gap: 10px;
+  border-bottom-color: var(--sky-300);
+}
+
+.tq-text-link .icon {
+  width: 17px;
+  height: 17px;
+}
+
+@media (max-width: 640px) {
+  .tq-text-link {
+    white-space: normal;
+  }
+}
+
+/* Khung cuộn bảng — mở rộng .table-scroll của globals như khung data-table design */
+
+.tq-scroll {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+}

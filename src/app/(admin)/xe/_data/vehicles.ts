@@ -5,6 +5,7 @@ export type Xe = {
   bienSo: string;
   loaiXe: string;
   soCho: number;
+  seatLayoutId: string | null;
   /* id tài xế phụ trách (CompanyDriverResponse.driverId) — backend chưa có nguồn, chỉ lưu cục bộ. */
   taiXeId: string | null;
   taiXe: string | null;

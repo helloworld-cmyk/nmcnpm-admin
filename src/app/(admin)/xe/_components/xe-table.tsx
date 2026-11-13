@@ -34,6 +34,12 @@ const CELL_ACTION_EDIT = [
   "hover:text-[var(--sky-800)]",
 ].join(" ");
 
+const CELL_ACTION_SEAT = [
+  CELL_ACTION_BASE,
+  "text-[var(--slate-600)] hover:bg-[var(--navy-50)]",
+  "hover:text-[var(--navy-800)]",
+].join(" ");
+
 const CELL_ACTION_DELETE = [
   CELL_ACTION_BASE,
   "text-[var(--red-600)] hover:bg-[var(--red-50)]",
@@ -51,7 +57,7 @@ const SO_CHO_CLASS =
   "inline-flex items-center gap-1.5 font-semibold text-[var(--ink)]";
 
 const ACTIONS_CLASS =
-  "flex items-center gap-1.5 max-[640px]:w-full max-[640px]:justify-end";
+  "flex flex-wrap items-center gap-1.5 max-[640px]:w-full max-[640px]:justify-end";
 
 const TABLE_FOOTER_CLASS = [
   "flex flex-wrap items-center justify-between gap-2.5",
@@ -67,6 +73,7 @@ type XeTableProps = {
   page: number;
   onEdit: (xe: Xe) => void;
   onDelete: (xe: Xe) => void;
+  onSeat: (xe: Xe) => void;
 };
 
 export function XeTable({
@@ -78,6 +85,7 @@ export function XeTable({
   page,
   onEdit,
   onDelete,
+  onSeat,
 }: XeTableProps) {
   const sortKey = useXeFiltersStore((s) => s.sortKey);
   const sortDir = useXeFiltersStore((s) => s.sortDir);
@@ -188,6 +196,20 @@ export function XeTable({
                       >
                         <Icon name="i-edit" className="icon h-4 w-4" />
                         Sửa
+                      </button>
+                      <button
+                        type="button"
+                        className={CELL_ACTION_SEAT}
+                        disabled={xe.trangThai === "Ngưng sử dụng"}
+                        title={
+                          xe.trangThai === "Ngưng sử dụng"
+                            ? "Xe đã ngưng sử dụng — không thể cấu hình ghế"
+                            : undefined
+                        }
+                        onClick={() => onSeat(xe)}
+                      >
+                        <Icon name="i-grid" className="icon h-4 w-4" />
+                        Sơ đồ ghế
                       </button>
                       <button
                         type="button"

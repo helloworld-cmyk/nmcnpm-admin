@@ -112,7 +112,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </p>
         </div>
 
-        <nav aria-label="Mục quản trị" className="flex flex-col gap-[3px] overflow-y-auto px-3">
+        <nav
+          aria-label="Mục quản trị"
+          className="scroll-area scroll-area--dark flex flex-col gap-[3px] overflow-y-auto px-3"
+        >
           {NAV_ITEMS.map((item) => {
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (

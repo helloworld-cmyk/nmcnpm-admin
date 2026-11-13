@@ -1,0 +1,149 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+
+import { useConfigureVehicleSeats } from "@/api/xe/tanstack/use-configure-vehicle-seats";
+import { useVehicleSeats } from "@/api/xe/tanstack/use-vehicle-seats";
+import { ApiError } from "@/api/types";
+
+import { SEAT_EMPTY, type XeSeatEditorState } from "../_data/seats";
+import {
+  countSeats,
+  deckSeatCells,
+  defaultSeatClass,
+  emptyEditorState,
+  fillCells,
+  seatCellKey,
+  seatLayoutFromResponse,
+  toSeatPayload,
+  validateSeatEditor,
+} from "../_utils/seat-layout";
+
+type UseXeSeatFormOptions = {
+  companyId: string;
+  vehicleId: string;
+  onSaved: (message: string) => void;
+};
+
+/*
+ * State + nghiệp vụ trình cấu hình sơ đồ ghế: nạp sơ đồ hiện tại từ API, tô
+ * hạng ghế theo ô, dựng payload và lưu qua PUT. Component chỉ render UI.
+ * Body của trình cấu hình được mount lại (key = vehicleId) mỗi khi đổi xe nên
+ * state luôn khởi tạo mới, không cần effect reset.
+ */
+export function useXeSeatForm({
+  companyId,
+  vehicleId,
+  onSaved,
+}: UseXeSeatFormOptions) {
+  const queryClient = useQueryClient();
+  const seatsQuery = useVehicleSeats(companyId, vehicleId, { enabled: true });
+  const configure = useConfigureVehicleSeats(companyId, vehicleId);
+
+  const [state, setState] = useState<XeSeatEditorState>(emptyEditorState);
+  const [activeDeckState, setActiveDeckState] = useState(1);
+  const [brush, setBrush] = useState<string>(defaultSeatClass());
+  const [error, setError] = useState<string | null>(null);
+  const [nameInvalid, setNameInvalid] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const seededRef = useRef(false);
+
+  /* Nạp sơ đồ ghế hiện tại từ API một lần khi truy vấn thành công. */
+  useEffect(() => {
+    if (seededRef.current || !seatsQuery.isSuccess) return;
+    seededRef.current = true;
+    setState(seatLayoutFromResponse(seatsQuery.data));
+  }, [seatsQuery.isSuccess, seatsQuery.data]);
+
+  /* Số tầng có thể giảm sau khi sửa → luôn kẹp tầng đang chọn trong phạm vi. */
+  const activeDeck = Math.min(activeDeckState, state.decks);
+
+  const cells = useMemo(
+    () => deckSeatCells(state, activeDeck),
+    [state, activeDeck]
+  );
+  const totalSeats = useMemo(() => countSeats(state), [state]);
+
+  const patchState = useCallback((patch: Partial<XeSeatEditorState>) => {
+    setState((prev) => fillCells({ ...prev, ...patch }, defaultSeatClass()));
+    setError(null);
+    if (patch.name !== undefined) setNameInvalid(false);
+  }, []);
+
+  const paintCell = useCallback(
+    (row: number, col: number) => {
+      const key = seatCellKey(activeDeck, row, col);
+      setState((prev) => ({ ...prev, cells: { ...prev.cells, [key]: brush } }));
+    },
+    [activeDeck, brush]
+  );
+
+  const paintAll = useCallback(() => {
+    setState((prev) => {
+      const cells: Record<string, string> = {};
+      Object.keys(prev.cells).forEach((key) => {
+        cells[key] = brush;
+      });
+      return { ...prev, cells };
+    });
+  }, [brush]);
+
+  const clearAll = useCallback(() => {
+    setState((prev) => {
+      const cells: Record<string, string> = {};
+      Object.keys(prev.cells).forEach((key) => {
+        cells[key] = SEAT_EMPTY;
+      });
+      return { ...prev, cells };
+    });
+    setError(null);
+  }, []);
+
+  const submit = useCallback(async () => {
+    const result = validateSeatEditor(state);
+    if (!result.ok) {
+      setError(result.error);
+      setNameInvalid(result.nameInvalid);
+      if (result.nameInvalid) nameRef.current?.focus();
+      return;
+    }
+    try {
+      await configure.mutateAsync(toSeatPayload(state));
+      await queryClient.invalidateQueries({
+        queryKey: ["company-vehicle-seats", companyId, vehicleId],
+      });
+      await queryClient.invalidateQueries({
+        queryKey: ["company-vehicles", companyId],
+      });
+      onSaved(`Đã lưu sơ đồ ${countSeats(state)} ghế cho xe này.`);
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Có lỗi xảy ra, vui lòng thử lại."
+      );
+    }
+  }, [state, configure, queryClient, companyId, vehicleId, onSaved]);
+
+  return {
+    state,
+    cells,
+    activeDeck,
+    setActiveDeck: setActiveDeckState,
+    brush,
+    setBrush,
+    totalSeats,
+    error,
+    nameInvalid,
+    nameRef,
+    isLoading: seatsQuery.isLoading,
+    loadError: seatsQuery.isError,
+    saving: configure.isPending,
+    patchState,
+    paintCell,
+    paintAll,
+    clearAll,
+    submit,
+  };
+}

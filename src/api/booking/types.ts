@@ -1,0 +1,31 @@
+/* Kiểu dữ liệu đặt vé và vé dùng chung cho nhiều domain (chuyến, khách hàng). */
+
+/* Trạng thái đặt vé. */
+export type BookingStatus = "HOLDING" | "CONFIRMED" | "CANCELLED" | "EXPIRED";
+
+/* Trạng thái vé. */
+export type TicketStatus = "HOLDING" | "CONFIRMED" | "CANCELLED" | "EXPIRED";
+
+/* Trạng thái đón/trả hành khách trên chuyến. */
+export type PassengerTripStatus =
+  | "WAITING_PICKUP"
+  | "PICKED_UP"
+  | "DROPPED_OFF"
+  | "NO_SHOW";
+
+/* Một vé (ghế) trong đặt vé. */
+export type TicketResponse = {
+  id: string;
+  ticketCode: string;
+  passengerName: string;
+  passengerPhone: string;
+  pickupAddress: string;
+  dropoffAddress: string;
+  seatId: string;
+  seatCode: string;
+  seatClass: string;
+  fareAmount: number;
+  status: TicketStatus;
+  passengerTripStatus: PassengerTripStatus;
+  createdAt: string;
+};

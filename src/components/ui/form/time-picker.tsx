@@ -186,7 +186,7 @@ export const TimePicker = forwardRef<HTMLButtonElement, TimePickerProps>(
                     <span className="pb-1 text-center text-[10.5px] font-bold uppercase tracking-wide text-[var(--slate-400)]">
                       Giờ
                     </span>
-                    <div className="flex max-h-[200px] flex-col gap-0.5 overflow-y-auto pr-0.5">
+                    <div className="scroll-area flex max-h-[200px] flex-col gap-0.5 overflow-y-auto pr-0.5">
                       {HOURS.map((item) => (
                         <button
                           key={item}
@@ -207,7 +207,7 @@ export const TimePicker = forwardRef<HTMLButtonElement, TimePickerProps>(
                     <span className="pb-1 text-center text-[10.5px] font-bold uppercase tracking-wide text-[var(--slate-400)]">
                       Phút
                     </span>
-                    <div className="flex max-h-[200px] flex-col gap-0.5 overflow-y-auto pr-0.5">
+                    <div className="scroll-area flex max-h-[200px] flex-col gap-0.5 overflow-y-auto pr-0.5">
                       {minuteOptions.map((item) => (
                         <button
                           key={item}

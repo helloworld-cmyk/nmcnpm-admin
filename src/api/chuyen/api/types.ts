@@ -1,3 +1,5 @@
+import type { BookingStatus, TicketResponse } from "@/api/booking/types";
+
 /* Kiểu dữ liệu chuyến xe dùng chung cho các endpoint quản lý /bus-companies/{id}/trips. */
 
 /* Trạng thái vận hành của chuyến. */
@@ -11,22 +13,6 @@ export type TripStatus =
 
 /* Trạng thái mở bán của chuyến. */
 export type TripSalesStatus = "CLOSED" | "OPEN" | "PAUSED";
-
-/* Điểm dừng đã được chụp vào lịch trình chuyến. */
-export type TripStopResponse = {
-  id: string;
-  stopId: string;
-  areaId: string;
-  areaCode: string;
-  areaName: string;
-  sequenceNo: number;
-  name: string;
-  address: string;
-  plannedArrivalAt: string | null;
-  plannedDepartureAt: string | null;
-  pickupAllowed: boolean | null;
-  dropoffAllowed: boolean | null;
-};
 
 /* Thông tin chuyến xe của hãng. */
 export type TripResponse = {
@@ -49,7 +35,6 @@ export type TripResponse = {
   baseFareAmount: number;
   status: TripStatus;
   salesStatus: TripSalesStatus;
-  stops: TripStopResponse[];
   createdAt: string;
   updatedAt: string;
 };
@@ -69,4 +54,40 @@ export type UpdateTripPayload = {
   departureAt?: string;
   expectedArrivalAt?: string;
   bookingCutoffAt?: string;
+};
+
+/* Tham số lọc danh sách chuyến; tất cả đều tùy chọn. */
+export type ListTripsQuery = {
+  date?: string;
+  status?: TripStatus;
+  routeId?: string;
+  assignmentStatus?: "ASSIGNED" | "UNASSIGNED";
+};
+
+/* Phân công xe và tài xế hiện tại của chuyến. */
+export type TripAssignmentResponse = {
+  tripId: string;
+  vehicleId: string | null;
+  driverId: string | null;
+  driverName: string | null;
+  driverPhone: string | null;
+  assignedAt: string | null;
+};
+
+/* Body gán hoặc thay xe và tài xế cho chuyến. */
+export type AssignTripPayload = {
+  vehicleId: string;
+  driverId: string;
+};
+
+/* Một đặt vé kèm danh sách hành khách và ghế trên chuyến. */
+export type TripPassengerBookingResponse = {
+  id: string;
+  bookingCode: string;
+  status: BookingStatus;
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  createdAt: string;
+  passengers: TicketResponse[];
 };

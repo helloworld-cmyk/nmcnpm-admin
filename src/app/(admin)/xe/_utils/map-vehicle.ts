@@ -28,6 +28,7 @@ export function mapVehicle(vehicle: VehicleResponse): Xe {
     bienSo: vehicle.plateNumber,
     loaiXe: vehicle.vehicleModel,
     soCho: vehicle.passengerCapacity,
+    seatLayoutId: vehicle.seatLayoutId,
     taiXeId: null,
     taiXe: null,
     trangThai: STATUS_TO_TRANG_THAI[vehicle.status],

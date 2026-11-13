@@ -17,6 +17,7 @@ import type {
   XeDriverOption,
   XeFormValues,
 } from "../_data/vehicles";
+import type { XeSeatTarget } from "../_data/seats";
 import {
   XE_TRANG_THAI_TO_STATUS,
   mapVehicles,
@@ -56,6 +57,7 @@ export function useXeBoard() {
   const [overrides, setOverrides] = useState<Record<string, Partial<Xe>>>({});
   const [formTarget, setFormTarget] = useState<XeFormTarget | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Xe | null>(null);
+  const [seatTarget, setSeatTarget] = useState<XeSeatTarget | null>(null);
   const [toast, setToast] = useState<ToastData | null>(null);
 
   const search = useXeFiltersStore((s) => s.search);
@@ -208,6 +210,8 @@ export function useXeBoard() {
     setFormTarget,
     deleteTarget,
     setDeleteTarget,
+    seatTarget,
+    setSeatTarget,
     toast,
     setToast,
     handleSave,

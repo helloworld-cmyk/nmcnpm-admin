@@ -1,0 +1,69 @@
+/* Style riêng màn Quản lý tuyến: tinh chỉnh bảng trên nền .table dùng chung
+   và chế độ thẻ dọc cho bảng trên màn nhỏ (áp dụng cho mọi ô của bảng). */
+
+.td-table {
+  min-width: 920px;
+}
+
+.td-table thead th {
+  padding: 13px 14px;
+}
+
+.td-table tbody td {
+  padding: 14px;
+}
+
+@media (max-width: 640px) {
+  .td-table {
+    min-width: 0;
+  }
+
+  .td-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .td-table tbody tr {
+    display: grid;
+    gap: 9px;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .td-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .td-table tbody td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 0;
+    border: 0;
+  }
+
+  .td-table tbody td::before {
+    content: attr(data-label);
+    flex: none;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--slate-500);
+  }
+
+  .td-table tbody td[data-label="Tuyến"] {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .td-table tbody td[data-label="Tuyến"]::before {
+    margin-bottom: 3px;
+  }
+}

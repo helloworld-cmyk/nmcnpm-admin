@@ -305,6 +305,20 @@ render từ state thay cho gán `.textContent`, và class gom vào hằng số k
 - Zustand chỉ giữ client state (form, filter, UI); không duplicate dữ liệu
   server vào store nếu chỉ để hiển thị.
 
+### 6.4. Tính năng "điểm dừng" — ĐÃ BỎ HOÀN TOÀN (KHÔNG TÁI TẠO)
+
+- Mọi thứ liên quan đến **điểm dừng (stops / điểm đón-trả của hãng)** đã bị xóa
+  khỏi dự án vì không cần thiết: domain API `src/api/diem-dung/` (list, create),
+  endpoint thay điểm dừng của tuyến (`replace-route-stops` + hook tanstack),
+  các type `StopResponse`/`RouteStop*`/`TripStopResponse` và trường `stops`
+  trong `RouteResponse`/`TripResponse`, modal/cột "Điểm dừng" ở màn tuyến đường.
+- **Tuyến đường chỉ cần: điểm đi – điểm đến, quãng đường, thời lượng, giá vé,
+  trạng thái. Chuyến xe chỉ cần: lịch trình theo tuyến, không quản lý điểm
+  dừng.**
+- CẤM tạo lại bất kỳ API, type, UI, store hay mock nào liên quan đến điểm dừng.
+  Nếu backend trả về trường `stops` thì bỏ qua, không map vào view-model và
+  không hiển thị.
+
 ---
 
 ## 7. Cấu trúc thư mục dự án
@@ -359,15 +373,16 @@ nmcnpm-admin/
         ├── favicon.ico
         ├── (auth)/            #   Đăng nhập quản trị (route group, URL "/")
         │   ├── page.tsx
-        │   └── _components/   #     auth.css, login-form.tsx
-        ├── tong-quan/         #   (sẽ tạo) Tổng quan — dashboard
-        ├── chuyen/            #   (sẽ tạo) Quản lý chuyến
-        ├── don-dat/           #   (sẽ tạo) Quản lý đơn đặt
-        ├── tai-xe/            #   (sẽ tạo) Quản lý tài xế
-        ├── xe/                #   (sẽ tạo) Quản lý xe
-        ├── tuyen-duong/       #   (sẽ tạo) Quản lý tuyến đường
-        ├── khach-hang/        #   (sẽ tạo) Quản lý khách hàng
-        └── doanh-thu/         #   (sẽ tạo) Doanh thu
+        │   ├── _components/   #     auth.css, login-form.tsx
+        │   └── _hooks/        #     use-login-form.ts
+        ├── tong-quan/         #   Tổng quan — dashboard (_components/ + _hooks/)
+        ├── chuyen/            #   Quản lý chuyến (_components/ + _hooks/ + _utils/ + _data/)
+        ├── don-dat/           #   Quản lý đơn đặt (_components/)
+        ├── tai-xe/            #   Quản lý tài xế (_components/ + _hooks/ + _utils/ + _data/)
+        ├── xe/                #   Quản lý xe (_components/ + _hooks/ + _utils/ + _data/)
+        ├── tuyen-duong/       #   Quản lý tuyến đường (_components/ + _hooks/ + _utils/ + _data/)
+        ├── khach-hang/        #   Quản lý khách hàng (_components/ + _hooks/ + _utils/ + _data/)
+        └── doanh-thu/         #   Doanh thu (_components/ + _hooks/ + _utils/ + _data/)
 ```
 
 ### 7.1. Quy ước theo cấu trúc
@@ -376,6 +391,8 @@ nmcnpm-admin/
   trong folder con bắt đầu bằng `_` (Next.js bỏ qua khi định tuyến):
   `_components/` (component riêng), `_hooks/` (hook riêng), `_utils/`
   (hàm tiện ích riêng), `_data/` (dữ liệu mock/thumbnail).
+- State + nghiệp vụ của route phải nằm trong `_hooks/use-*.ts`; **không viết
+  custom hook hoặc nhồi logic state vào file component** (xem §7.3).
 - Route mới → tạo folder cùng cấp trong `src/app/`, lấy màn tương ứng trong
   `design/admin/screens/` làm tham chiếu bố cục (bảng §7.2).
 - Component dùng chung ≥2 route → `src/components/` (phân vai theo folder trên);
@@ -407,6 +424,61 @@ nmcnpm-admin/
   `src/components/layout/admin-shell.tsx` dùng chung các route đã đăng nhập.
 - Đăng nhập thành công điều hướng tới `/tong-quan` (xem `REDIRECT_PATH` trong
   `login-form.tsx`).
+
+### 7.3. Tách hook khỏi UI — `_hooks/` (BẮT BUỘC)
+
+> Nguyên tắc: **component chỉ render UI.** Mọi state + nghiệp vụ (truy vấn API,
+> lọc/sắp xếp/phân trang, validate form, handler gọi mutation, toast, focus lỗi)
+> phải nằm trong custom hook ở `src/app/<route>/_hooks/`. File component
+> `_components/*.tsx` không được chứa khối logic dài trộn lẫn JSX.
+
+- **Vị trí & đặt tên**
+  - Hook riêng của 1 route → `src/app/<route>/_hooks/use-<ten>.ts`; file bắt
+    đầu bằng `"use client"` và export `use<Ten>`.
+  - 1 hook/1 file, tên file kebab-case (`use-tai-xe-board.ts`,
+    `use-xe-form.ts`...).
+  - Hook dùng chung ≥2 route → `src/hooks/use-<ten>.ts` (chỉ tạo khi thực sự
+    dùng chéo; không copy-paste hook giữa các route).
+- **Được phép trong hook**: `useState`/`useReducer`, `useEffect`, `useMemo`,
+  `useCallback`, `useRef`, hook react-query (`use*` trong
+  `src/api/<domain>/tanstack/`), đọc Zustand store, logic validate, tính toán
+  view-model, handler async gọi mutation + invalidate + toast.
+- **Không được trong hook**: JSX/markup, import component UI, class Tailwind.
+  Kiểu dữ liệu dùng chung của route đặt ở `_data/` hoặc `_utils/` — **không
+  import type từ `_components/` vào `_hooks/`** (tránh phụ thuộc ngược).
+- **Component sau khi tách** chỉ còn:
+  - gọi đúng 1 hook nghiệp vụ (`use<Route>Board`, `use<X>Form`...);
+  - render JSX + các sub-component presentational (EmptyState/ErrorState...);
+  - truyền handler/ref do hook trả về.
+- **Mẫu đặt tên theo vai trò**
+  - Container màn (board/dashboard): `use-<route>-board.ts`
+    (`use-tai-xe-board.ts`, `use-xe-board.ts`, `use-tuyen-duong-board.ts`,
+    `use-khach-hang-board.ts`, `use-chuyen-board.ts`,
+    `use-tong-quan-dashboard.ts`).
+  - Form trong modal: `use-<x>-form.ts` (`use-chuyen-form.ts`,
+    `use-xe-form.ts`, `use-tai-xe-form.ts`, `use-tuyen-duong-form.ts`).
+  - Báo cáo/xuất dữ liệu: `use-doanh-thu-report.ts`, `use-doanh-thu-export.ts`.
+- State dùng chung nhiều component/route vẫn đưa vào Zustand store
+  `src/global-states/` theo §5; hook route chỉ đọc store, không tạo Context.
+- Khi thêm/sửa màn: **tách hook trước, viết UI sau.** Nếu thấy file component
+  có nhiều `useState`/`useEffect`/handler rải rác, tách phần đó ra hook mới
+  thay vì tiếp tục nhồi vào component.
+- **Join response từ nhiều API:** nếu một endpoint thiếu trường cần thiết,
+  được phép gọi thêm endpoint khác (thường là API master dữ liệu — hãng xe,
+  tài xế, xe, tuyến đường, khách hàng, điểm đến/điểm đi…) để join dữ liệu vào
+  response-model tại hook. Nguyên tắc:
+  - Chỉ join để bổ sung dữ liệu hiển thị, không tự ý tạo logic nghiệp vụ.
+  - Ưu tiên gọi API master dùng `key` ngoại vi (vd. `id_tai_xe`, `id_xe`,
+    `id_tuyen`, `id_khach_hang`, `id_hang_xe`) đã có sẵn trong response.
+  - Thực hiện gọi song song (parallel) các request độc lập; nếu cần join
+    danh sách → gọi 1 API list duy nhất rồi map theo tập ID, tránh gọi N
+    request cho N bản ghi.
+  - Map kết quả join vào view-model trong hook (hoặc `useMemo`), không sửa
+    payload gốc của API đã gọi.
+  - Với dữ liệu master ít thay đổi → cache trong react-query (queryKey riêng
+    cho từng master) để giảm số lần gọi.
+  - Khi join thất bại (lỗi HTTP, network), vẫn giữ hiển thị record với các
+    trường có sẵn; chỉ để trống hoặc placeholder cho trường bị thiếu.
 
 ---
 

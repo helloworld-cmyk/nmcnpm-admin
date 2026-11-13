@@ -16,6 +16,17 @@ export type ApiEnvelope<T> = {
   wsResponse: T;
 };
 
+/* Một trang kết quả phân trang của backend; page bắt đầu từ 0. */
+export type PageResponse<T> = {
+  content: T[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+};
+
 /* Lỗi nghiệp vụ đã được interceptor bóc khỏi envelope hoặc lỗi HTTP. */
 export class ApiError extends Error {
   code: number;
