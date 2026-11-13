@@ -6,16 +6,20 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAssignTrip } from "@/api/chuyen/tanstack/use-assign-trip";
 import { useCreateTrip } from "@/api/chuyen/tanstack/use-create-trip";
 import { usePublishTrip } from "@/api/chuyen/tanstack/use-publish-trip";
+import { useTripAssignments } from "@/api/chuyen/tanstack/use-trip-assignments";
 import { useTrips } from "@/api/chuyen/tanstack/use-trips";
 import { useUpdateTrip } from "@/api/chuyen/tanstack/use-update-trip";
 import type {
   CreateTripPayload,
   UpdateTripPayload,
 } from "@/api/chuyen/api/types";
+import { useDriverTripStatuses } from "@/api/tai-xe/tanstack/use-driver-trip-statuses";
 import { useDrivers } from "@/api/tai-xe/tanstack/use-drivers";
 import { useRoutes } from "@/api/tuyen-duong/tanstack/use-routes";
 import { useVehicles } from "@/api/xe/tanstack/use-vehicles";
+import type { VehicleResponse } from "@/api/xe/api/types";
 import type { RouteResponse } from "@/api/tuyen-duong/api/types";
+import { routeLabel, routeLabelWithStation } from "@/utils/route-label";
 import type { ToastData } from "@/components/ui/toast";
 import { useCompanyStore } from "@/global-states/company-store";
 import { useChuyenFiltersStore } from "@/global-states/chuyen-filters-store";
@@ -33,6 +37,7 @@ import {
 } from "../_data/chuyen";
 import type { ChuyenFormValues } from "./use-chuyen-form";
 import {
+  applyTripAssignment,
   buildDepartureAt,
   buildExpectedArrivalAt,
   mapTrips,
@@ -52,7 +57,7 @@ export function useChuyenBoard() {
 
   const tripsQuery = useTrips(companyId);
   const routesQuery = useRoutes(companyId);
-  const vehiclesQuery = useVehicles(companyId, { status: "ACTIVE" });
+  const vehiclesQuery = useVehicles(companyId);
   const driversQuery = useDrivers(companyId, { status: "ACTIVE", size: 100 });
   const queryClient = useQueryClient();
   const createTrip = useCreateTrip(companyId);
@@ -84,7 +89,7 @@ export function useChuyenBoard() {
     () =>
       routes.map((route) => ({
         value: route.id,
-        label: `${route.name} · ${route.distanceKm} km · ${route.durationMinutes} phút`,
+        label: `${routeLabel(route.originAreaName, route.destinationAreaName)} · ${route.distanceKm} km · ${route.durationMinutes} phút`,
       })),
     [routes]
   );
@@ -97,18 +102,28 @@ export function useChuyenBoard() {
     return map;
   }, [routes]);
 
-  /* Lựa chọn xe + tài xế lấy từ API /vehicles và /drivers (chỉ lấy đang hoạt động). */
+  /* Danh sách xe đầy đủ dùng để ghép phân công; options chỉ lấy xe đang hoạt động. */
   const xeOptions: XeOption[] = useMemo(
     () =>
-      (vehiclesQuery.data ?? []).map((vehicle) => ({
-        value: vehicle.id,
-        label: `${vehicle.plateNumber} · ${vehicle.passengerCapacity} chỗ · ${vehicle.vehicleModel}`,
-        plateNumber: vehicle.plateNumber,
-        model: vehicle.vehicleModel,
-        capacity: vehicle.passengerCapacity,
-      })),
+      (vehiclesQuery.data ?? [])
+        .filter((vehicle) => vehicle.status === "ACTIVE")
+        .map((vehicle) => ({
+          value: vehicle.id,
+          label: `${vehicle.plateNumber} · ${vehicle.passengerCapacity} chỗ · ${vehicle.vehicleModel}`,
+          plateNumber: vehicle.plateNumber,
+          model: vehicle.vehicleModel,
+          capacity: vehicle.passengerCapacity,
+        })),
     [vehiclesQuery.data]
   );
+
+  const vehicleById = useMemo(() => {
+    const map: Record<string, VehicleResponse> = {};
+    (vehiclesQuery.data ?? []).forEach((vehicle) => {
+      map[vehicle.id] = vehicle;
+    });
+    return map;
+  }, [vehiclesQuery.data]);
 
   const taixeOptions: TaiXeOption[] = useMemo(
     () =>
@@ -137,13 +152,47 @@ export function useChuyenBoard() {
     return map;
   }, [taixeOptions]);
 
-  /* Dữ liệu thật từ API, đắp thêm các thay đổi cục bộ của thao tác backend chưa hỗ trợ. */
+  /*
+   * API danh sách chuyến không trả phân công. Ghép thêm 2 nguồn:
+   * - /trips/{id}/assignments → xe + tài xế của từng chuyến;
+   * - /drivers/{id}/trips → trạng thái nhận lệnh (ASSIGNED/ACCEPTED/…).
+   */
+  const tripIds = useMemo(
+    () => (tripsQuery.data ?? []).map((trip) => trip.id),
+    [tripsQuery.data]
+  );
+  const assignmentByTripId = useTripAssignments(companyId, tripIds);
+  const driverIds = useMemo(() => {
+    const ids = new Set<string>();
+    Object.values(assignmentByTripId).forEach((assignment) => {
+      if (assignment.driverId) ids.add(assignment.driverId);
+    });
+    return Array.from(ids);
+  }, [assignmentByTripId]);
+  const assignmentStatusByTripId = useDriverTripStatuses(companyId, driverIds);
+
+  /* Dữ liệu thật từ API, đắp thêm phân công và các thay đổi cục bộ. */
   const trips = useMemo(() => {
-    const mapped = mapTrips(tripsQuery.data ?? []);
+    const mapped = mapTrips(tripsQuery.data ?? []).map((trip) => {
+      const assignment = assignmentByTripId[trip.id];
+      if (!assignment) return trip;
+      return applyTripAssignment(
+        trip,
+        assignment,
+        assignment.vehicleId ? vehicleById[assignment.vehicleId] : undefined,
+        assignmentStatusByTripId[trip.id]
+      );
+    });
     return mapped.map((trip) =>
       overrides[trip.id] ? { ...trip, ...overrides[trip.id] } : trip
     );
-  }, [tripsQuery.data, overrides]);
+  }, [
+    tripsQuery.data,
+    assignmentByTripId,
+    assignmentStatusByTripId,
+    vehicleById,
+    overrides,
+  ]);
 
   const counts = useMemo(() => {
     const result: Record<string, number> = { all: trips.length };
@@ -267,7 +316,7 @@ export function useChuyenBoard() {
   const closeCancel = useCallback(() => setCancelMa(null), []);
   const closeSuco = useCallback(() => setSucoState(null), []);
 
-  /* Đắp các trường backend chưa lưu được (tuyến, tài xế, xe, giá). */
+  /* Đắp các trường backend chưa lưu được (tuyến, tài xế, xe). */
   const applyLocalOverride = useCallback(
     (
       tripId: string,
@@ -275,9 +324,11 @@ export function useChuyenBoard() {
       route: RouteResponse | null,
       trip: ChuyenRecord | null
     ) => {
-      const tuyenName = route?.name ?? trip?.tuyen ?? "";
+      const tuyenName = route
+        ? routeLabel(route.originAreaName, route.destinationAreaName)
+        : (trip?.tuyen ?? "");
       const tuyenPhu = route
-        ? `BX ${route.originAreaName} → BX ${route.destinationAreaName}`
+        ? routeLabelWithStation(route.originAreaName, route.destinationAreaName)
         : (trip?.tuyenPhu ?? "");
       const xe = values.xe ? (xeById[values.xe] ?? null) : null;
       const taixe = values.taixe ? (taixeById[values.taixe] ?? null) : null;
@@ -295,7 +346,6 @@ export function useChuyenBoard() {
         xeBienSo: xe?.plateNumber ?? null,
         xeLoai: xe ? `${xe.model} · ${xe.capacity} chỗ` : null,
         sucChua,
-        giaVe: values.gia,
         lenh: values.taixe && values.xe ? (trip?.lenh ?? "chua-nhan") : null,
       });
     },
@@ -309,8 +359,15 @@ export function useChuyenBoard() {
       const departureAt = buildDepartureAt(values.ngay, values.gio);
       const expectedArrivalAt = buildExpectedArrivalAt(departureAt, durationMinutes);
 
-      const invalidate = () =>
+      const invalidate = () => {
         queryClient.invalidateQueries({ queryKey: ["company-trips", companyId] });
+        queryClient.invalidateQueries({
+          queryKey: ["company-trip-assignment", companyId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["company-driver-trips", companyId],
+        });
+      };
 
       const finishOk = (message: string) => {
         setFormState(null);
@@ -478,6 +535,31 @@ export function useChuyenBoard() {
     [trips, setOverride]
   );
 
+  /* Công bố chuyến nháp (chuyển SCHEDULED, bật mở bán). */
+  const handlePublish = useCallback(
+    (tripId: string) => {
+      publishTrip.mutate(tripId, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["company-trips", companyId] });
+          queryClient.invalidateQueries({
+            queryKey: ["company-trip-assignment", companyId],
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["company-driver-trips", companyId],
+          });
+          setToast({ message: "Chuyến đã được công bố và mở bán vé.", type: "success" });
+        },
+        onError: (error) => {
+          setToast({
+            message: `Không thể công bố chuyến: ${error.message}`,
+            type: "error",
+          });
+        },
+      });
+    },
+    [publishTrip, companyId, queryClient, setToast]
+  );
+
   return {
     companyId,
     companyHydrated,
@@ -518,5 +600,6 @@ export function useChuyenBoard() {
     handleConfirmCancel,
     handleSucoNhan,
     handleSucoKetQua,
+    handlePublish,
   };
 }

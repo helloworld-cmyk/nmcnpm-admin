@@ -35,7 +35,6 @@ function toFormState(target: ChuyenFormTarget): ChuyenFormFields {
       gio: trip.gio,
       xe: trip.xeId ?? "",
       taixe: trip.taixeId ?? "",
-      gia: String(trip.giaVe),
     };
   }
   const prefill = target.prefill ?? {};
@@ -45,7 +44,6 @@ function toFormState(target: ChuyenFormTarget): ChuyenFormFields {
     gio: prefill.gio ?? "",
     xe: prefill.xe ?? "",
     taixe: prefill.taixe ?? "",
-    gia: "",
   };
 }
 

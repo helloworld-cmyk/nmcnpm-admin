@@ -129,9 +129,9 @@ export function useTuyenDuongBoard() {
   };
 
   const handleFormSave = async (values: TuyenDuongFormValues) => {
+    /* Không gửi `name`: BE tự sinh tên tuyến từ điểm đi – điểm đến. */
     const payload = {
       code: values.code,
-      name: values.name,
       originAreaId: values.originAreaId,
       destinationAreaId: values.destinationAreaId,
       distanceKm: values.km,

@@ -1,11 +1,9 @@
 "use client";
 
-import { Icon } from "@/components/icons/icon";
 import {
   DatePicker,
   FormField,
   Select,
-  TextInput,
   TimePicker,
 } from "@/components/ui/form";
 import type {
@@ -59,7 +57,6 @@ export function ChuyenFormBody({
     gioRef,
     xeRef,
     taixeRef,
-    giaRef,
     khiLabel,
     availNote,
     busyXe,
@@ -196,29 +193,6 @@ export function ChuyenFormBody({
             ]}
           />
         </FormField>
-
-        <FormField
-          id="fGiaVe"
-          label="Giá vé mỗi ghế (đ)"
-          required
-          invalid={invalid.gia}
-        >
-          <TextInput
-            ref={giaRef}
-            id="fGiaVe"
-            name="gia"
-            type="number"
-            icon="i-wallet"
-            min={0}
-            step={1000}
-            inputMode="numeric"
-            placeholder="Ví dụ: 180000"
-            aria-invalid={invalid.gia}
-            invalid={invalid.gia}
-            value={values.gia}
-            onChange={(event) => updateField("gia", event.target.value)}
-          />
-        </FormField>
       </div>
 
       <section
@@ -255,14 +229,6 @@ export function ChuyenFormBody({
           {availNote}
         </p>
       </section>
-
-      <p className="flex items-center gap-2 text-[12px] leading-[1.5] text-[var(--slate-500)]">
-        <Icon
-          name="i-shield"
-          className="icon h-4 w-4 flex-none text-[var(--sky-600)]"
-        />
-        Giá vé dùng để tính lãi gộp ở màn Doanh thu.
-      </p>
 
       <p
         className={`form-status${status ? " is-error" : ""}`}

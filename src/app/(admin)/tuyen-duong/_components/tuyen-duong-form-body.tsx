@@ -10,6 +10,8 @@ import { useTuyenDuongForm } from "../_hooks/use-tuyen-duong-form";
 const FIELD_GRID_CLASS =
   "td-form-grid grid gap-3.5 [grid-template-columns:1fr_1fr] max-[520px]:[grid-template-columns:1fr]";
 
+const FULL_ROW_CLASS = "[grid-column:1/-1]";
+
 type TuyenDuongFormBodyProps = {
   initial: TuyenDuongFormState;
   isEdit: boolean;
@@ -39,13 +41,12 @@ export function TuyenDuongFormBody({
     updateField,
     handleSubmit,
     codeRef,
-    nameRef,
     originRef,
     destinationRef,
     kmRef,
     minRef,
     priceRef,
-  } = useTuyenDuongForm({ initial, excludeId, routes, areas, onSave });
+  } = useTuyenDuongForm({ initial, excludeId, routes, onSave });
 
   return (
     <form className="grid gap-3.5" noValidate onSubmit={handleSubmit}>
@@ -54,6 +55,7 @@ export function TuyenDuongFormBody({
           id="td-rf-code"
           label="Mã tuyến"
           required
+          className={FULL_ROW_CLASS}
           invalid={invalid.code}
         >
           <TextInput
@@ -66,20 +68,6 @@ export function TuyenDuongFormBody({
             invalid={invalid.code}
             value={values.code}
             onChange={(event) => updateField("code", event.target.value)}
-          />
-        </FormField>
-
-        <FormField id="td-rf-name" label="Tên tuyến" invalid={invalid.name}>
-          <TextInput
-            ref={nameRef}
-            id="td-rf-name"
-            type="text"
-            placeholder="Bỏ trống để tự sinh từ điểm đi – điểm đến"
-            autoComplete="off"
-            aria-invalid={invalid.name}
-            invalid={invalid.name}
-            value={values.name}
-            onChange={(event) => updateField("name", event.target.value)}
           />
         </FormField>
 
@@ -184,7 +172,7 @@ export function TuyenDuongFormBody({
           id="td-rf-price"
           label="Giá vé cơ bản (đ)"
           required
-          className="[grid-column:1/-1]"
+          className={FULL_ROW_CLASS}
           invalid={invalid.price}
         >
           <TextInput

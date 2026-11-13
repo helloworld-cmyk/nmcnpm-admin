@@ -8,6 +8,7 @@ import type {
   DashboardTripPointResponse,
   IncidentStatus,
 } from "@/api/tong-quan/api/types";
+import { routeLabel, routeLabelWithStation } from "@/utils/route-label";
 
 import type { ChartPoint, StatKpi, TrendTone } from "../_data/tong-quan";
 
@@ -212,8 +213,11 @@ export function mapTodayTrips(
     return {
       id: trip.tripId,
       code: trip.tripCode,
-      routeName: trip.routeName,
-      routeSub: `${trip.originAreaName} → ${trip.destinationAreaName}`,
+      routeName: routeLabel(trip.originAreaName, trip.destinationAreaName),
+      routeSub: routeLabelWithStation(
+        trip.originAreaName,
+        trip.destinationAreaName
+      ),
       time: timeLabel(trip.departureAt),
       driver: driverLabel(trip),
       vehicle: trip.vehiclePlate ?? "—",

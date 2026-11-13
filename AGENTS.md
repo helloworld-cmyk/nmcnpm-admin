@@ -482,6 +482,16 @@ nmcnpm-admin/
 
 ---
 
+## 8. Tài khoản test local
+
+> Chỉ dùng cho DB/backend local của dự án cá nhân này (không phải production).
+> Khi cần đăng nhập để test UI, dùng tài khoản admin dưới đây.
+
+- Email: `hello676913@gmail.com`
+- Mật khẩu: `9ASUtkN@ki34s85`
+
+---
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know

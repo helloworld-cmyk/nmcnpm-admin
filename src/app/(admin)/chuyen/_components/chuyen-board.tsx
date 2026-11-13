@@ -55,6 +55,7 @@ export function ChuyenBoard() {
     handleConfirmCancel,
     handleSucoNhan,
     handleSucoKetQua,
+    handlePublish,
   } = useChuyenBoard();
 
   const renderBody = () => {
@@ -115,6 +116,7 @@ export function ChuyenBoard() {
         onEdit={openEdit}
         onCancel={openCancelFromTable}
         onReset={handleReset}
+        onPublish={handlePublish}
       />
     );
   };

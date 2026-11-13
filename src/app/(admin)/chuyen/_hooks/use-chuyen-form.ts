@@ -20,7 +20,6 @@ export type ChuyenFormFields = {
   gio: string;
   xe: string;
   taixe: string;
-  gia: string;
 };
 
 export type ChuyenFormValues = {
@@ -29,7 +28,6 @@ export type ChuyenFormValues = {
   gio: string;
   xe: string;
   taixe: string;
-  gia: number;
 };
 
 type UseChuyenFormOptions = {
@@ -51,7 +49,6 @@ const REQUIRED_FIELDS: {
   { key: "gio", label: "Giờ khởi hành", test: (v) => !v.gio },
   { key: "xe", label: "Xe", test: (v) => !v.xe },
   { key: "taixe", label: "Tài xế", test: (v) => !v.taixe },
-  { key: "gia", label: "Giá vé mỗi ghế", test: (v) => !v.gia },
 ];
 
 export function useChuyenForm({
@@ -71,7 +68,6 @@ export function useChuyenForm({
   const gioRef = useRef<HTMLButtonElement>(null);
   const xeRef = useRef<HTMLButtonElement>(null);
   const taixeRef = useRef<HTMLButtonElement>(null);
-  const giaRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     tuyenRef.current?.focus();
@@ -93,9 +89,6 @@ export function useChuyenForm({
         break;
       case "taixe":
         taixeRef.current?.focus();
-        break;
-      case "gia":
-        giaRef.current?.focus();
         break;
     }
   };
@@ -165,8 +158,6 @@ export function useChuyenForm({
     });
     setInvalid(nextInvalid);
 
-    const gia = Number(values.gia);
-
     if (missing.length > 0) {
       setStatus(
         `Vui lòng điền đủ dữ liệu bắt buộc: ${missing
@@ -190,7 +181,6 @@ export function useChuyenForm({
       gio: values.gio,
       xe: values.xe,
       taixe: values.taixe,
-      gia,
     });
   };
 
@@ -205,7 +195,6 @@ export function useChuyenForm({
     gioRef,
     xeRef,
     taixeRef,
-    giaRef,
     khiLabel,
     availNote,
     busyXe,

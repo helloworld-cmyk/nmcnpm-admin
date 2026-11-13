@@ -3,6 +3,7 @@ import type {
   CompanyCustomerResponse,
 } from "@/api/khach-hang/api/types";
 import type { TicketResponse } from "@/api/booking/types";
+import { routeLabel } from "@/utils/route-label";
 
 import type { HangThanhVien, KhachHang, TrangThaiVe, VeDaDat } from "../_data/customers";
 
@@ -76,7 +77,10 @@ export function mapCustomerDetail(
   const lichSuVe: VeDaDat[] = detail.bookings.flatMap((booking) =>
     booking.tickets.map((ticket) => ({
       maVe: ticket.ticketCode,
-      tuyen: booking.trip.routeName,
+      tuyen: routeLabel(
+        booking.trip.originAreaName,
+        booking.trip.destinationAreaName
+      ),
       thoiGian: formatDate(booking.trip.departureAt),
       daThuTien: ticket.status === "CONFIRMED",
       ghe: ticket.seatCode,

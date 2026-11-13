@@ -23,10 +23,9 @@ export type RouteResponse = {
   updatedAt: string;
 };
 
-/* Body tạo tuyến mới (POST /bus-companies/{id}/routes). */
+/* Body tạo tuyến mới (POST /bus-companies/{id}/routes). Không gửi `name` — BE tự sinh từ 2 khu vực. */
 export type CreateRoutePayload = {
   code: string;
-  name: string;
   originAreaId: string;
   destinationAreaId: string;
   distanceKm: number;
@@ -34,10 +33,9 @@ export type CreateRoutePayload = {
   baseFareAmount: number;
 };
 
-/* Body cập nhật tuyến; trường không gửi được giữ nguyên. */
+/* Body cập nhật tuyến; trường không gửi được giữ nguyên. Không gửi `name` — BE tự sinh từ 2 khu vực. */
 export type UpdateRoutePayload = {
   code?: string;
-  name?: string;
   originAreaId?: string;
   destinationAreaId?: string;
   distanceKm?: number;

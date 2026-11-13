@@ -13,7 +13,6 @@ export type TuyenDuong = {
 
 export type TuyenDuongFormValues = {
   code: string;
-  name: string;
   originAreaId: string;
   destinationAreaId: string;
   km: number;

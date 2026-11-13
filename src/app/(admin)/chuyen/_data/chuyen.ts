@@ -43,6 +43,8 @@ export type ChuyenRecord = {
   giaVe: number;
   congTaiXe: number;
   trangThai: TrangThaiChuyen;
+  /* true khi backend đã công bố (status ≠ DRAFT) — điều khiển nút "Công bố" trên bảng. */
+  daCongBo: boolean;
   lenh: LenhPhanCong | null;
   /* Thời lượng tuyến (phút), suy ra từ departureAt → expectedArrivalAt của backend. */
   thoiLuong: number;
@@ -222,6 +224,17 @@ export const isoSangNhanNgan = (ngayISO: string) => {
   const [, m, d] = ngayISO.split("-");
   return `${d}/${m}`;
 };
+
+/* Mốc khởi hành (ngày ISO + giờ HH:mm) theo giờ địa phương. */
+export const mocKhoiHanh = (ngayISO: string, gio: string) => {
+  const [y, m, d] = ngayISO.split("-").map(Number);
+  const [h, mi] = gio.split(":").map(Number);
+  return new Date(y, m - 1, d, h, mi, 0, 0);
+};
+
+/* Chuyến chưa tới giờ khởi hành — chỉ chuyến như vậy mới còn công bố mở bán. */
+export const chuaKhoiHanh = (trip: ChuyenRecord) =>
+  mocKhoiHanh(trip.ngayISO, trip.gio).getTime() > Date.now();
 
 export const taoMaChuyen = (trips: ChuyenRecord[]) => {
   const maxSo = trips.reduce((so, trip) => {

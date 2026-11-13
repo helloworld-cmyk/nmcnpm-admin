@@ -36,6 +36,7 @@ import { PercentIcon } from "./percent";
 import { PhoneIcon } from "./phone";
 import { PinIcon } from "./pin";
 import { PlusIcon } from "./plus";
+import { PublishIcon } from "./publish";
 import { RefreshIcon } from "./refresh";
 import { RouteIcon } from "./route";
 import { SearchIcon } from "./search";
@@ -92,6 +93,7 @@ const registry = {
   "i-phone": PhoneIcon,
   "i-pin": PinIcon,
   "i-plus": PlusIcon,
+  "i-publish": PublishIcon,
   "i-refresh": RefreshIcon,
   "i-route": RouteIcon,
   "i-search": SearchIcon,

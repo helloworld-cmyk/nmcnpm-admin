@@ -247,6 +247,22 @@ select {
   transform: translateY(0);
 }
 
+.btn-sky {
+  background: var(--sky-700);
+  color: #fff;
+  box-shadow: 0 10px 24px -14px rgba(3, 105, 161, 0.9);
+}
+
+.btn-sky:hover {
+  background: var(--sky-600);
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px -14px rgba(3, 105, 161, 0.95);
+}
+
+.btn-sky:active {
+  transform: translateY(0);
+}
+
 .btn-ghost {
   background: #fff;
   border: 1px solid var(--border);
@@ -257,6 +273,19 @@ select {
   background: var(--sky-50);
   border-color: var(--sky-300);
   color: var(--sky-700);
+}
+
+.btn-sky {
+  background: var(--sky-500);
+  color: #fff;
+}
+
+.btn-sky:hover {
+  background: var(--sky-600);
+}
+
+.btn-sky:active {
+  background: var(--sky-700);
 }
 
 .btn-sm {

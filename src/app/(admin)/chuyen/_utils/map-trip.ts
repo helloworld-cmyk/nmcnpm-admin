@@ -1,13 +1,17 @@
 import type { PassengerTripStatus } from "@/api/booking/types";
 import type {
+  DriverAssignmentStatus,
   TripAssignmentResponse,
   TripPassengerBookingResponse,
   TripResponse,
 } from "@/api/chuyen/api/types";
+import type { VehicleResponse } from "@/api/xe/api/types";
+import { routeLabel, routeLabelWithStation } from "@/utils/route-label";
 
 import {
   isoSangNhan,
   type ChuyenRecord,
+  type LenhPhanCong,
   type TrangThaiChuyen,
   type VeItem,
 } from "../_data/chuyen";
@@ -62,8 +66,11 @@ export function mapTrip(trip: TripResponse): ChuyenRecord {
     ngayISO,
     gio,
     tuyenId: trip.routeId,
-    tuyen: trip.routeName,
-    tuyenPhu: `BX ${trip.originAreaName} → BX ${trip.destinationAreaName}`,
+    tuyen: routeLabel(trip.originAreaName, trip.destinationAreaName),
+    tuyenPhu: routeLabelWithStation(
+      trip.originAreaName,
+      trip.destinationAreaName
+    ),
     /* Không có nguồn dữ liệu ở backend — giữ an toàn, cập nhật cục bộ khi cần. */
     taixeId: null,
     taixe: null,
@@ -75,6 +82,8 @@ export function mapTrip(trip: TripResponse): ChuyenRecord {
     daDat: 0,
     giaVe: trip.baseFareAmount,
     congTaiXe: 0,
+    /* DRAFT = chưa công bố (nháp), các trạng khác = đã công bố. */
+    daCongBo: trip.status !== "DRAFT",
     trangThai: STATUS_TO_TRANG_THAI[trip.status],
     lenh: null,
     thoiLuong: thoiLuongPhut(trip.departureAt, trip.expectedArrivalAt),
@@ -84,6 +93,55 @@ export function mapTrip(trip: TripResponse): ChuyenRecord {
 
 export function mapTrips(trips: TripResponse[]): ChuyenRecord[] {
   return trips.map(mapTrip);
+}
+
+/* Trạng thái phân công của backend → trạng thái "lệnh" hiển thị trên bảng chuyến. */
+const LENH_THEO_TRANG_THAI: Record<
+  DriverAssignmentStatus,
+  LenhPhanCong | null
+> = {
+  ASSIGNED: "chua-nhan",
+  ACCEPTED: "da-nhan",
+  PREPARING: "da-nhan",
+  ARRIVED: "co-mat",
+  COMPLETED: "co-mat",
+  REJECTED: null,
+  REPLACED: null,
+};
+
+export function lenhTuTrangThaiPhanCong(
+  status: DriverAssignmentStatus | null | undefined
+): LenhPhanCong | null {
+  return status ? LENH_THEO_TRANG_THAI[status] : null;
+}
+
+/*
+ * Ghép phân công xe + tài xế (và trạng thái nhận lệnh) vào chuyến.
+ * Phân công REJECTED/REPLACED được backend coi như chưa phân công.
+ */
+export function applyTripAssignment(
+  trip: ChuyenRecord,
+  assignment: TripAssignmentResponse,
+  vehicle: VehicleResponse | undefined,
+  assignmentStatus: DriverAssignmentStatus | undefined
+): ChuyenRecord {
+  if (!assignment.driverId || !assignment.driverName) return trip;
+  if (assignmentStatus === "REJECTED" || assignmentStatus === "REPLACED") {
+    return trip;
+  }
+
+  return {
+    ...trip,
+    taixeId: assignment.driverId,
+    taixe: assignment.driverName,
+    xeId: assignment.vehicleId,
+    xeBienSo: vehicle?.plateNumber ?? null,
+    xeLoai: vehicle
+      ? `${vehicle.vehicleModel} · ${vehicle.passengerCapacity} chỗ`
+      : null,
+    sucChua: vehicle?.passengerCapacity ?? trip.sucChua,
+    lenh: lenhTuTrangThaiPhanCong(assignmentStatus) ?? "chua-nhan",
+  };
 }
 
 /* Ghép ngày (yyyy-mm-dd) + giờ (HH:mm) của form thành mốc ISO gửi backend. */

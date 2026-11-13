@@ -11,6 +11,7 @@ import {
   LENH_HIENTHI,
   SO_DONG_MOI_TRANG,
   TRANG_THAI_HIENTHI,
+  chuaKhoiHanh,
   dinhDangTien,
   isoSangNhanNgan,
   isoSangNhanSub,
@@ -72,6 +73,7 @@ type ChuyenTableProps = {
   onEdit: (trip: ChuyenRecord) => void;
   onCancel: (ma: string) => void;
   onReset: () => void;
+  onPublish: (tripId: string) => void;
 };
 
 export function ChuyenTable({
@@ -83,6 +85,7 @@ export function ChuyenTable({
   onEdit,
   onCancel,
   onReset,
+  onPublish,
 }: ChuyenTableProps) {
   const sortKey = useChuyenFiltersStore((s) => s.sortKey);
   const sortDir = useChuyenFiltersStore((s) => s.sortDir);
@@ -277,6 +280,20 @@ export function ChuyenTable({
                       >
                         Chi tiết
                       </button>
+                      {!trip.daCongBo &&
+                        trip.trangThai === "sap-toi" &&
+                        chuaKhoiHanh(trip) && (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-sky"
+                            title="Công bố chuyến — bật mở bán vé"
+                            aria-label={`Công bố chuyến ${trip.ma}`}
+                            onClick={() => onPublish(trip.id)}
+                          >
+                            <Icon name="i-publish" />
+                            Công bố
+                          </button>
+                        )}
                       {trip.trangThai === "sap-toi" && (
                         <>
                           <button

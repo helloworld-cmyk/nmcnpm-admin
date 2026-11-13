@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import type { AreaResponse } from "@/api/area/api/get-areas";
 import { ApiError } from "@/api/types";
 import type { RouteResponse } from "@/api/tuyen-duong/api/types";
 import type { TuyenDuongFormValues } from "../_data/tuyen-duong";
@@ -16,7 +15,6 @@ type UseTuyenDuongFormOptions = {
   initial: TuyenDuongFormState;
   excludeId?: string;
   routes: RouteResponse[];
-  areas: AreaResponse[];
   onSave: (values: TuyenDuongFormValues) => Promise<void>;
 };
 
@@ -28,7 +26,6 @@ function errorMessage(error: unknown): string {
 
 const EMPTY_INVALID: TuyenDuongFormInvalid = {
   code: false,
-  name: false,
   origin: false,
   destination: false,
   km: false,
@@ -44,7 +41,6 @@ export function useTuyenDuongForm({
   initial,
   excludeId,
   routes,
-  areas,
   onSave,
 }: UseTuyenDuongFormOptions) {
   const [values, setValues] = useState<TuyenDuongFormState>(initial);
@@ -53,7 +49,6 @@ export function useTuyenDuongForm({
   const [saving, setSaving] = useState(false);
 
   const codeRef = useRef<HTMLInputElement>(null);
-  const nameRef = useRef<HTMLInputElement>(null);
   const originRef = useRef<HTMLButtonElement>(null);
   const destinationRef = useRef<HTMLButtonElement>(null);
   const kmRef = useRef<HTMLInputElement>(null);
@@ -76,24 +71,22 @@ export function useTuyenDuongForm({
   const focusFirstInvalid = (next: TuyenDuongFormInvalid) => {
     const firstRef = next.code
       ? codeRef
-      : next.name
-        ? nameRef
-        : next.origin
-          ? originRef
-          : next.destination
-            ? destinationRef
-            : next.km
-              ? kmRef
-              : next.min
-                ? minRef
-                : priceRef;
+      : next.origin
+        ? originRef
+        : next.destination
+          ? destinationRef
+          : next.km
+            ? kmRef
+            : next.min
+              ? minRef
+              : priceRef;
     firstRef.current?.focus();
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const result = validateTuyenDuongForm(values, routes, areas, excludeId);
+    const result = validateTuyenDuongForm(values, routes, excludeId);
     setInvalid(result.invalid);
 
     if (!result.values) {
@@ -120,7 +113,6 @@ export function useTuyenDuongForm({
     updateField,
     handleSubmit,
     codeRef,
-    nameRef,
     originRef,
     destinationRef,
     kmRef,

@@ -14,6 +14,16 @@ export type TripStatus =
 /* Trạng thái mở bán của chuyến. */
 export type TripSalesStatus = "CLOSED" | "OPEN" | "PAUSED";
 
+/* Trạng thái phân công tài xế của chuyến. */
+export type DriverAssignmentStatus =
+  | "ASSIGNED"
+  | "ACCEPTED"
+  | "REJECTED"
+  | "PREPARING"
+  | "ARRIVED"
+  | "COMPLETED"
+  | "REPLACED";
+
 /* Thông tin chuyến xe của hãng. */
 export type TripResponse = {
   id: string;
