@@ -11,7 +11,7 @@ function formatUpdated(value: string): string {
 }
 
 /* Map một tuyến từ backend sang view-model dùng bởi bảng/modal. */
-export function mapRoute(route: RouteResponse): TuyenDuong {
+export function mapRoute(route: RouteResponse, trips = 0): TuyenDuong {
   return {
     id: route.id,
     code: route.code,
@@ -21,12 +21,15 @@ export function mapRoute(route: RouteResponse): TuyenDuong {
     min: route.durationMinutes,
     price: route.baseFareAmount,
     active: route.status === "ACTIVE",
-    trips: 0,
+    trips,
     updated: formatUpdated(route.updatedAt),
   };
 }
 
-/* Map danh sách tuyến từ backend. */
-export function mapRoutes(routes: RouteResponse[]): TuyenDuong[] {
-  return routes.map(mapRoute);
+/* Map danh sách tuyến; đắp số chuyến theo tuyến từ API /trips (join theo id). */
+export function mapRoutes(
+  routes: RouteResponse[],
+  tripCountByRoute: Record<string, number> = {}
+): TuyenDuong[] {
+  return routes.map((route) => mapRoute(route, tripCountByRoute[route.id] ?? 0));
 }

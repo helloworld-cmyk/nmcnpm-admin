@@ -74,9 +74,7 @@ function isHangGplx(value: string): value is GplxHang {
 }
 
 export function validateTaiXeForm(
-  state: TaiXeFormState,
-  drivers: TaiXe[],
-  excludeId?: string
+  state: TaiXeFormState
 ): TaiXeFormValidation {
   const fullName = state.fullName.trim();
   const phone = digitsOnly(state.phone);
@@ -96,14 +94,6 @@ export function validateTaiXeForm(
   if (!PHONE_PATTERN.test(phone)) {
     invalid.phone = true;
     errors.push("SĐT chưa hợp lệ (bắt đầu bằng 0, gồm 10–11 chữ số).");
-  } else {
-    const duplicated = drivers.some(
-      (driver) => driver.id !== excludeId && digitsOnly(driver.soDienThoai) === phone
-    );
-    if (duplicated) {
-      invalid.phone = true;
-      errors.push("SĐT đã tồn tại trong đội tài xế.");
-    }
   }
 
   if (email && !EMAIL_PATTERN.test(email)) {

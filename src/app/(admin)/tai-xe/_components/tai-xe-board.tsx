@@ -28,15 +28,19 @@ export function TaiXeBoard() {
     drivers,
     totalElements,
     pageCount,
-    safePage,
+    page,
     start,
     detailTrips,
+    detailTaiXe,
+    detailLoading,
     formTarget,
     setFormTarget,
     detail,
     setDetail,
+    confirmTarget,
     confirmMode,
-    setConfirmMode,
+    openConfirm,
+    closeConfirm,
     credential,
     setCredential,
     credentialSubtitle,
@@ -47,6 +51,9 @@ export function TaiXeBoard() {
     handleConfirm,
     openStatusConfirm,
   } = useTaiXeBoard();
+
+  /* Ưu tiên bản ghi tươi từ API chi tiết; dòng bảng chỉ là fallback khi đang tải. */
+  const activeDetail = detailTaiXe ?? detail;
 
   const renderBody = () => {
     if (!companyHydrated) {
@@ -87,8 +94,9 @@ export function TaiXeBoard() {
           totalCount={totalElements}
           rangeStart={totalElements > 0 ? start + 1 : 0}
           rangeEnd={start + drivers.length}
-          page={safePage}
+          page={page}
           pageCount={pageCount}
+          refreshing={isFetching && !isLoading}
           onEdit={(taiXe) => setFormTarget({ mode: "edit", taiXe })}
           onToggleStatus={openStatusConfirm}
           onOpenDetail={(taiXe) => setDetail(taiXe)}
@@ -127,34 +135,41 @@ export function TaiXeBoard() {
 
       <TaiXeFormModal
         target={formTarget}
-        drivers={drivers}
         saving={saving}
         onClose={() => setFormTarget(null)}
         onSave={handleSave}
       />
 
       <TaiXeDetailModal
-        taiXe={detail}
+        taiXe={activeDetail}
+        loading={detailLoading}
         trips={detailTrips.data?.content ?? []}
         tripsLoading={detailTrips.isLoading}
         tripsError={detailTrips.isError}
         onClose={() => setDetail(null)}
         onEditRequest={() => {
-          if (!detail) return;
-          setFormTarget({ mode: "edit", taiXe: detail });
+          if (!activeDetail) return;
+          setFormTarget({ mode: "edit", taiXe: activeDetail });
           setDetail(null);
         }}
-        onResetRequest={() => setConfirmMode("reset")}
-        onToggleStatus={() =>
-          setConfirmMode(detail?.trangThai === "locked" ? "unlock" : "lock")
-        }
+        onResetRequest={() => {
+          if (activeDetail) openConfirm("reset", activeDetail);
+        }}
+        onToggleStatus={() => {
+          if (activeDetail) {
+            openConfirm(
+              activeDetail.trangThai === "locked" ? "unlock" : "lock",
+              activeDetail
+            );
+          }
+        }}
       />
 
       <TaiXeConfirmModal
         mode={confirmMode}
-        taiXe={detail}
+        taiXe={confirmTarget}
         saving={saving}
-        onClose={() => setConfirmMode(null)}
+        onClose={closeConfirm}
         onConfirm={handleConfirm}
       />
 

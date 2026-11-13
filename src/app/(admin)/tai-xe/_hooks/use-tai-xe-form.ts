@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import type { TaiXe, TaiXeFormValues } from "../_data/tai-xe";
+import type { TaiXeFormValues } from "../_data/tai-xe";
 import {
   validateTaiXeForm,
   type TaiXeFormInvalid,
@@ -11,8 +11,6 @@ import {
 
 type UseTaiXeFormOptions = {
   initial: TaiXeFormState;
-  drivers: TaiXe[];
-  excludeId?: string;
   saving: boolean;
   onSave: (values: TaiXeFormValues) => void;
 };
@@ -23,8 +21,6 @@ type UseTaiXeFormOptions = {
  */
 export function useTaiXeForm({
   initial,
-  drivers,
-  excludeId,
   saving,
   onSave,
 }: UseTaiXeFormOptions) {
@@ -76,7 +72,7 @@ export function useTaiXeForm({
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (saving) return;
-    const result = validateTaiXeForm(values, drivers, excludeId);
+    const result = validateTaiXeForm(values);
     setInvalid(result.invalid);
 
     if (!result.values) {

@@ -1,9 +1,10 @@
 "use client";
 
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
 
 import { useCreateDriver } from "@/api/tai-xe/tanstack/use-create-driver";
+import { useDriver } from "@/api/tai-xe/tanstack/use-driver";
 import { useDriverTrips } from "@/api/tai-xe/tanstack/use-driver-trips";
 import { useDrivers } from "@/api/tai-xe/tanstack/use-drivers";
 import { useResetDriverPassword } from "@/api/tai-xe/tanstack/use-reset-driver-password";
@@ -14,7 +15,7 @@ import { ApiError } from "@/api/types";
 import type { ToastData } from "@/components/ui/toast";
 import { useCompanyStore } from "@/global-states/company-store";
 import { useTaiXeFiltersStore } from "@/global-states/tai-xe-filters-store";
-import { mapDrivers } from "../_utils/map-driver";
+import { mapDriver, mapDrivers } from "../_utils/map-driver";
 import { TAI_XE_PAGE_SIZE, computePageCount } from "../_utils/tai-xe-list";
 import type {
   TaiXeConfirmMode,
@@ -50,7 +51,9 @@ export function useTaiXeBoard() {
       status: trangThai || undefined,
       page: page - 1,
       size: TAI_XE_PAGE_SIZE,
-    }
+    },
+    /* Giữ dữ liệu trang trước khi đổi lọc/tìm kiếm → bảng không nhấp nháy. */
+    { placeholderData: keepPreviousData }
   );
 
   const createDriver = useCreateDriver(companyId);
@@ -60,6 +63,7 @@ export function useTaiXeBoard() {
 
   const [formTarget, setFormTarget] = useState<TaiXeFormTarget | null>(null);
   const [detail, setDetail] = useState<TaiXe | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<TaiXe | null>(null);
   const [confirmMode, setConfirmMode] = useState<TaiXeConfirmMode | null>(null);
   const [credential, setCredential] =
     useState<CompanyDriverCredentialResponse | null>(null);
@@ -74,15 +78,22 @@ export function useTaiXeBoard() {
     computePageCount(totalElements, TAI_XE_PAGE_SIZE),
     data?.totalPages ?? 1
   );
-  const safePage = Math.min(page, pageCount);
-
+  /* `page` (nguồn duy nhất) được dùng cho cả query lẫn range; khi vượt pageCount
+     effect sẽ kéo về trang cuối → query và range luôn cùng nhịp. */
   useEffect(() => {
     if (page > pageCount) setPage(pageCount);
   }, [page, pageCount, setPage]);
 
-  const start = (safePage - 1) * TAI_XE_PAGE_SIZE;
+  const start = (page - 1) * TAI_XE_PAGE_SIZE;
 
   const detailTrips = useDriverTrips(companyId, detail?.id ?? "", 0, 5);
+
+  /* Chi tiết tài xế luôn lấy dữ liệu tươi từ API khi mở modal (tránh stale). */
+  const detailQuery = useDriver(companyId, detail?.id ?? "");
+  const detailTaiXe = useMemo(
+    () => (detailQuery.data ? mapDriver(detailQuery.data) : null),
+    [detailQuery.data]
+  );
 
   const invalidate = () => {
     void queryClient.invalidateQueries({
@@ -92,7 +103,24 @@ export function useTaiXeBoard() {
       void queryClient.invalidateQueries({
         queryKey: ["company-driver-trips", companyId, detail.id],
       });
+      void queryClient.invalidateQueries({
+        queryKey: ["company-driver", companyId, detail.id],
+      });
     }
+  };
+
+  const openConfirm = (mode: TaiXeConfirmMode, taiXe: TaiXe) => {
+    setConfirmTarget(taiXe);
+    setConfirmMode(mode);
+  };
+
+  const closeConfirm = () => {
+    setConfirmMode(null);
+    setConfirmTarget(null);
+  };
+
+  const openStatusConfirm = (taiXe: TaiXe) => {
+    openConfirm(taiXe.trangThai === "locked" ? "unlock" : "lock", taiXe);
   };
 
   const handleSave = async (values: TaiXeFormValues) => {
@@ -130,12 +158,13 @@ export function useTaiXeBoard() {
   };
 
   const handleConfirm = async (note: string) => {
-    if (!companyId || !detail || !confirmMode) return;
+    if (!companyId || !confirmTarget || !confirmMode) return;
+    const target = confirmTarget;
     setSaving(true);
     try {
       if (confirmMode === "reset") {
         const result = await resetDriverPassword.mutateAsync({
-          driverId: detail.id,
+          driverId: target.id,
           payload: { note: note.trim() || undefined },
         });
         setCredentialSubtitle(
@@ -143,39 +172,38 @@ export function useTaiXeBoard() {
         );
         setCredential(result);
         setToast({
-          message: `Đã đặt lại mật khẩu cho ${detail.ten}.`,
+          message: `Đã đặt lại mật khẩu cho ${target.ten}.`,
           type: "success",
         });
       } else {
         const status = confirmMode === "lock" ? "LOCKED" : "ACTIVE";
         await updateDriverStatus.mutateAsync({
-          driverId: detail.id,
+          driverId: target.id,
           payload: { status, note: note.trim() || undefined },
         });
-        setDetail({
-          ...detail,
-          trangThai: confirmMode === "lock" ? "locked" : "active",
-        });
+        setDetail((prev) =>
+          prev && prev.id === target.id
+            ? {
+                ...prev,
+                trangThai: confirmMode === "lock" ? "locked" : "active",
+              }
+            : prev
+        );
         setToast({
           message:
             confirmMode === "lock"
-              ? `Đã khóa tài khoản của ${detail.ten}.`
-              : `Đã mở khóa tài khoản của ${detail.ten}.`,
+              ? `Đã khóa tài khoản của ${target.ten}.`
+              : `Đã mở khóa tài khoản của ${target.ten}.`,
           type: "success",
         });
       }
       invalidate();
-      setConfirmMode(null);
+      closeConfirm();
     } catch (err) {
       setToast({ message: apiMessage(err), type: "error" });
     } finally {
       setSaving(false);
     }
-  };
-
-  const openStatusConfirm = (taiXe: TaiXe) => {
-    setDetail(taiXe);
-    setConfirmMode(taiXe.trangThai === "locked" ? "unlock" : "lock");
   };
 
   return {
@@ -189,15 +217,19 @@ export function useTaiXeBoard() {
     drivers,
     totalElements,
     pageCount,
-    safePage,
+    page,
     start,
     detailTrips,
+    detailTaiXe,
+    detailLoading: detailQuery.isFetching,
     formTarget,
     setFormTarget,
     detail,
     setDetail,
+    confirmTarget,
     confirmMode,
-    setConfirmMode,
+    openConfirm,
+    closeConfirm,
     credential,
     setCredential,
     credentialSubtitle,

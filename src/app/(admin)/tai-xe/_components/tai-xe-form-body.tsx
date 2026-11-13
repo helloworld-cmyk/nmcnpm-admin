@@ -6,11 +6,7 @@ import {
   Select,
   TextInput,
 } from "@/components/ui/form";
-import {
-  GPLX_HANG_OPTIONS,
-  type TaiXe,
-  type TaiXeFormValues,
-} from "../_data/tai-xe";
+import { GPLX_HANG_OPTIONS, type TaiXeFormValues } from "../_data/tai-xe";
 import type { TaiXeFormState } from "../_utils/tai-xe-form";
 import { useTaiXeForm } from "../_hooks/use-tai-xe-form";
 
@@ -28,8 +24,6 @@ const FOOTER_CLASS = [
 type TaiXeFormBodyProps = {
   initial: TaiXeFormState;
   isEdit: boolean;
-  excludeId?: string;
-  drivers: TaiXe[];
   saving: boolean;
   onClose: () => void;
   onSave: (values: TaiXeFormValues) => void;
@@ -38,8 +32,6 @@ type TaiXeFormBodyProps = {
 export function TaiXeFormBody({
   initial,
   isEdit,
-  excludeId,
-  drivers,
   saving,
   onClose,
   onSave,
@@ -56,7 +48,7 @@ export function TaiXeFormBody({
     licenseNumberRef,
     licenseClassRef,
     licenseExpiresOnRef,
-  } = useTaiXeForm({ initial, drivers, excludeId, saving, onSave });
+  } = useTaiXeForm({ initial, saving, onSave });
 
   return (
     <form className="grid gap-3.5" noValidate onSubmit={handleSubmit}>

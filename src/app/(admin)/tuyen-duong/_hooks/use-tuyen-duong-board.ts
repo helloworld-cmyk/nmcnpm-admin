@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { useAreas } from "@/api/area/tanstack/use-areas";
+import { useTrips } from "@/api/chuyen/tanstack/use-trips";
 import { useCreateRoute } from "@/api/tuyen-duong/tanstack/use-create-route";
 import { useRoutes } from "@/api/tuyen-duong/tanstack/use-routes";
 import { useUpdateRoute } from "@/api/tuyen-duong/tanstack/use-update-route";
@@ -30,11 +31,14 @@ function apiMessage(error: unknown): string {
  */
 export function useTuyenDuongBoard() {
   const companyId = useCompanyStore((s) => s.companyId) ?? "";
+  const companyHydrated = useCompanyStore((s) => s.hydrated);
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error, isFetching, refetch } =
     useRoutes(companyId);
   const { data: areas } = useAreas();
+  /* Số chuyến mỗi tuyến: backend không trả trong RouteResponse nên join từ /trips. */
+  const tripsQuery = useTrips(companyId);
 
   const createRoute = useCreateRoute(companyId);
   const updateRoute = useUpdateRoute(companyId);
@@ -43,8 +47,19 @@ export function useTuyenDuongBoard() {
   const [pauseTarget, setPauseTarget] = useState<TuyenDuong | null>(null);
   const [toast, setToast] = useState<ToastData | null>(null);
 
+  const tripCountByRoute = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const trip of tripsQuery.data ?? []) {
+      counts[trip.routeId] = (counts[trip.routeId] ?? 0) + 1;
+    }
+    return counts;
+  }, [tripsQuery.data]);
+
   const rawRoutes = useMemo(() => data ?? [], [data]);
-  const routes = useMemo(() => mapRoutes(rawRoutes), [rawRoutes]);
+  const routes = useMemo(
+    () => mapRoutes(rawRoutes, tripCountByRoute),
+    [rawRoutes, tripCountByRoute]
+  );
 
   const search = useTuyenDuongFiltersStore((s) => s.search);
   const trangThai = useTuyenDuongFiltersStore((s) => s.trangThai);
@@ -152,6 +167,7 @@ export function useTuyenDuongBoard() {
 
   return {
     companyId,
+    companyHydrated,
     isLoading,
     isError,
     isFetching,

@@ -267,7 +267,7 @@ export function useChuyenBoard() {
   const closeCancel = useCallback(() => setCancelMa(null), []);
   const closeSuco = useCallback(() => setSucoState(null), []);
 
-  /* Đắp các trường backend chưa lưu được (tuyến, tài xế, xe, ghế, giá, công, ghi chú). */
+  /* Đắp các trường backend chưa lưu được (tuyến, tài xế, xe, giá). */
   const applyLocalOverride = useCallback(
     (
       tripId: string,
@@ -294,11 +294,8 @@ export function useChuyenBoard() {
         xeId: values.xe || null,
         xeBienSo: xe?.plateNumber ?? null,
         xeLoai: xe ? `${xe.model} · ${xe.capacity} chỗ` : null,
-        soChoMo: values.ghe,
         sucChua,
         giaVe: values.gia,
-        congTaiXe: values.cong ?? 0,
-        ghiChu: values.ghichu || undefined,
         lenh: values.taixe && values.xe ? (trip?.lenh ?? "chua-nhan") : null,
       });
     },

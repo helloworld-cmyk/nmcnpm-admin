@@ -15,6 +15,7 @@ export function mapDriver(driver: CompanyDriverResponse): TaiXe {
     hanGplx: driver.licenseExpiresOn,
     trips30Days: driver.tripCount30Days,
     trangThai: driver.status === "ACTIVE" ? "active" : "locked",
+    statusNote: driver.statusNote ?? "",
     ngayTao: formatNgay(driver.createdAt),
   };
 }

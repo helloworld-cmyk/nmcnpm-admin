@@ -1,7 +1,7 @@
 "use client";
 
 import { Modal } from "@/components/ui/modal";
-import type { TaiXe, TaiXeFormValues } from "../_data/tai-xe";
+import type { TaiXeFormValues } from "../_data/tai-xe";
 import {
   EMPTY_TAI_XE_FORM,
   toTaiXeFormState,
@@ -11,7 +11,6 @@ import { TaiXeFormBody } from "./tai-xe-form-body";
 
 type TaiXeFormModalProps = {
   target: TaiXeFormTarget | null;
-  drivers: TaiXe[];
   saving: boolean;
   onClose: () => void;
   onSave: (values: TaiXeFormValues) => void;
@@ -24,7 +23,6 @@ const TITLE_HINT_CLASS = [
 
 export function TaiXeFormModal({
   target,
-  drivers,
   saving,
   onClose,
   onSave,
@@ -63,10 +61,6 @@ export function TaiXeFormModal({
         }
         initial={initial}
         isEdit={Boolean(isEdit)}
-        excludeId={
-          target && target.mode === "edit" ? target.taiXe.id : undefined
-        }
-        drivers={drivers}
         saving={saving}
         onClose={onClose}
         onSave={onSave}

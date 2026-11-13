@@ -19,6 +19,8 @@ export type TaiXe = {
   hanGplx: string;
   trips30Days: number;
   trangThai: TaiXeTrangThai;
+  /* Ghi chú kèm theo lần khóa/mở khóa gần nhất (backend trả về, có thể rỗng). */
+  statusNote: string;
   ngayTao: string;
 };
 
@@ -84,4 +86,10 @@ export function soNgayConLai(hanIso: string): number {
 export function laSapHetHan(hanIso: string): boolean {
   const left = soNgayConLai(hanIso);
   return !Number.isNaN(left) && left >= 0 && left <= GPLX_WARNING_DAYS;
+}
+
+/* GPLX đã quá hạn (số ngày còn lại âm). */
+export function daHetHan(hanIso: string): boolean {
+  const left = soNgayConLai(hanIso);
+  return !Number.isNaN(left) && left < 0;
 }

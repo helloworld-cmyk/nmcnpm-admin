@@ -5,15 +5,18 @@ import { Modal } from "@/components/ui/modal";
 import type { CompanyDriverTripResponse } from "@/api/tai-xe/api/types";
 import {
   TRANG_THAI_TAI_XE_LABEL,
+  daHetHan,
   formatNgay,
   laSapHetHan,
   soNgayConLai,
   vietTatHoTen,
   type TaiXe,
 } from "../_data/tai-xe";
+import { tintFor } from "../_utils/tai-xe-avatar";
 
 type TaiXeDetailModalProps = {
   taiXe: TaiXe | null;
+  loading: boolean;
   trips: CompanyDriverTripResponse[];
   tripsLoading: boolean;
   tripsError: boolean;
@@ -67,6 +70,7 @@ function formatDateTime(value: string): string {
 
 export function TaiXeDetailModal({
   taiXe,
+  loading,
   trips,
   tripsLoading,
   tripsError,
@@ -77,7 +81,8 @@ export function TaiXeDetailModal({
 }: TaiXeDetailModalProps) {
   const locked = taiXe?.trangThai === "locked";
   const left = taiXe ? soNgayConLai(taiXe.hanGplx) : Number.NaN;
-  const warn = taiXe ? laSapHetHan(taiXe.hanGplx) : false;
+  const hetHan = taiXe ? daHetHan(taiXe.hanGplx) : false;
+  const warn = taiXe ? !hetHan && laSapHetHan(taiXe.hanGplx) : false;
 
   return (
     <Modal
@@ -87,7 +92,7 @@ export function TaiXeDetailModal({
       title={
         <div className="flex items-center gap-3">
           <span
-            className={`tx-avatar tx-avatar--${locked ? "orange" : "sky"} h-11 w-11 text-[15px]`}
+            className={`tx-avatar tx-avatar--${taiXe ? tintFor(taiXe.id) : "sky"} h-11 w-11 text-[15px]`}
             aria-hidden="true"
           >
             {taiXe ? vietTatHoTen(taiXe.ten) : ""}
@@ -108,6 +113,11 @@ export function TaiXeDetailModal({
     >
       {taiXe && (
         <>
+          {loading ? (
+            <p className="text-[12.5px] font-medium text-[var(--slate-400)]">
+              Đang cập nhật thông tin mới nhất…
+            </p>
+          ) : null}
           <dl className={DETAIL_GRID}>
             <div>
               <dt className={DETAIL_DT}>Số điện thoại</dt>
@@ -127,7 +137,9 @@ export function TaiXeDetailModal({
               <dt className={DETAIL_DT}>Hạn GPLX</dt>
               <dd className={`${DETAIL_DD} flex flex-wrap items-center gap-2`}>
                 <span>{formatNgay(taiXe.hanGplx)}</span>
-                {warn ? (
+                {hetHan ? (
+                  <span className="badge badge--red">Đã hết hạn</span>
+                ) : warn ? (
                   <span className="badge badge--orange">
                     Còn {Math.max(left, 0)} ngày
                   </span>
@@ -143,6 +155,15 @@ export function TaiXeDetailModal({
               <dd className={DETAIL_DD}>{taiXe.ngayTao}</dd>
             </div>
           </dl>
+
+          {taiXe.statusNote ? (
+            <div className="rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--bg)] px-4 py-3">
+              <span className={DETAIL_DT}>Ghi chú trạng thái</span>
+              <p className="mt-1 text-[13.5px] font-medium text-[var(--ink)] [word-break:break-word]">
+                {taiXe.statusNote}
+              </p>
+            </div>
+          ) : null}
 
           <div>
             <h3 className="mb-2.5 text-[15px] font-bold text-[var(--ink)]">

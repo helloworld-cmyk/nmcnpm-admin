@@ -6,13 +6,12 @@ import {
   toXeFormState,
   type XeFormTarget,
 } from "../_utils/xe-form";
-import type { Xe, XeDriverOption, XeFormValues } from "../_data/vehicles";
+import type { Xe, XeFormValues } from "../_data/vehicles";
 import { XeFormBody } from "./xe-form-body";
 
 type XeFormModalProps = {
   target: XeFormTarget | null;
   vehicles: Xe[];
-  driverOptions: XeDriverOption[];
   onClose: () => void;
   onSave: (values: XeFormValues) => void;
 };
@@ -25,7 +24,6 @@ const TITLE_HINT_CLASS = [
 export function XeFormModal({
   target,
   vehicles,
-  driverOptions,
   onClose,
   onSave,
 }: XeFormModalProps) {
@@ -65,7 +63,6 @@ export function XeFormModal({
           target && target.mode === "edit" && target.xe.seatLayoutId
         )}
         vehicles={vehicles}
-        driverOptions={driverOptions}
         onClose={onClose}
         onSave={onSave}
       />

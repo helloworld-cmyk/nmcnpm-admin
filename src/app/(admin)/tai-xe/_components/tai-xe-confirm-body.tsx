@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Icon } from "@/components/icons/icon";
 import { FormField, TextInput } from "@/components/ui/form";
 import type { TaiXe } from "../_data/tai-xe";
@@ -36,8 +37,6 @@ function description(mode: TaiXeConfirmMode, taiXe: TaiXe | null): string {
 type TaiXeConfirmBodyProps = {
   mode: TaiXeConfirmMode | null;
   taiXe: TaiXe | null;
-  note: string;
-  setNote: (note: string) => void;
   saving: boolean;
   onClose: () => void;
   onConfirm: (note: string) => void;
@@ -46,12 +45,12 @@ type TaiXeConfirmBodyProps = {
 export function TaiXeConfirmBody({
   mode,
   taiXe,
-  note,
-  setNote,
   saving,
   onClose,
   onConfirm,
 }: TaiXeConfirmBodyProps) {
+  const [note, setNote] = useState("");
+
   if (!mode) return null;
 
   return (

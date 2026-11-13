@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Modal } from "@/components/ui/modal";
 import type { TaiXe } from "../_data/tai-xe";
 import type { TaiXeConfirmMode } from "../_utils/tai-xe-form";
@@ -29,8 +28,6 @@ export function TaiXeConfirmModal({
   onClose,
   onConfirm,
 }: TaiXeConfirmModalProps) {
-  const [note, setNote] = useState("");
-
   return (
     <Modal
       open={mode !== null && taiXe !== null}
@@ -42,8 +39,6 @@ export function TaiXeConfirmModal({
         key={`${mode}:${taiXe?.id ?? ""}`}
         mode={mode}
         taiXe={taiXe}
-        note={note}
-        setNote={setNote}
         saving={saving}
         onClose={onClose}
         onConfirm={onConfirm}

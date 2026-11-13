@@ -29,7 +29,6 @@ export function XeBoard() {
     errorText,
     refetch,
     vehicles,
-    driverOptions,
     sorted,
     rows,
     stats,
@@ -139,7 +138,6 @@ export function XeBoard() {
       <XeFormModal
         target={formTarget}
         vehicles={vehicles}
-        driverOptions={driverOptions}
         onClose={() => setFormTarget(null)}
         onSave={handleSave}
       />

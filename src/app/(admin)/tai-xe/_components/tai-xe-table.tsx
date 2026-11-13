@@ -5,6 +5,7 @@ import { useTaiXeFiltersStore } from "@/global-states/tai-xe-filters-store";
 import { pageIndexes } from "@/utils/table";
 import {
   TRANG_THAI_TAI_XE_LABEL,
+  daHetHan,
   laSapHetHan,
   vietTatHoTen,
   type TaiXe,
@@ -41,6 +42,7 @@ type TaiXeTableProps = {
   rangeEnd: number;
   page: number;
   pageCount: number;
+  refreshing: boolean;
   onEdit: (taiXe: TaiXe) => void;
   onToggleStatus: (taiXe: TaiXe) => void;
   onOpenDetail: (taiXe: TaiXe) => void;
@@ -53,6 +55,7 @@ export function TaiXeTable({
   rangeEnd,
   page,
   pageCount,
+  refreshing,
   onEdit,
   onToggleStatus,
   onOpenDetail,
@@ -91,7 +94,8 @@ export function TaiXeTable({
           <tbody>
             {rows.map((taiXe) => {
               const locked = taiXe.trangThai === "locked";
-              const sapHetHan = laSapHetHan(taiXe.hanGplx);
+              const hetHan = daHetHan(taiXe.hanGplx);
+              const sapHetHan = !hetHan && laSapHetHan(taiXe.hanGplx);
               return (
                 <tr key={taiXe.id} onClick={() => onOpenDetail(taiXe)}>
                   <td data-label="Tài xế">
@@ -126,7 +130,9 @@ export function TaiXeTable({
                       {new Date(`${taiXe.hanGplx}T00:00:00`).toLocaleDateString(
                         "vi-VN"
                       )}
-                      {sapHetHan ? (
+                      {hetHan ? (
+                        <span className="badge badge--red">Đã hết hạn</span>
+                      ) : sapHetHan ? (
                         <span className="badge badge--orange">Sắp hết hạn</span>
                       ) : null}
                     </span>
@@ -186,6 +192,11 @@ export function TaiXeTable({
       <div className={PAGINATION_BAR}>
         <p className="page-note">
           {`Hiển thị ${rangeStart}–${rangeEnd} của ${totalCount} tài xế`}
+          {refreshing ? (
+            <span className="ml-1.5 font-medium text-[var(--slate-400)]">
+              · đang cập nhật…
+            </span>
+          ) : null}
         </p>
         <nav className="pagination" aria-label="Phân trang danh sách">
           <button

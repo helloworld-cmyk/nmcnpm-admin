@@ -7,7 +7,6 @@ import {
   phutSangGio,
   type ChuyenRecord,
   type TaiXeOption,
-  type XeOption,
 } from "../_data/chuyen";
 import {
   buildBusyMap,
@@ -21,10 +20,7 @@ export type ChuyenFormFields = {
   gio: string;
   xe: string;
   taixe: string;
-  ghe: string;
   gia: string;
-  cong: string;
-  ghichu: string;
 };
 
 export type ChuyenFormValues = {
@@ -33,10 +29,7 @@ export type ChuyenFormValues = {
   gio: string;
   xe: string;
   taixe: string;
-  ghe: number;
   gia: number;
-  cong: number | null;
-  ghichu: string;
 };
 
 type UseChuyenFormOptions = {
@@ -44,7 +37,6 @@ type UseChuyenFormOptions = {
   editingMa: string | null;
   trips: ChuyenRecord[];
   routeDurations?: Record<string, number>;
-  xeOptions: XeOption[];
   taixeOptions: TaiXeOption[];
   onSave: (values: ChuyenFormValues) => void;
 };
@@ -59,7 +51,6 @@ const REQUIRED_FIELDS: {
   { key: "gio", label: "Giờ khởi hành", test: (v) => !v.gio },
   { key: "xe", label: "Xe", test: (v) => !v.xe },
   { key: "taixe", label: "Tài xế", test: (v) => !v.taixe },
-  { key: "ghe", label: "Số ghế mở bán", test: (v) => !v.ghe },
   { key: "gia", label: "Giá vé mỗi ghế", test: (v) => !v.gia },
 ];
 
@@ -68,7 +59,6 @@ export function useChuyenForm({
   editingMa,
   trips,
   routeDurations,
-  xeOptions,
   taixeOptions,
   onSave,
 }: UseChuyenFormOptions) {
@@ -81,7 +71,6 @@ export function useChuyenForm({
   const gioRef = useRef<HTMLButtonElement>(null);
   const xeRef = useRef<HTMLButtonElement>(null);
   const taixeRef = useRef<HTMLButtonElement>(null);
-  const gheRef = useRef<HTMLInputElement>(null);
   const giaRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -105,9 +94,6 @@ export function useChuyenForm({
       case "taixe":
         taixeRef.current?.focus();
         break;
-      case "ghe":
-        gheRef.current?.focus();
-        break;
       case "gia":
         giaRef.current?.focus();
         break;
@@ -120,9 +106,6 @@ export function useChuyenForm({
     setStatus(null);
   };
 
-  const sucChua = values.xe
-    ? (xeOptions.find((option) => option.value === values.xe)?.capacity ?? null)
-    : null;
   const thoiLuong = values.tuyen
     ? (routeDurations?.[values.tuyen] ?? 90)
     : 90;
@@ -182,7 +165,6 @@ export function useChuyenForm({
     });
     setInvalid(nextInvalid);
 
-    const soGhe = Number(values.ghe);
     const gia = Number(values.gia);
 
     if (missing.length > 0) {
@@ -192,12 +174,6 @@ export function useChuyenForm({
           .join(", ")}.`
       );
       focusField(missing[0].key);
-      return;
-    }
-
-    if (sucChua !== null && soGhe > sucChua) {
-      setStatus(`Số ghế mở bán vượt sức chứa xe (tối đa ${sucChua} ghế).`);
-      gheRef.current?.focus();
       return;
     }
 
@@ -214,10 +190,7 @@ export function useChuyenForm({
       gio: values.gio,
       xe: values.xe,
       taixe: values.taixe,
-      ghe: soGhe,
       gia,
-      cong: values.cong ? Number(values.cong) : null,
-      ghichu: values.ghichu.trim(),
     });
   };
 
@@ -232,9 +205,7 @@ export function useChuyenForm({
     gioRef,
     xeRef,
     taixeRef,
-    gheRef,
     giaRef,
-    sucChua,
     khiLabel,
     availNote,
     busyXe,

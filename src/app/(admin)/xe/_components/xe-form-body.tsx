@@ -4,7 +4,6 @@ import { FormField, Select, TextInput } from "@/components/ui/form";
 import {
   XE_TRANG_THAI_OPTIONS,
   type Xe,
-  type XeDriverOption,
   type XeFormValues,
   type XeTrangThai,
 } from "../_data/vehicles";
@@ -28,7 +27,6 @@ type XeFormBodyProps = {
   excludeId?: string;
   capacityLocked: boolean;
   vehicles: Xe[];
-  driverOptions: XeDriverOption[];
   onClose: () => void;
   onSave: (values: XeFormValues) => void;
 };
@@ -39,7 +37,6 @@ export function XeFormBody({
   excludeId,
   capacityLocked,
   vehicles,
-  driverOptions,
   onClose,
   onSave,
 }: XeFormBodyProps) {
@@ -119,21 +116,6 @@ export function XeFormBody({
             invalid={invalid.loaiXe}
             value={values.loaiXe}
             onChange={(event) => updateField("loaiXe", event.target.value)}
-          />
-        </FormField>
-
-        <FormField id="v-tai-xe" label="Tài xế phụ trách">
-          <Select
-            id="v-tai-xe"
-            value={values.taiXe}
-            onChange={(value) => updateField("taiXe", value)}
-            options={[
-              { value: "", label: "— Chưa gán —" },
-              ...driverOptions.map((driver) => ({
-                value: driver.value,
-                label: driver.label,
-              })),
-            ]}
           />
         </FormField>
 
