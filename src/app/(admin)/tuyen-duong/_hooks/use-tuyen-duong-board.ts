@@ -151,30 +151,25 @@ export function useTuyenDuongBoard() {
       baseFareAmount: values.price,
     };
 
-    try {
-      if (formTarget?.mode === "edit") {
-        await updateRoute.mutateAsync({
-          routeId: formTarget.route.id,
-          payload,
-        });
-        setToast({
-          message: `Đã cập nhật tuyến ${values.code}.`,
-          type: "success",
-        });
-      } else {
-        await createRoute.mutateAsync(payload);
-        setPage(1);
-        setToast({
-          message: `Đã thêm tuyến ${values.code}.`,
-          type: "success",
-        });
-      }
-      await invalidateRoutes();
-      setFormTarget(null);
-    } catch (err) {
-      setToast({ message: apiMessage(err), type: "error" });
-      throw err;
+    if (formTarget?.mode === "edit") {
+      await updateRoute.mutateAsync({
+        routeId: formTarget.route.id,
+        payload,
+      });
+      setToast({
+        message: `Đã cập nhật tuyến ${values.code}.`,
+        type: "success",
+      });
+    } else {
+      await createRoute.mutateAsync(payload);
+      setPage(1);
+      setToast({
+        message: `Đã thêm tuyến ${values.code}.`,
+        type: "success",
+      });
     }
+    await invalidateRoutes();
+    setFormTarget(null);
   };
 
   return {

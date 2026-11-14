@@ -101,7 +101,9 @@ export function TuyenDuongFormBody({
             aria-invalid={invalid.code}
             invalid={invalid.code}
             value={values.code}
-            onChange={(event) => updateField("code", event.target.value)}
+            onChange={(event) =>
+              updateField("code", event.target.value.toUpperCase())
+            }
           />
         </FormField>
 

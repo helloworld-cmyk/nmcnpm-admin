@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type XeSortKey = "bienSo" | "soCho" | "taiXe" | "trangThai";
+export type XeSortKey = "bienSo" | "soCho" | "trangThai";
 export type XeSortDir = "asc" | "desc";
 
 type XeFiltersState = {

@@ -67,7 +67,7 @@ export function validateTuyenDuongForm(
   routes: RouteResponse[],
   excludeId?: string
 ): TuyenDuongFormValidation {
-  const code = state.code.trim();
+  const code = state.code.trim().toUpperCase();
   const originAreaId = state.originAreaId;
   const destinationAreaId = state.destinationAreaId;
   const km = Number(state.km);
@@ -83,7 +83,13 @@ export function validateTuyenDuongForm(
   } else if (code.length > 50) {
     invalid.code = true;
     errors.push("Mã tuyến tối đa 50 ký tự.");
-  } else if (routes.some((route) => route.id !== excludeId && route.code === code)) {
+  } else if (
+    routes.some(
+      (route) =>
+        route.id !== excludeId &&
+        route.code.trim().toUpperCase() === code
+    )
+  ) {
     invalid.code = true;
     errors.push(`Mã tuyến ${code} đã tồn tại trong danh mục.`);
   }

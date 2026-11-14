@@ -8,34 +8,26 @@ export type XeStatsData = {
   total: number;
   hoatDong: number;
   baoTri: number;
+  ngungSuDung: number;
 };
 
+/*
+ * Bộ lọc còn lại ở client. Tìm kiếm (`q`) và trạng thái (`status`) đã được
+ * backend lọc sẵn; sức chứa backend chưa hỗ trợ nên vẫn lọc tại client.
+ */
 export type XeFilterValues = {
-  search: string;
   soCho: number | null;
-  trangThai: string;
 };
 
 export const XE_PAGE_SIZE = 6;
 
-export function filterVehicles(
-  vehicles: Xe[],
-  { search, soCho, trangThai }: XeFilterValues
-) {
-  const query = search.trim().toLowerCase();
-  return vehicles.filter((xe) => {
-    const haystack = `${xe.bienSo} ${xe.taiXe ?? ""}`.toLowerCase();
-    return (
-      (!query || haystack.includes(query)) &&
-      (soCho === null || xe.soCho === soCho) &&
-      (!trangThai || xe.trangThai === trangThai)
-    );
-  });
+export function filterVehicles(vehicles: Xe[], { soCho }: XeFilterValues) {
+  if (soCho === null) return vehicles;
+  return vehicles.filter((xe) => xe.soCho === soCho);
 }
 
 function sortValue(xe: Xe, sortKey: XeSortKey) {
   if (sortKey === "bienSo") return xe.bienSo;
-  if (sortKey === "taiXe") return xe.taiXe ?? "";
   return xe.trangThai;
 }
 
@@ -58,10 +50,30 @@ export function computePageCount(totalCount: number) {
   return Math.max(1, Math.ceil(totalCount / XE_PAGE_SIZE));
 }
 
+/*
+ * Danh sách mức sức chứa cho bộ lọc, lấy từ chính dữ liệu xe của hãng thay vì
+ * danh sách cứng (xe có thể có sức chứa bất kỳ: 15, 29, 45...).
+ */
+export function collectSoChoOptions(
+  vehicles: Xe[],
+  selected: number | null
+): number[] {
+  const values = new Set<number>();
+  for (const xe of vehicles) values.add(xe.soCho);
+  if (selected !== null) values.add(selected);
+  return [...values].sort((a, b) => a - b);
+}
+
+/*
+ * Thống kê trên đúng tập xe đang hiển thị. Tổng = Hoạt động + Bảo trì +
+ * Ngưng sử dụng để các thẻ luôn cộng khớp (backend có thể trả xe RETIRED).
+ */
 export function computeXeStats(vehicles: Xe[]): XeStatsData {
   return {
     total: vehicles.length,
     hoatDong: vehicles.filter((xe) => xe.trangThai === "Đang hoạt động").length,
     baoTri: vehicles.filter((xe) => xe.trangThai === "Đang bảo trì").length,
+    ngungSuDung: vehicles.filter((xe) => xe.trangThai === "Ngưng sử dụng")
+      .length,
   };
 }

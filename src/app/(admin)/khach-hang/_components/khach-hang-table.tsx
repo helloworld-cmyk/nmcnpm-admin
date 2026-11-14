@@ -11,6 +11,7 @@ import {
   vietTatHoTen,
   type KhachHang,
 } from "../_data/customers";
+import { tachEmail } from "../_utils/tach-email";
 
 const COLUMNS: {
   label: string;
@@ -131,6 +132,7 @@ export function KhachHangTable({
           <tbody>
             {rows.map((kh) => {
               const locked = kh.trangThai === "locked";
+              const email = tachEmail(kh.email);
               return (
                 <tr key={kh.id} onClick={() => onOpenDetail(kh)}>
                   <td data-label="Khách hàng">
@@ -146,9 +148,20 @@ export function KhachHangTable({
                   </td>
                   <td data-label="Số điện thoại">{kh.soDienThoai}</td>
                   <td data-label="Email">
-                    <span className="text-[13px] [word-break:break-word]">
-                      {kh.email}
-                    </span>
+                    {kh.email ? (
+                      <span className="flex min-w-[150px] flex-col text-[13px] leading-[1.35]">
+                        <span className="[word-break:break-word]">
+                          {email.local}
+                        </span>
+                        {email.domain ? (
+                          <span className="text-[var(--slate-500)] [word-break:break-word]">
+                            {`@${email.domain}`}
+                          </span>
+                        ) : null}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td data-label="Ngày tạo">{kh.ngayTao}</td>
                   <td data-label="Vé đã đặt" className={NUM_CELL}>

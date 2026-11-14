@@ -1,16 +1,19 @@
 import { create } from "zustand";
 
-export type KhachHangSortKey = "ten" | "ngayTao" | "veDaDat";
+import type { UserAccountStatus } from "@/api/khach-hang/api/types";
+
+export type KhachHangSortKey = "ten" | "datGanNhat" | "veDaDat";
 export type KhachHangSortDir = "asc" | "desc";
 
 type KhachHangFiltersState = {
   search: string;
-  trangThai: string;
+  /* Trạng thái tài khoản theo enum của backend; rỗng = mọi trạng thái. */
+  trangThai: UserAccountStatus | "";
   page: number;
   sortKey: KhachHangSortKey | null;
   sortDir: KhachHangSortDir;
   setSearch: (search: string) => void;
-  setTrangThai: (trangThai: string) => void;
+  setTrangThai: (trangThai: UserAccountStatus | "") => void;
   setPage: (page: number) => void;
   toggleSort: (key: KhachHangSortKey) => void;
   reset: () => void;

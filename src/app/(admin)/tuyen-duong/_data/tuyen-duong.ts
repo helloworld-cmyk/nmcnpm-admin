@@ -37,10 +37,42 @@ export function formatDuration(min: number) {
     : `${hours}h`;
 }
 
+const CODE_SEQUENCE = /^(.*?)(\d+)$/;
+
+function matchCodeSequence(
+  code: string
+): { prefix: string; number: number; width: number } | null {
+  const match = CODE_SEQUENCE.exec(code);
+  if (!match) return null;
+  const number = Number(match[2]);
+  if (!Number.isFinite(number)) return null;
+  return { prefix: match[1], number, width: match[2].length };
+}
+
 export function nextRouteCode(codes: string[]) {
-  const max = codes.reduce((current, code) => {
-    const number = Number(code.replace("TUY-", ""));
-    return Number.isFinite(number) && number > current ? number : current;
-  }, 0);
-  return `TUY-${String(max + 1).padStart(2, "0")}`;
+  const normalized = codes.map((code) => code.trim().toUpperCase());
+  const taken = new Set(normalized);
+  const sequences = normalized.flatMap((code) => {
+    const match = matchCodeSequence(code);
+    return match ? [match] : [];
+  });
+  const tuyenSequences = sequences.filter((seq) => seq.prefix === "TUY-");
+  const base = (tuyenSequences.length > 0 ? tuyenSequences : sequences).reduce<{
+    prefix: string;
+    number: number;
+    width: number;
+  } | null>(
+    (best, seq) => (best === null || seq.number > best.number ? seq : best),
+    null
+  );
+
+  const prefix = base?.prefix ?? "TUY-";
+  const width = base?.width ?? 2;
+  let next = (base?.number ?? 0) + 1;
+  let candidate = `${prefix}${String(next).padStart(width, "0")}`;
+  while (taken.has(candidate)) {
+    next += 1;
+    candidate = `${prefix}${String(next).padStart(width, "0")}`;
+  }
+  return candidate;
 }

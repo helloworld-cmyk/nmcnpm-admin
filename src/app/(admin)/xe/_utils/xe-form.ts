@@ -4,7 +4,6 @@ export type XeFormState = {
   bienSo: string;
   loaiXe: string;
   soCho: string;
-  taiXe: string;
   trangThai: XeFormValues["trangThai"];
 };
 
@@ -26,7 +25,6 @@ export const EMPTY_XE_FORM: XeFormState = {
   bienSo: "",
   loaiXe: "",
   soCho: "",
-  taiXe: "",
   trangThai: "Đang hoạt động",
 };
 
@@ -38,7 +36,6 @@ export function toXeFormState(xe: Xe): XeFormState {
     bienSo: xe.bienSo,
     loaiXe: xe.loaiXe,
     soCho: String(xe.soCho),
-    taiXe: xe.taiXeId ?? "",
     trangThai: xe.trangThai,
   };
 }
@@ -92,7 +89,6 @@ export function validateXeForm(
       bienSo,
       loaiXe,
       soCho,
-      taiXeId: state.taiXe || null,
       trangThai: state.trangThai,
     },
     errors: [],
