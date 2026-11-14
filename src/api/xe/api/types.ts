@@ -70,11 +70,11 @@ export type VehicleSeatResponse = {
   columnNo: number;
 };
 
-/* Sơ đồ ghế hiện tại của xe. */
+/* Sơ đồ ghế hiện tại của xe; `seatLayoutId`/`name` là null khi xe chưa cấu hình. */
 export type VehicleSeatLayoutResponse = {
   vehicleId: string;
-  seatLayoutId: string;
-  name: string;
+  seatLayoutId: string | null;
+  name: string | null;
   seats: VehicleSeatResponse[];
 };
 
@@ -105,11 +105,15 @@ export type VehicleDocumentResponse = {
   updatedAt: string;
 };
 
-/* Body thêm hoặc cập nhật giấy tờ xe; trường không gửi được giữ nguyên. */
+/*
+ * Body thêm hoặc cập nhật giấy tờ xe. Backend thay thế toàn bộ bản ghi nên
+ * frontend phải gửi đủ 5 trường; trường muốn xóa gửi `null` (không gửi sẽ bị
+ * backend set null ngoài ý muốn).
+ */
 export type VehicleDocumentPayload = {
-  documentNumber?: string;
-  issuer?: string;
-  description?: string;
-  issuedOn?: string;
-  expiresOn?: string;
+  documentNumber: string | null;
+  issuer: string | null;
+  description: string | null;
+  issuedOn: string | null;
+  expiresOn: string | null;
 };

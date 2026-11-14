@@ -21,10 +21,21 @@ const TAB_COUNT_ACTIVE_CLASS = "bg-white/25 text-white";
 
 type DonDatToolbarProps = {
   counts: CompanyBookingStatusCountsResponse | null;
+  customerId: string | null;
+  customerName: string;
+  customerLoading: boolean;
+  onClearCustomer: () => void;
   onReset: () => void;
 };
 
-export function DonDatToolbar({ counts, onReset }: DonDatToolbarProps) {
+export function DonDatToolbar({
+  counts,
+  customerId,
+  customerName,
+  customerLoading,
+  onClearCustomer,
+  onReset,
+}: DonDatToolbarProps) {
   const tab = useDonDatFiltersStore((s) => s.tab);
   const search = useDonDatFiltersStore((s) => s.search);
   const departureFrom = useDonDatFiltersStore((s) => s.departureFrom);
@@ -35,6 +46,25 @@ export function DonDatToolbar({ counts, onReset }: DonDatToolbarProps) {
 
   return (
     <section className="toolbar" aria-label="Bộ lọc đơn đặt">
+      {customerId ? (
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-[10px] border border-[var(--border-soft)] bg-[var(--sky-50)] px-3 py-2">
+          <Icon name="i-user" className="icon h-4 w-4 text-[var(--sky-700)]" />
+          <span className="text-[12.5px] font-semibold text-[var(--sky-800)]">
+            {customerLoading
+              ? "Đang tải thông tin khách..."
+              : `Đơn của ${customerName || "khách hàng đã chọn"}`}
+          </span>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={onClearCustomer}
+          >
+            <Icon name="i-close" className="icon h-3.5 w-3.5" />
+            Bỏ lọc
+          </button>
+        </div>
+      ) : null}
+
       <div
         role="tablist"
         aria-label="Lọc đơn theo trạng thái"

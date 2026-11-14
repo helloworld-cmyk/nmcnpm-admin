@@ -105,7 +105,7 @@ export function TaiXeTable({
                       <span className={CELL_SUB}>{taiXe.email || "—"}</span>
                     </div>
                   </td>
-                  <td data-label="SĐT">{taiXe.soDienThoai}</td>
+                  <td data-label="SĐT">{taiXe.soDienThoai || "—"}</td>
                   <td data-label="Giấy phép">
                     <span className="flex flex-col leading-[1.3]">
                       <strong className="font-semibold text-[var(--ink)]">

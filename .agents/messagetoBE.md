@@ -131,6 +131,18 @@ Yêu cầu ghi chú: tài xế đã có phần **báo cáo sự cố** ở BE, n
 
 ---
 
+## 6. Kiểm tra quyền quản trị khi login
+
+**Hiện trạng BE:** `AuthServiceImpl.login` cho **mọi tài khoản `ACTIVE`** đăng nhập, và `JwtAuthenticationFilter` gán `ROLE_CUSTOMER` cho tất cả → `/me` luôn pass (vì `@PreAuthorize("hasAuthority('ROLE_CUSTOMER')")`).
+
+**Hậu quả:** tài khoản khách hàng thường (không phải `COMPANY_ADMIN` của hãng nào) vẫn đăng nhập được vào admin; sau đó mọi API company-scoped trả 403 → màn trống, không thông báo.
+
+**Cần BE xử lý (chọn 1 hoặc cả 2):**
+1. Chặn ngay tại `login`: chỉ trả token cho tài khoản có quyền quản trị (`COMPANY_ADMIN` của một hãng), tài khoản khách hàng thường trả lỗi business (`code != 0`) kèm message rõ ràng.
+2. `/me` (hoặc `LoginResponse`) trả đúng `role` / `authorities` / `companies` để FE tự gating sau login, thay vì role cứng `ROLE_CUSTOMER`.
+
+---
+
 ## Ghi chú ngoài phạm vi BE
 - Tiêu đề "Thứ Năm, 29/10/2026" ở header hiện hardcode phía FE (`dash-head.tsx`) — đây là việc FE, không cần BE.
 - Nút "Xuất báo cáo" hiện chỉ là link sang `/doanh-thu`; chưa có luồng xuất file.

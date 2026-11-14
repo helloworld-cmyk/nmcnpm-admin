@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/form";
 import {
   GPLX_HANG_OPTIONS,
+  type TaiXeFormPatchValues,
   type TaiXeFormState,
   type TaiXeFormValues,
 } from "../_utils/tai-xe-form";
@@ -29,7 +30,7 @@ type TaiXeFormBodyProps = {
   isEdit: boolean;
   saving: boolean;
   onClose: () => void;
-  onSave: (values: TaiXeFormValues) => void;
+  onSave: (values: TaiXeFormValues | TaiXeFormPatchValues) => void;
 };
 
 export function TaiXeFormBody({
@@ -51,7 +52,7 @@ export function TaiXeFormBody({
     licenseNumberRef,
     licenseClassRef,
     licenseExpiresOnRef,
-  } = useTaiXeForm({ initial, saving, onSave });
+  } = useTaiXeForm({ initial, saving, onSave, isEdit });
 
   return (
     <form className="grid gap-3.5" noValidate onSubmit={handleSubmit}>

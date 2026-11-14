@@ -11,7 +11,6 @@ import type { Xe } from "../_data/vehicles";
 const COLUMNS: { label: string; sortKey?: XeSortKey }[] = [
   { label: "Xe", sortKey: "bienSo" },
   { label: "Sức chứa", sortKey: "soCho" },
-  { label: "Tài xế phụ trách", sortKey: "taiXe" },
   { label: "Tình trạng", sortKey: "trangThai" },
   { label: "Thao tác" },
 ];
@@ -111,7 +110,7 @@ export function XeTable({
             Danh sách xe
           </h2>
           <p className="table-sub">
-            Tình trạng xe cập nhật sau mỗi chuyến hoàn thành.
+            Tình trạng do quản trị viên cập nhật, không tự đổi theo chuyến.
           </p>
         </div>
       </div>
@@ -124,8 +123,7 @@ export function XeTable({
       >
         <table className="table xe-table">
           <caption className="sr-only">
-            Danh sách xe của đội: biển số, sức chứa, tài xế phụ trách và tình
-            trạng
+            Danh sách xe của đội: biển số, sức chứa và tình trạng
           </caption>
           <thead>
             <tr>
@@ -186,11 +184,6 @@ export function XeTable({
                       {xe.soCho} chỗ
                     </span>
                   </td>
-                  <td data-label="Tài xế phụ trách">
-                    {xe.taiXe ?? (
-                      <span className="text-[var(--slate-400)]">— Chưa gán</span>
-                    )}
-                  </td>
                   <td data-label="Tình trạng">
                     <span className={`badge ${STATUS_BADGE_CLASS[xe.trangThai]}`}>
                       {xe.trangThai}
@@ -231,12 +224,6 @@ export function XeTable({
                       <button
                         type="button"
                         className={CELL_ACTION_DELETE}
-                        disabled={xe.daGanChuyen}
-                        title={
-                          xe.daGanChuyen
-                            ? "Xe đã gắn chuyến — chỉ có thể ngưng sử dụng"
-                            : undefined
-                        }
                         onClick={() => onDelete(xe)}
                       >
                         <Icon name="i-trash" className="icon h-4 w-4" />

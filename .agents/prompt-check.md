@@ -1,5 +1,5 @@
 http://localhost:3000/xe 
-
+đóng vai senior 10 năm kinh nghiệm
 kiểm tra cho tôi xem hiện tịa màn này đang có những vấn đề gì 
 
 1. còn có chỗ nào sử dụng data mocks không

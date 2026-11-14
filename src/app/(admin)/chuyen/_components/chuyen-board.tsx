@@ -39,6 +39,7 @@ export function ChuyenBoard() {
     deleteTrip,
     cancelPending,
     deletePending,
+    formPending,
     sucoTrip,
     sucoState,
     formState,
@@ -165,6 +166,7 @@ export function ChuyenBoard() {
           routeDurations={routeDurations}
           xeOptions={xeOptions}
           taixeOptions={taixeOptions}
+          saving={formPending}
           onClose={closeForm}
           onSave={handleSaveForm}
         />

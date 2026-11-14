@@ -4,9 +4,11 @@ import Link from "next/link";
 import { Icon } from "@/components/icons/icon";
 import { Modal } from "@/components/ui/modal";
 import {
+  TRANG_THAI_TAI_KHOAN_BADGE,
   TRANG_THAI_TAI_KHOAN_LABEL,
   VE_TRANG_THAI_BADGE,
   formatVnd,
+  laTaiKhoanBiKhoa,
   vietTatHoTen,
   type KhachHang,
 } from "../_data/customers";
@@ -37,13 +39,15 @@ export function KhachHangDetailModal({
   ticketsLoading = false,
   onClose,
 }: KhachHangDetailModalProps) {
-  const locked = khachHang.trangThai === "locked";
+  const locked = laTaiKhoanBiKhoa(khachHang.trangThai);
+
+  const ngayTaoTaiKhoan = khachHang.ngayTaoTaiKhoan ?? "—";
 
   const infoItems = [
     { label: "Số điện thoại", value: khachHang.soDienThoai },
     { label: "Email", value: khachHang.email },
-    { label: "Ngày tạo tài khoản", value: khachHang.ngayTao },
-    { label: "Số vé đã đặt", value: String(khachHang.veDaDat) },
+    { label: "Ngày tạo tài khoản", value: ngayTaoTaiKhoan },
+    { label: "Số đơn đã đặt", value: String(khachHang.veDaDat) },
     { label: "Tổng chi tiêu", value: formatVnd(khachHang.tongChiTieu) },
   ];
 
@@ -58,20 +62,19 @@ export function KhachHangDetailModal({
             {vietTatHoTen(khachHang.ten)}
           </span>
           <span className="block min-w-0">
-            <span className="block text-[11.5px] font-bold uppercase tracking-[0.08em] text-[var(--sky-700)] [font-family:var(--font-body)]">
-              {khachHang.maKhach}
-            </span>
-            <span className="mt-0.5 flex flex-wrap items-center gap-2">
+            <span className="flex flex-wrap items-center gap-2">
               <span className="text-[19px] font-extrabold leading-[1.2] tracking-[-0.02em] text-[var(--ink)]">
                 {khachHang.ten}
               </span>
-              <span className={`badge ${locked ? "badge--orange" : "badge--green"}`}>
+              <span
+                className={`badge ${TRANG_THAI_TAI_KHOAN_BADGE[khachHang.trangThai]}`}
+              >
                 {locked && <Icon name="i-lock" />}
                 {TRANG_THAI_TAI_KHOAN_LABEL[khachHang.trangThai]}
               </span>
             </span>
             <span className="mt-0.5 block text-[12.5px] font-medium text-[var(--slate-500)] [font-family:var(--font-body)]">
-              Tham gia {khachHang.ngayTao} · {khachHang.veDaDat} vé đã đặt
+              Tham gia {ngayTaoTaiKhoan} · {khachHang.veDaDat} đơn đã đặt
             </span>
           </span>
         </div>
@@ -90,9 +93,12 @@ export function KhachHangDetailModal({
         <div className="kh-warn" role="note">
           <Icon name="i-lock" />
           <p>
-            <strong>Tài khoản đang bị khóa.</strong>{" "}
+            <strong>
+              {`Tài khoản ${TRANG_THAI_TAI_KHOAN_LABEL[khachHang.trangThai].toLowerCase()}.`}
+            </strong>{" "}
             <span>
-              Khách không thể đăng nhập và đặt vé mới cho tới khi được mở khóa.
+              Khách không thể đăng nhập và đặt vé mới cho tới khi tài khoản hoạt
+              động lại.
             </span>
           </p>
         </div>
@@ -103,7 +109,10 @@ export function KhachHangDetailModal({
           <h3 className="[font-family:var(--font-heading)] text-[15.5px] font-bold tracking-[-0.01em] text-[var(--ink)]">
             Lịch sử vé gần đây
           </h3>
-          <Link href="/don-dat" className={DRAWER_LINK_CLASS}>
+          <Link
+            href={`/don-dat?customerId=${encodeURIComponent(khachHang.id)}`}
+            className={DRAWER_LINK_CLASS}
+          >
             Xem tất cả đơn đặt
             <Icon name="i-arrow-right" className="icon h-3.5 w-3.5" />
           </Link>

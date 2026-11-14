@@ -1,22 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
 
 import { useCreateVehicle } from "@/api/xe/tanstack/use-create-vehicle";
 import { useDeleteVehicle } from "@/api/xe/tanstack/use-delete-vehicle";
 import { useUpdateVehicle } from "@/api/xe/tanstack/use-update-vehicle";
 import { useVehicles } from "@/api/xe/tanstack/use-vehicles";
-import { useDrivers } from "@/api/tai-xe/tanstack/use-drivers";
+import type { VehicleStatus } from "@/api/xe/api/types";
 import { ApiError } from "@/api/types";
 import type { ToastData } from "@/components/ui/toast";
 import { useCompanyStore } from "@/global-states/company-store";
 import { useXeFiltersStore } from "@/global-states/xe-filters-store";
-import type {
-  Xe,
-  XeDriverOption,
-  XeFormValues,
-} from "../_data/vehicles";
+import type { Xe, XeFormValues, XeTrangThai } from "../_data/vehicles";
 import type { XeSeatTarget } from "../_data/seats";
 import type { XeDocumentTarget } from "../_data/documents";
 import {
@@ -26,6 +22,7 @@ import {
 import type { XeFormTarget } from "../_utils/xe-form";
 import {
   XE_PAGE_SIZE,
+  collectSoChoOptions,
   computePageCount,
   computeXeStats,
   filterVehicles,
@@ -47,21 +44,6 @@ export function useXeBoard() {
   const companyHydrated = useCompanyStore((s) => s.hydrated);
   const queryClient = useQueryClient();
 
-  const { data, isLoading, isError, error, isFetching, refetch } =
-    useVehicles(companyId);
-  const driversQuery = useDrivers(companyId, { status: "ACTIVE", size: 100 });
-  const createVehicle = useCreateVehicle(companyId);
-  const updateVehicle = useUpdateVehicle(companyId);
-  const deleteVehicle = useDeleteVehicle(companyId);
-
-  /* Trường backend chưa lưu (tài xế) — đắp cục bộ theo phiên. */
-  const [overrides, setOverrides] = useState<Record<string, Partial<Xe>>>({});
-  const [formTarget, setFormTarget] = useState<XeFormTarget | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Xe | null>(null);
-  const [seatTarget, setSeatTarget] = useState<XeSeatTarget | null>(null);
-  const [docTarget, setDocTarget] = useState<XeDocumentTarget | null>(null);
-  const [toast, setToast] = useState<ToastData | null>(null);
-
   const search = useXeFiltersStore((s) => s.search);
   const soCho = useXeFiltersStore((s) => s.soCho);
   const trangThai = useXeFiltersStore((s) => s.trangThai);
@@ -70,37 +52,48 @@ export function useXeBoard() {
   const sortDir = useXeFiltersStore((s) => s.sortDir);
   const setPage = useXeFiltersStore((s) => s.setPage);
 
-  const vehicles = useMemo(() => {
-    const mapped = mapVehicles(data ?? []);
-    return mapped.map((xe) =>
-      overrides[xe.id] ? { ...xe, ...overrides[xe.id] } : xe
-    );
-  }, [data, overrides]);
+  /*
+   * Backend chỉ hỗ trợ `q` + `status` (không phân trang): tìm kiếm và trạng thái
+   * lọc phía server, sau đó vẫn sắp xếp/phân trang trên mảng trả về.
+   */
+  const deferredSearch = useDeferredValue(search);
+  const q = deferredSearch.trim() || undefined;
+  const status: VehicleStatus | undefined =
+    trangThai && trangThai in XE_TRANG_THAI_TO_STATUS
+      ? XE_TRANG_THAI_TO_STATUS[trangThai as XeTrangThai]
+      : undefined;
 
-  /* Tài xế phụ trách lấy từ API /drivers (chỉ đang hoạt động). */
-  const driverOptions: XeDriverOption[] = useMemo(
-    () =>
-      (driversQuery.data?.content ?? []).map((driver) => ({
-        value: driver.driverId,
-        label: driver.licenseClass
-          ? `${driver.fullName} · ${driver.licenseClass}`
-          : driver.fullName,
-        name: driver.fullName,
-      })),
-    [driversQuery.data]
+  const { data, isLoading, isError, error, isFetching, refetch } = useVehicles(
+    companyId,
+    { q, status },
+    /* Giữ dữ liệu cũ khi đổi bộ lọc → bảng không nhấp nháy. */
+    { placeholderData: keepPreviousData }
+  );
+  /*
+   * Truy vấn không lọc dùng cho thẻ thống kê, danh sách sức chứa và kiểm tra
+   * trùng biển số ở form — những chỗ cần toàn bộ đội xe chứ không phải tập
+   * đang lọc. React-query cache riêng nên chỉ gọi một lần cho mỗi hãng.
+   */
+  const fleetQuery = useVehicles(companyId);
+  const createVehicle = useCreateVehicle(companyId);
+  const updateVehicle = useUpdateVehicle(companyId);
+  const deleteVehicle = useDeleteVehicle(companyId);
+
+  const [formTarget, setFormTarget] = useState<XeFormTarget | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Xe | null>(null);
+  const [seatTarget, setSeatTarget] = useState<XeSeatTarget | null>(null);
+  const [docTarget, setDocTarget] = useState<XeDocumentTarget | null>(null);
+  const [toast, setToast] = useState<ToastData | null>(null);
+
+  const vehicles = useMemo(() => mapVehicles(data ?? []), [data]);
+  const fleet = useMemo(
+    () => mapVehicles(fleetQuery.data ?? []),
+    [fleetQuery.data]
   );
 
-  const driverNameById = useMemo(() => {
-    const map: Record<string, string> = {};
-    driverOptions.forEach((option) => {
-      map[option.value] = option.name;
-    });
-    return map;
-  }, [driverOptions]);
-
   const filtered = useMemo(
-    () => filterVehicles(vehicles, { search, soCho, trangThai }),
-    [vehicles, search, soCho, trangThai]
+    () => filterVehicles(vehicles, { soCho }),
+    [vehicles, soCho]
   );
 
   const sorted = useMemo(
@@ -118,22 +111,25 @@ export function useXeBoard() {
   const start = (safePage - 1) * XE_PAGE_SIZE;
   const rows = sorted.slice(start, start + XE_PAGE_SIZE);
 
-  const stats = useMemo(() => computeXeStats(vehicles), [vehicles]);
+  const stats = useMemo(() => computeXeStats(fleet), [fleet]);
 
-  const setOverride = useCallback((id: string, patch: Partial<Xe>) => {
-    setOverrides((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
-  }, []);
+  const soChoOptions = useMemo(
+    () => collectSoChoOptions(fleet, soCho),
+    [fleet, soCho]
+  );
+
+  /*
+   * Phân biệt "hãng chưa có xe nào" với "không khớp bộ lọc" dựa trên toàn bộ
+   * đội xe (truy vấn không lọc) chứ không phải tập đang lọc.
+   */
+  const hasNoVehicles = fleetQuery.isSuccess && fleet.length === 0;
 
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ["company-vehicles", companyId] });
 
   const handleSave = async (values: XeFormValues) => {
     if (!companyId) return;
-    const uiPatch: Partial<Xe> = {
-      taiXeId: values.taiXeId,
-      taiXe: values.taiXeId ? (driverNameById[values.taiXeId] ?? null) : null,
-    };
-    const status = XE_TRANG_THAI_TO_STATUS[values.trangThai];
+    const nextStatus = XE_TRANG_THAI_TO_STATUS[values.trangThai];
 
     try {
       if (formTarget?.mode === "edit") {
@@ -143,10 +139,9 @@ export function useXeBoard() {
             plateNumber: values.bienSo,
             vehicleModel: values.loaiXe,
             passengerCapacity: values.soCho,
-            status,
+            status: nextStatus,
           },
         });
-        setOverride(formTarget.xe.id, uiPatch);
         setToast({
           message: `Đã lưu thay đổi cho xe ${values.bienSo}.`,
           type: "success",
@@ -157,11 +152,10 @@ export function useXeBoard() {
           vehicleModel: values.loaiXe,
           passengerCapacity: values.soCho,
         });
-        setOverride(created.id, uiPatch);
-        if (status !== "ACTIVE") {
+        if (nextStatus !== "ACTIVE") {
           await updateVehicle.mutateAsync({
             vehicleId: created.id,
-            payload: { status },
+            payload: { status: nextStatus },
           });
         }
         setPage(1);
@@ -184,7 +178,7 @@ export function useXeBoard() {
       await deleteVehicle.mutateAsync(target.id);
       await invalidate();
       setToast({
-        message: `Đã xóa xe ${target.bienSo} khỏi đội xe.`,
+        message: `Đã xử lý xe ${target.bienSo}: xóa khỏi đội xe, hoặc chuyển “Ngưng sử dụng” nếu xe đã có phân công chuyến.`,
         type: "success",
       });
     } catch (err) {
@@ -202,11 +196,12 @@ export function useXeBoard() {
     isFetching,
     errorText: apiMessage(error),
     refetch,
-    vehicles,
-    driverOptions,
+    fleet,
     sorted,
     rows,
     stats,
+    soChoOptions,
+    hasNoVehicles,
     start,
     pageCount,
     safePage,

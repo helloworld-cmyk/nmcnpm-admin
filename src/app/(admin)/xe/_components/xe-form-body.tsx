@@ -11,7 +11,7 @@ import type { XeFormState } from "../_utils/xe-form";
 import { useXeForm } from "../_hooks/use-xe-form";
 
 const FIELD_GRID_CLASS = [
-  "xe-form-grid grid gap-3.5",
+  "grid gap-3.5",
   "[grid-template-columns:1fr_1fr]",
   "max-[520px]:[grid-template-columns:1fr]",
 ].join(" ");

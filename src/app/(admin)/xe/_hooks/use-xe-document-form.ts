@@ -38,16 +38,21 @@ export function useXeDocumentForm({
   const putDocument = usePutVehicleDocument(companyId, vehicleId);
 
   const [drafts, setDrafts] = useState(emptyXeDocumentDrafts);
+  const [ready, setReady] = useState(false);
   const [activeType, setActiveType] =
     useState<VehicleDocumentType>("REGISTRATION");
   const [error, setError] = useState<string | null>(null);
   const seededRef = useRef(false);
 
-  /* Nạp giấy tờ đã có một lần khi truy vấn thành công. */
+  /*
+   * Nạp giấy tờ đã có một lần khi truy vấn thành công. Chỉ bật `ready` sau khi
+   * đã seed để không gửi payload rỗng ghi đè dữ liệu khi GET đang tải/lỗi.
+   */
   useEffect(() => {
     if (seededRef.current || !docsQuery.isSuccess) return;
     seededRef.current = true;
     setDrafts(seedXeDocumentDrafts(docsQuery.data));
+    setReady(true);
   }, [docsQuery.isSuccess, docsQuery.data]);
 
   const savedByType = useMemo(() => {
@@ -72,6 +77,12 @@ export function useXeDocumentForm({
   }, []);
 
   const submit = useCallback(async () => {
+    if (!ready) {
+      setError(
+        "Chưa tải được giấy tờ hiện có — hãy thử lại trước khi lưu để tránh ghi đè."
+      );
+      return;
+    }
     const draft = drafts[activeType];
     if (draft.issuedOn && draft.expiresOn && draft.issuedOn > draft.expiresOn) {
       setError("Ngày cấp không được sau ngày hết hiệu lực.");
@@ -82,11 +93,11 @@ export function useXeDocumentForm({
       await putDocument.mutateAsync({
         type: activeType,
         payload: {
-          documentNumber: trim(draft.documentNumber) || undefined,
-          issuer: trim(draft.issuer) || undefined,
-          description: trim(draft.description) || undefined,
-          issuedOn: draft.issuedOn || undefined,
-          expiresOn: draft.expiresOn || undefined,
+          documentNumber: trim(draft.documentNumber) || null,
+          issuer: trim(draft.issuer) || null,
+          description: trim(draft.description) || null,
+          issuedOn: draft.issuedOn || null,
+          expiresOn: draft.expiresOn || null,
         },
       });
       await queryClient.invalidateQueries({
@@ -98,16 +109,26 @@ export function useXeDocumentForm({
         err instanceof ApiError ? err.message : "Có lỗi xảy ra, vui lòng thử lại."
       );
     }
-  }, [drafts, activeType, putDocument, queryClient, companyId, vehicleId, onSaved]);
+  }, [
+    ready,
+    drafts,
+    activeType,
+    putDocument,
+    queryClient,
+    companyId,
+    vehicleId,
+    onSaved,
+  ]);
 
   return {
     drafts,
     activeType,
     savedByType,
     error,
-    isLoading: docsQuery.isLoading,
+    ready,
     loadError: docsQuery.isError,
     saving: putDocument.isPending,
+    refetch: docsQuery.refetch,
     patchField,
     setActive,
     submit,

@@ -3,7 +3,7 @@
 import { Icon } from "@/components/icons/icon";
 import { FormField, Select, TextInput } from "@/components/ui/form";
 import { useXeFiltersStore } from "@/global-states/xe-filters-store";
-import { XE_SO_CHO_OPTIONS, XE_TRANG_THAI_OPTIONS } from "../_data/vehicles";
+import { XE_TRANG_THAI_OPTIONS } from "../_data/vehicles";
 
 const GRID_CLASS = [
   "grid items-end gap-3.5",
@@ -15,9 +15,14 @@ const GRID_CLASS = [
 type XeFiltersProps = {
   filteredCount: number;
   totalCount: number;
+  soChoOptions: number[];
 };
 
-export function XeFilters({ filteredCount, totalCount }: XeFiltersProps) {
+export function XeFilters({
+  filteredCount,
+  totalCount,
+  soChoOptions,
+}: XeFiltersProps) {
   const search = useXeFiltersStore((s) => s.search);
   const soCho = useXeFiltersStore((s) => s.soCho);
   const trangThai = useXeFiltersStore((s) => s.trangThai);
@@ -27,7 +32,7 @@ export function XeFilters({ filteredCount, totalCount }: XeFiltersProps) {
   const reset = useXeFiltersStore((s) => s.reset);
 
   return (
-    <section className="toolbar xe-toolbar" aria-label="Bộ lọc danh sách xe">
+    <section className="toolbar" aria-label="Bộ lọc danh sách xe">
       <div className={GRID_CLASS}>
         <FormField
           id="xe-search"
@@ -38,21 +43,21 @@ export function XeFilters({ filteredCount, totalCount }: XeFiltersProps) {
             id="xe-search"
             type="search"
             icon="i-search"
-            placeholder="Biển số hoặc tài xế phụ trách..."
+            placeholder="Tìm theo biển số hoặc mẫu xe..."
             autoComplete="off"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
         </FormField>
 
-        <FormField id="xe-so-cho" label="Loại xe">
+        <FormField id="xe-so-cho" label="Sức chứa">
           <Select
             id="xe-so-cho"
             value={soCho === null ? "" : String(soCho)}
             onChange={(value) => setSoCho(value ? Number(value) : null)}
             options={[
-              { value: "", label: "Mọi loại xe" },
-              ...XE_SO_CHO_OPTIONS.map((option) => ({
+              { value: "", label: "Mọi sức chứa" },
+              ...soChoOptions.map((option) => ({
                 value: String(option),
                 label: `${option} chỗ`,
               })),

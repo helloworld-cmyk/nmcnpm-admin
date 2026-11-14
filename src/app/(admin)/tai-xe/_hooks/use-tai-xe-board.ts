@@ -22,6 +22,7 @@ import type {
   TaiXeFormTarget,
   TaiXeFormValues,
 } from "../_utils/tai-xe-form";
+import type { UpdateDriverPayload } from "@/api/tai-xe/api/types";
 import type { TaiXe } from "../_utils/tai-xe";
 
 function apiMessage(error: unknown): string {
@@ -127,32 +128,41 @@ export function useTaiXeBoard() {
     openConfirm(taiXe.trangThai === "locked" ? "unlock" : "lock", taiXe);
   };
 
-  const handleSave = async (values: TaiXeFormValues) => {
+  const handleSave = async (
+    values: TaiXeFormValues | Partial<TaiXeFormValues>
+  ) => {
     if (!companyId) return;
     /* Chụp id ngay từ đầu: modal chi tiết đã đóng trước khi lưu nên không thể
        dựa vào state `detail` để biết cần làm mới chi tiết nào. */
     const editingId =
       formTarget?.mode === "edit" ? formTarget.taiXe.id : undefined;
+    const editingTen =
+      formTarget?.mode === "edit" ? formTarget.taiXe.ten : "";
     setSaving(true);
     try {
       if (editingId) {
+        /* Edit: PATCH partial — chỉ chứa các field đã thay đổi. */
         await updateDriver.mutateAsync({
           driverId: editingId,
-          payload: values,
+          payload: values as UpdateDriverPayload,
         });
         setToast({
-          message: `Đã cập nhật thông tin của ${values.fullName}.`,
+          message: `Đã cập nhật thông tin của ${
+            (values as Partial<TaiXeFormValues>).fullName ?? editingTen
+          }.`,
           type: "success",
         });
       } else {
-        const result = await createDriver.mutateAsync(values);
+        const result = await createDriver.mutateAsync(
+          values as TaiXeFormValues
+        );
         setCredentialSubtitle(
           "Tài khoản đã sẵn sàng — sao chép và bàn giao cho tài xế."
         );
         setCredential(result);
         setPage(1);
         setToast({
-          message: `Đã tạo tài khoản cho ${values.fullName}.`,
+          message: `Đã tạo tài khoản cho ${(values as TaiXeFormValues).fullName}.`,
           type: "success",
         });
       }

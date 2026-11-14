@@ -7,7 +7,9 @@ import {
 } from "@/global-states/khach-hang-filters-store";
 import { pageIndexes } from "@/utils/table";
 import {
+  TRANG_THAI_TAI_KHOAN_BADGE,
   TRANG_THAI_TAI_KHOAN_LABEL,
+  laTaiKhoanBiKhoa,
   vietTatHoTen,
   type KhachHang,
 } from "../_data/customers";
@@ -21,16 +23,14 @@ const COLUMNS: {
   { label: "Khách hàng", sortKey: "ten" },
   { label: "Số điện thoại" },
   { label: "Email" },
-  { label: "Đặt gần nhất", sortKey: "ngayTao" },
-  { label: "Vé đã đặt", num: true, sortKey: "veDaDat" },
+  { label: "Đặt gần nhất", sortKey: "datGanNhat" },
+  { label: "Đơn đã đặt", num: true, sortKey: "veDaDat" },
   { label: "Trạng thái" },
   { label: "Thao tác" },
 ];
 
 const NUM_CELL =
   "num [font-family:var(--font-heading)] font-bold tracking-[-0.01em] text-[var(--ink)]";
-
-const CELL_SUB = "mt-0.5 block text-[12px] font-medium text-[var(--slate-400)]";
 
 const PAGE_GAP =
   "px-0.5 font-bold text-[var(--slate-400)] max-[400px]:hidden";
@@ -72,8 +72,8 @@ export function KhachHangTable({
       >
         <table className="table kh-table">
           <caption className="sr-only">
-            Tài khoản khách hàng — kèm số điện thoại, email, ngày tạo, số vé
-            đã đặt và trạng thái tài khoản
+            Tài khoản khách hàng — kèm số điện thoại, email, lần đặt gần nhất, số
+            đơn đã đặt và trạng thái tài khoản
           </caption>
           <thead>
             <tr>
@@ -131,19 +131,16 @@ export function KhachHangTable({
           </thead>
           <tbody>
             {rows.map((kh) => {
-              const locked = kh.trangThai === "locked";
+              const locked = laTaiKhoanBiKhoa(kh.trangThai);
               const email = tachEmail(kh.email);
               return (
                 <tr key={kh.id} onClick={() => onOpenDetail(kh)}>
                   <td data-label="Khách hàng">
                     <div className="flex min-w-[190px] items-center gap-[11px]">
                       <span className="kh-avatar">{vietTatHoTen(kh.ten)}</span>
-                      <span className="flex flex-col leading-[1.3]">
-                        <strong className="font-semibold text-[var(--ink)]">
-                          {kh.ten}
-                        </strong>
-                        <span className={CELL_SUB}>{kh.maKhach}</span>
-                      </span>
+                      <strong className="min-w-[190px] font-semibold text-[var(--ink)]">
+                        {kh.ten}
+                      </strong>
                     </div>
                   </td>
                   <td data-label="Số điện thoại">{kh.soDienThoai}</td>
@@ -163,13 +160,13 @@ export function KhachHangTable({
                       "—"
                     )}
                   </td>
-                  <td data-label="Ngày tạo">{kh.ngayTao}</td>
-                  <td data-label="Vé đã đặt" className={NUM_CELL}>
+                  <td data-label="Đặt gần nhất">{kh.datGanNhat}</td>
+                  <td data-label="Đơn đã đặt" className={NUM_CELL}>
                     {kh.veDaDat}
                   </td>
                   <td data-label="Trạng thái">
                     <span
-                      className={`badge ${locked ? "badge--orange" : "badge--green"}`}
+                      className={`badge ${TRANG_THAI_TAI_KHOAN_BADGE[kh.trangThai]}`}
                     >
                       {locked && <Icon name="i-lock" />}
                       {TRANG_THAI_TAI_KHOAN_LABEL[kh.trangThai]}

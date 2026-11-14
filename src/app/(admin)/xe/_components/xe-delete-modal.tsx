@@ -34,7 +34,9 @@ export function XeDeleteModal({
         <strong className="font-bold text-[var(--ink)]">
           {target?.bienSo}
         </strong>{" "}
-        sẽ bị xóa khỏi đội xe. Hành động này không thể hoàn tác.
+        sẽ bị xóa khỏi đội xe. Nếu xe đã từng được phân công chuyến, hệ thống
+        chỉ chuyển xe sang{" "}
+        <strong className="font-bold text-[var(--ink)]">Ngưng sử dụng</strong>.
       </p>
       <div className="flex flex-wrap justify-end gap-2.5 border-t border-[var(--border-soft)] pt-4">
         <button type="button" className="btn btn-ghost" onClick={onClose}>

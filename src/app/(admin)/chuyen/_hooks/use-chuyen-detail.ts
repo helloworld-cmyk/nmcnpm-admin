@@ -2,48 +2,38 @@
 
 import { useMemo } from "react";
 
-import { useTripAssignment } from "@/api/chuyen/tanstack/use-trip-assignment";
-import { useTripBookings } from "@/api/chuyen/tanstack/use-trip-bookings";
-import { useVehicle } from "@/api/xe/tanstack/use-vehicle";
+import { useTrip } from "@/api/chuyen/tanstack/use-trip";
 import { ApiError } from "@/api/types";
 import { useCompanyStore } from "@/global-states/company-store";
 
-import type { ChuyenRecord, VeItem } from "../_data/chuyen";
-import { mapTripAssignment, mapTripBookings } from "../_utils/map-trip";
+import type { VeItem } from "../_data/chuyen";
+import { mapDetailPassengers } from "../_utils/map-trip";
 
 /*
- * Dữ liệu chi tiết một chuyến cho ngăn kéo: danh sách đặt vé + hành khách, phân
- * công xe/tài xế hiện tại và sức chứa xe. Chỉ gọi API khi có chuyến đang mở.
+ * Dữ liệu chi tiết một chuyến cho ngăn kéo, lấy từ một request duy nhất
+ * `GET /bus-companies/{id}/trips/{tripId}` (TripDetailResponse): vé/hành khách,
+ * phân công xe + tài xế, số ghế và lịch sử trạng thái. Chỉ gọi API khi mở chuyến.
  */
-export function useChuyenDetail(trip: ChuyenRecord | null) {
+export function useChuyenDetail(tripId: string) {
   const companyId = useCompanyStore((s) => s.companyId) ?? "";
-  const tripId = trip?.id ?? "";
 
-  const bookingsQuery = useTripBookings(companyId, tripId);
-  const assignmentQuery = useTripAssignment(companyId, tripId);
-
-  const assignment = useMemo(
-    () => mapTripAssignment(assignmentQuery.data),
-    [assignmentQuery.data]
-  );
-
-  const vehicleQuery = useVehicle(companyId, assignment?.vehicleId ?? "");
+  const query = useTrip(companyId, tripId);
+  const detail = query.data ?? null;
 
   const veList = useMemo<VeItem[]>(
-    () => mapTripBookings(bookingsQuery.data ?? []),
-    [bookingsQuery.data]
+    () => mapDetailPassengers(detail?.passengers ?? []),
+    [detail]
   );
 
   return {
+    detail,
     veList,
-    assignment,
-    vehicle: vehicleQuery.data ?? null,
-    isLoading: bookingsQuery.isLoading,
-    isError: bookingsQuery.isError,
+    isLoading: query.isLoading,
+    isError: query.isError,
     errorText:
-      bookingsQuery.error instanceof ApiError
-        ? bookingsQuery.error.message
-        : "Không tải được danh sách vé.",
-    refetch: bookingsQuery.refetch,
+      query.error instanceof ApiError
+        ? query.error.message
+        : "Không tải được chi tiết chuyến.",
+    refetch: query.refetch,
   };
 }

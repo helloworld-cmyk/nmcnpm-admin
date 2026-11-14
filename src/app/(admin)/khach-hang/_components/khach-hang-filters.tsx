@@ -3,6 +3,10 @@
 import { Icon } from "@/components/icons/icon";
 import { FormField, Select, TextInput } from "@/components/ui/form";
 import { useKhachHangFiltersStore } from "@/global-states/khach-hang-filters-store";
+import {
+  TRANG_THAI_TAI_KHOAN_OPTIONS,
+  type TrangThaiTaiKhoan,
+} from "../_data/customers";
 
 const GRID_CLASS =
   "grid items-end gap-3.5 [grid-template-columns:minmax(240px,1fr)_minmax(190px,240px)_auto] max-[900px]:[grid-template-columns:1fr_1fr] max-[640px]:[grid-template-columns:1fr]";
@@ -46,11 +50,12 @@ export function KhachHangFilters({
           <Select
             id="kh-trang-thai"
             value={trangThai}
-            onChange={(value) => setTrangThai(value)}
+            onChange={(value) =>
+              setTrangThai(value as TrangThaiTaiKhoan | "")
+            }
             options={[
               { value: "", label: "Mọi trạng thái" },
-              { value: "active", label: "Đang hoạt động" },
-              { value: "locked", label: "Bị khóa" },
+              ...TRANG_THAI_TAI_KHOAN_OPTIONS,
             ]}
           />
         </FormField>

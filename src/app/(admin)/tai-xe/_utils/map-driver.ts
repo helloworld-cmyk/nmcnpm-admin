@@ -7,7 +7,8 @@ export function mapDriver(driver: CompanyDriverResponse): TaiXe {
   return {
     id: driver.driverId,
     ten: driver.fullName,
-    soDienThoai: driver.phone,
+    /* SĐT có thể null ở backend → dùng chuỗi rỗng để form/validate không vỡ. */
+    soDienThoai: driver.phone ?? "",
     email: driver.email ?? "",
     gplx: driver.licenseNumber ? nhomGplx(driver.licenseNumber) : "—",
     gplxRaw: driver.licenseNumber ?? "",

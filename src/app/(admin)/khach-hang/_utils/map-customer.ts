@@ -7,11 +7,6 @@ import { routeLabel } from "@/utils/route-label";
 
 import type { KhachHang, TrangThaiVe, VeDaDat } from "../_data/customers";
 
-/* accountStatus của backend → trạng thái 2 mức đang dùng ở UI. */
-function mapTrangThai(accountStatus: CompanyCustomerResponse["accountStatus"]): KhachHang["trangThai"] {
-  return accountStatus === "ACTIVE" ? "active" : "locked";
-}
-
 /* Định dạng mốc ISO thành dd/mm/yyyy; trả "—" khi thiếu/không hợp lệ. */
 function formatDate(value: string | null): string {
   if (!value) return "—";
@@ -20,11 +15,6 @@ function formatDate(value: string | null): string {
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
   return `${day}/${month}/${date.getFullYear()}`;
-}
-
-/* Mã khách hiển thị — backend chưa trả mã riêng nên suy ra ổn định từ id. */
-function maKhach(id: string): string {
-  return `KH-${id.replace(/[^a-zA-Z0-9]/g, "").slice(0, 8).toUpperCase()}`;
 }
 
 /* Trạng thái vé (đặt vé + đón/trả hành khách) → nhãn trạng thái vé ở UI. */
@@ -40,15 +30,16 @@ function mapVeTrangThai(ticket: TicketResponse): TrangThaiVe {
 export function mapCustomer(customer: CompanyCustomerResponse): KhachHang {
   return {
     id: customer.id,
-    maKhach: maKhach(customer.id),
     ten: customer.fullName,
     soDienThoai: customer.phone,
     email: customer.email,
-    /* Danh sách chỉ có mốc đặt vé gần nhất, dùng tạm cho cột thời gian. */
-    ngayTao: formatDate(customer.lastBookingAt),
+    /* Danh sách chỉ trả mốc đặt vé gần nhất, không có ngày tạo tài khoản. */
+    datGanNhat: formatDate(customer.lastBookingAt),
+    ngayTaoTaiKhoan: null,
+    /* bookingCount là số đơn đã đặt — cùng nghĩa với chi tiết. */
     veDaDat: customer.bookingCount,
     tongChiTieu: 0,
-    trangThai: mapTrangThai(customer.accountStatus),
+    trangThai: customer.accountStatus,
     lichSuVe: [],
   };
 }
@@ -57,23 +48,51 @@ export function mapCustomers(customers: CompanyCustomerResponse[]): KhachHang[] 
   return customers.map(mapCustomer);
 }
 
+/* Chi tiết chỉ bổ sung các trường riêng, giữ nguyên mốc đặt gần nhất từ danh sách. */
+export type KhachHangDetail = Omit<KhachHang, "datGanNhat">;
+
+/* Đọc mốc ISO thành mili-giây; null khi thiếu/không hợp lệ. */
+function docThoiDiem(value: string | null): number | null {
+  if (!value) return null;
+  const moc = new Date(value).getTime();
+  return Number.isNaN(moc) ? null : moc;
+}
+
+/* Sắp xếp giảm dần theo thời gian; mốc thiếu/không hợp lệ xuống cuối. */
+function soSanhGiamDan(a: string | null, b: string | null): number {
+  const mocA = docThoiDiem(a);
+  const mocB = docThoiDiem(b);
+  if (mocA === null && mocB === null) return 0;
+  if (mocA === null) return 1;
+  if (mocB === null) return -1;
+  return mocB - mocA;
+}
+
 /* Chi tiết khách (kèm lịch sử booking) → view-model đầy đủ. */
 export function mapCustomerDetail(
   detail: CompanyCustomerDetailResponse
-): KhachHang {
-  const lichSuVe: VeDaDat[] = detail.bookings.flatMap((booking) =>
-    booking.tickets.map((ticket) => ({
-      maVe: ticket.ticketCode,
-      tuyen: routeLabel(
-        booking.trip.originAreaName,
-        booking.trip.destinationAreaName
-      ),
-      thoiGian: formatDate(booking.trip.departureAt),
-      daThuTien: ticket.status === "CONFIRMED",
-      ghe: ticket.seatCode,
-      trangThai: mapVeTrangThai(ticket),
-    }))
-  );
+): KhachHangDetail {
+  /* Lịch sử vé sắp theo giờ khởi hành giảm dần (vé mới nhất lên đầu). */
+  const lichSuVe: VeDaDat[] = detail.bookings
+    .flatMap((booking) =>
+      booking.tickets.map((ticket) => ({
+        departureAt: booking.trip.departureAt,
+        ve: {
+          maVe: ticket.ticketCode,
+          tuyen: routeLabel(
+            booking.trip.originAreaName,
+            booking.trip.destinationAreaName
+          ),
+          thoiGian: formatDate(booking.trip.departureAt),
+          /* "Đã thu tiền" lấy từ cờ paymentCollected của vé, không suy từ trạng thái. */
+          daThuTien: ticket.paymentCollected === true,
+          ghe: ticket.seatCode,
+          trangThai: mapVeTrangThai(ticket),
+        } satisfies VeDaDat,
+      }))
+    )
+    .sort((a, b) => soSanhGiamDan(a.departureAt, b.departureAt))
+    .map((item) => item.ve);
 
   const tongChiTieu = detail.bookings
     .filter((booking) => booking.status === "CONFIRMED")
@@ -81,14 +100,15 @@ export function mapCustomerDetail(
 
   return {
     id: detail.id,
-    maKhach: maKhach(detail.id),
     ten: detail.fullName,
     soDienThoai: detail.phone,
     email: detail.email,
-    ngayTao: formatDate(detail.createdAt),
+    /* Ngày tạo tài khoản chỉ lấy từ createdAt của chi tiết. */
+    ngayTaoTaiKhoan: formatDate(detail.createdAt),
+    /* Số đơn đã đặt — nhất quán với bookingCount ở danh sách. */
     veDaDat: detail.bookings.length,
     tongChiTieu,
-    trangThai: mapTrangThai(detail.accountStatus),
+    trangThai: detail.accountStatus,
     lichSuVe,
   };
 }

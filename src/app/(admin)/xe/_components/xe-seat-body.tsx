@@ -84,9 +84,11 @@ export function XeSeatBody({
     error,
     nameInvalid,
     nameRef,
+    ready,
     isLoading,
     loadError,
     saving,
+    refetch,
     patchState,
     paintCell,
     paintAll,
@@ -134,6 +136,7 @@ export function XeSeatBody({
           placeholder="VD: Ford Transit 16 chỗ"
           aria-invalid={nameInvalid}
           invalid={nameInvalid}
+          disabled={!ready}
           value={state.name}
           onChange={(event) => patchState({ name: event.target.value })}
         />
@@ -146,6 +149,7 @@ export function XeSeatBody({
             type="number"
             min={SEAT_LIMITS.rows.min}
             max={SEAT_LIMITS.rows.max}
+            disabled={!ready}
             value={state.rows}
             onChange={(event) =>
               setDim(
@@ -163,6 +167,7 @@ export function XeSeatBody({
             type="number"
             min={SEAT_LIMITS.columns.min}
             max={SEAT_LIMITS.columns.max}
+            disabled={!ready}
             value={state.cols}
             onChange={(event) =>
               setDim(
@@ -188,6 +193,7 @@ export function XeSeatBody({
           <button
             type="button"
             aria-pressed={brush === SEAT_FILLED}
+            disabled={!ready}
             onClick={() => setBrush(SEAT_FILLED)}
             className={cx(
               PALETTE_BASE,
@@ -201,6 +207,7 @@ export function XeSeatBody({
           <button
             type="button"
             aria-pressed={brush === SEAT_EMPTY}
+            disabled={!ready}
             onClick={() => setBrush(SEAT_EMPTY)}
             className={cx(
               PALETTE_BASE,
@@ -216,7 +223,7 @@ export function XeSeatBody({
 
       {isLoading ? (
         <div className="state-loading py-6">Đang tải sơ đồ ghế...</div>
-      ) : (
+      ) : ready ? (
         <div
           className={GRID_CLASS}
           style={{ gridTemplateColumns: `repeat(${state.cols}, minmax(0, 1fr))` }}
@@ -245,7 +252,7 @@ export function XeSeatBody({
             </button>
           ))}
         </div>
-      )}
+      ) : null}
 
       <div className={TOOLBAR_CLASS}>
         <div className={LEGEND_CLASS}>
@@ -267,6 +274,7 @@ export function XeSeatBody({
           <button
             type="button"
             className="btn btn-ghost btn-sm"
+            disabled={!ready}
             onClick={paintAll}
           >
             <Icon name="i-grid" />
@@ -275,6 +283,7 @@ export function XeSeatBody({
           <button
             type="button"
             className="btn btn-ghost btn-sm"
+            disabled={!ready}
             onClick={clearAll}
           >
             <Icon name="i-refresh" />
@@ -283,11 +292,31 @@ export function XeSeatBody({
         </div>
       </div>
 
-      {(error || loadError) && (
-        <p className="form-status is-error" role="status" aria-live="polite">
-          {error ??
-            "Không tải được sơ đồ ghế hiện tại — bạn vẫn có thể tạo sơ đồ mới."}
-        </p>
+      {loadError ? (
+        <div
+          className="flex flex-wrap items-center gap-2.5"
+          role="status"
+          aria-live="polite"
+        >
+          <p className="form-status is-error">
+            Không tải được sơ đồ ghế hiện tại — hãy thử lại trước khi lưu để tránh
+            ghi đè.
+          </p>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => void refetch()}
+          >
+            <Icon name="i-refresh" />
+            Thử lại
+          </button>
+        </div>
+      ) : (
+        error && (
+          <p className="form-status is-error" role="status" aria-live="polite">
+            {error}
+          </p>
+        )
       )}
 
       <p className="text-[12px] leading-snug text-[var(--slate-500)]">
@@ -300,7 +329,11 @@ export function XeSeatBody({
         <button type="button" className="btn btn-ghost" onClick={onClose}>
           Hủy
         </button>
-        <button type="submit" className="btn btn-primary" disabled={saving}>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={!ready || saving}
+        >
           {saving ? "Đang lưu..." : "Lưu sơ đồ ghế"}
         </button>
       </div>

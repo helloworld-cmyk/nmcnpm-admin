@@ -34,6 +34,8 @@ type ChuyenFormBodyProps = {
   routeDurations: Record<string, number>;
   xeOptions: XeOption[];
   taixeOptions: TaiXeOption[];
+  /* Đang gọi API tạo/sửa → khóa nút và chặn submit trùng. */
+  saving?: boolean;
   onClose: () => void;
   onSave: (values: ChuyenFormValues, publish: boolean) => void;
 };
@@ -48,6 +50,7 @@ export function ChuyenFormBody({
   routeDurations,
   xeOptions,
   taixeOptions,
+  saving = false,
   onClose,
   onSave,
 }: ChuyenFormBodyProps) {
@@ -78,6 +81,7 @@ export function ChuyenFormBody({
     trips,
     routeDurations,
     taixeOptions,
+    saving,
     onSave,
   });
 
@@ -260,13 +264,14 @@ export function ChuyenFormBody({
         <button type="button" className="btn btn-ghost" onClick={onClose}>
           Đóng
         </button>
-        <button type="submit" className="btn btn-primary">
-          Lưu chuyến
+        <button type="submit" className="btn btn-primary" disabled={saving}>
+          {saving ? "Đang lưu..." : "Lưu chuyến"}
         </button>
         {canPublish && (
           <button
             type="button"
             className="btn btn-sky"
+            disabled={saving}
             onClick={handleSaveAndPublish}
           >
             <Icon name="i-publish" />

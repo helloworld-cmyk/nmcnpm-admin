@@ -793,6 +793,12 @@ export function useChuyenBoard() {
     deleteTrip,
     cancelPending: cancelTripMutation.isPending,
     deletePending: deleteTripMutation.isPending,
+    /* Chặn gửi trùng khi form tạo/sửa đang gọi API (tạo → phân công → công bố). */
+    formPending:
+      createTrip.isPending ||
+      updateTrip.isPending ||
+      publishTrip.isPending ||
+      assignTrip.isPending,
     sucoTrip,
     sucoState,
     formState,

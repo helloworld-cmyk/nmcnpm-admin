@@ -7,7 +7,7 @@ import { useCustomers } from "@/api/khach-hang/tanstack/use-customers";
 import { ApiError } from "@/api/types";
 import { useCompanyStore } from "@/global-states/company-store";
 import { useKhachHangFiltersStore } from "@/global-states/khach-hang-filters-store";
-import { soSanhNgay } from "../_data/customers";
+import { coNgay, soSanhNgay } from "../_data/customers";
 import { mapCustomerDetail, mapCustomers } from "../_utils/map-customer";
 
 const PAGE_SIZE = 5;
@@ -44,7 +44,7 @@ export function useKhachHangBoard() {
     const query = search.trim().toLowerCase();
     return customers.filter((kh) => {
       const haystack =
-        `${kh.ten} ${kh.soDienThoai} ${kh.email} ${kh.maKhach}`.toLowerCase();
+        `${kh.ten} ${kh.soDienThoai} ${kh.email}`.toLowerCase();
       return (
         (!query || haystack.includes(query)) &&
         (!trangThai || kh.trangThai === trangThai)
@@ -59,8 +59,14 @@ export function useKhachHangBoard() {
       if (sortKey === "veDaDat") {
         return (a.veDaDat - b.veDaDat) * direction;
       }
-      if (sortKey === "ngayTao") {
-        return soSanhNgay(a.ngayTao, b.ngayTao) * direction;
+      if (sortKey === "datGanNhat") {
+        /* Mốc thiếu/không hợp lệ luôn xuống cuối, không phụ thuộc chiều sắp xếp. */
+        const hopLeA = coNgay(a.datGanNhat);
+        const hopLeB = coNgay(b.datGanNhat);
+        if (hopLeA !== hopLeB) return hopLeA ? -1 : 1;
+        const soSanh = soSanhNgay(a.datGanNhat, b.datGanNhat);
+        if (soSanh !== 0) return soSanh * direction;
+        return a.ten.localeCompare(b.ten, "vi");
       }
       return a.ten.localeCompare(b.ten, "vi") * direction;
     });
@@ -74,6 +80,7 @@ export function useKhachHangBoard() {
   }, [page, pageCount, setPage]);
 
   const start = (safePage - 1) * PAGE_SIZE;
+  /* `veDaDat` lấy thẳng `bookingCount` của danh sách, không join thêm để tránh lệch nghĩa vé/đơn. */
   const rows = sorted.slice(start, start + PAGE_SIZE);
 
   const detailBase = customers.find((kh) => kh.id === detailId) ?? null;
@@ -103,7 +110,6 @@ export function useKhachHangBoard() {
     safePage,
     detail,
     detailTicketsLoading: detailQuery.isLoading,
-    detailId,
     setDetailId,
   };
 }

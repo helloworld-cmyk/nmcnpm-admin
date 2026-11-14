@@ -24,6 +24,8 @@ type ChuyenFormModalProps = {
   routeDurations: Record<string, number>;
   xeOptions: XeOption[];
   taixeOptions: TaiXeOption[];
+  /* Đang gọi API tạo/sửa → chặn gửi trùng ở form. */
+  saving?: boolean;
   onClose: () => void;
   onSave: (
     target: ChuyenFormTarget,
@@ -60,6 +62,7 @@ export function ChuyenFormModal({
   routeDurations,
   xeOptions,
   taixeOptions,
+  saving = false,
   onClose,
   onSave,
 }: ChuyenFormModalProps) {
@@ -94,6 +97,7 @@ export function ChuyenFormModal({
           routeDurations={routeDurations}
           xeOptions={xeOptions}
           taixeOptions={taixeOptions}
+          saving={saving}
           onClose={onClose}
           onSave={(values, publish) => onSave(target, values, publish)}
         />

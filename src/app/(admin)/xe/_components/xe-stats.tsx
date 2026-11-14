@@ -4,7 +4,7 @@ import type { XeStatsData } from "../_utils/xe-list";
 
 type StatCard = {
   icon: string;
-  tone: "sky" | "green" | "orange";
+  tone: "sky" | "green" | "orange" | "slate";
   value: number;
   label: string;
 };
@@ -28,7 +28,7 @@ const STAT_VALUE_CLASS = [
 ].join(" ");
 
 const STATS_GRID_CLASS = [
-  "mb-[22px] grid grid-cols-3 gap-3.5",
+  "mb-[22px] grid grid-cols-4 gap-3.5",
   "max-[1080px]:grid-cols-2 max-[640px]:gap-2.5",
   "max-[400px]:grid-cols-1",
 ].join(" ");
@@ -39,6 +39,8 @@ const ICON_TONE_CLASS: Record<StatCard["tone"], string> = {
     "bg-[var(--green-50)] text-[var(--green-700)] shadow-[inset_0_0_0_1px_var(--green-100)]",
   orange:
     "bg-[var(--orange-50)] text-[var(--orange-700)] shadow-[inset_0_0_0_1px_var(--orange-100)]",
+  slate:
+    "bg-[var(--slate-200)] text-[var(--slate-700)] shadow-[inset_0_0_0_1px_var(--slate-300)]",
 };
 
 export function XeStats({ stats }: { stats: XeStatsData }) {
@@ -55,6 +57,12 @@ export function XeStats({ stats }: { stats: XeStatsData }) {
       tone: "orange",
       value: stats.baoTri,
       label: "Đang bảo trì",
+    },
+    {
+      icon: "i-lock",
+      tone: "slate",
+      value: stats.ngungSuDung,
+      label: "Ngưng sử dụng",
     },
   ];
 

@@ -18,9 +18,8 @@ export const XE_TRANG_THAI_TO_STATUS: Record<XeTrangThai, VehicleStatus> = {
 
 /*
  * VehicleResponse → Xe (view-model của màn Quản lý xe).
- * Backend /bus-companies/{id}/vehicles hiện KHÔNG trả tài xế phụ trách → trường
- * này để trống và chỉ được cập nhật cục bộ ở tầng UI (xem local override trong
- * xe-board.tsx).
+ * Backend hiện chưa trả thông tin tài xế phụ trách nên view-model không có
+ * trường này.
  */
 export function mapVehicle(vehicle: VehicleResponse): Xe {
   return {
@@ -29,10 +28,7 @@ export function mapVehicle(vehicle: VehicleResponse): Xe {
     loaiXe: vehicle.vehicleModel,
     soCho: vehicle.passengerCapacity,
     seatLayoutId: vehicle.seatLayoutId,
-    taiXeId: null,
-    taiXe: null,
     trangThai: STATUS_TO_TRANG_THAI[vehicle.status],
-    daGanChuyen: false,
   };
 }
 

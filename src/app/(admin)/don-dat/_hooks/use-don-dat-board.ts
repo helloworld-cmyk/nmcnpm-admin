@@ -7,6 +7,7 @@ import { useBooking } from "@/api/don-dat/tanstack/use-booking";
 import { useBookingStatistics } from "@/api/don-dat/tanstack/use-booking-statistics";
 import { useBookingStatusCounts } from "@/api/don-dat/tanstack/use-booking-status-counts";
 import { useBookings } from "@/api/don-dat/tanstack/use-bookings";
+import { useCustomer } from "@/api/khach-hang/tanstack/use-customer";
 import type {
   CompanyBookingStatisticsResponse,
   ListBookingsQuery,
@@ -17,7 +18,9 @@ import { useCompanyStore } from "@/global-states/company-store";
 import { useDonDatFiltersStore } from "@/global-states/don-dat-filters-store";
 import {
   DON_DAT_TAB_VIEW,
+  DON_DAT_VIEW_TAB,
   SO_DONG_MOI_TRANG,
+  laViewStatus,
 } from "../_data/don-dat";
 import {
   mapBookingDetail,
@@ -40,18 +43,33 @@ export type DonDatCancelTarget = { id: string; ma: string; khach: string };
  * thái, thống kê, lọc/đếm/phân trang server-side, chi tiết đơn, hủy đơn).
  * Component `DonDatBoard` chỉ còn render UI.
  */
-export function useDonDatBoard() {
+export function useDonDatBoard(initialCustomerId = "", initialViewStatus = "") {
   const companyId = useCompanyStore((s) => s.companyId) ?? "";
   const companyHydrated = useCompanyStore((s) => s.hydrated);
 
   const tab = useDonDatFiltersStore((s) => s.tab);
+  const setTab = useDonDatFiltersStore((s) => s.setTab);
   const search = useDonDatFiltersStore((s) => s.search);
   const departureFrom = useDonDatFiltersStore((s) => s.departureFrom);
   const departureTo = useDonDatFiltersStore((s) => s.departureTo);
+  const customerId = useDonDatFiltersStore((s) => s.customerId);
+  const setCustomerId = useDonDatFiltersStore((s) => s.setCustomerId);
   const page = useDonDatFiltersStore((s) => s.page);
   const setPage = useDonDatFiltersStore((s) => s.setPage);
   const resetFilters = useDonDatFiltersStore((s) => s.reset);
   const deferredSearch = useDeferredValue(search);
+
+  /* Đồng bộ customerId từ query string của URL (link "Xem tất cả đơn đặt" ở màn khách hàng). */
+  useEffect(() => {
+    setCustomerId(initialCustomerId);
+  }, [initialCustomerId, setCustomerId]);
+
+  /* Đồng bộ tab từ query string ?viewStatus=... để deep link mở đúng trạng thái. */
+  useEffect(() => {
+    if (laViewStatus(initialViewStatus)) {
+      setTab(DON_DAT_VIEW_TAB[initialViewStatus]);
+    }
+  }, [initialViewStatus, setTab]);
 
   const [toast, setToast] = useState<ToastData | null>(null);
   const handleReset = () => {
@@ -64,9 +82,13 @@ export function useDonDatBoard() {
       q: deferredSearch.trim() || undefined,
       departureFrom: departureFrom || undefined,
       departureTo: departureTo || undefined,
+      customerId: customerId || undefined,
     }),
-    [deferredSearch, departureFrom, departureTo]
+    [deferredSearch, departureFrom, departureTo, customerId]
   );
+
+  /* Chờ đồng bộ customerId từ URL trước khi gọi, tránh tải nhầm toàn bộ đơn của hãng. */
+  const queriesEnabled = companyId.length > 0 && customerId !== null;
 
   const listQuery = useBookings(
     companyId,
@@ -76,10 +98,12 @@ export function useDonDatBoard() {
       page: page - 1,
       size: SO_DONG_MOI_TRANG,
     },
-    { placeholderData: keepPreviousData }
+    { placeholderData: keepPreviousData, enabled: queriesEnabled }
   );
 
-  const countsQuery = useBookingStatusCounts(companyId, sharedFilters);
+  const countsQuery = useBookingStatusCounts(companyId, sharedFilters, {
+    enabled: queriesEnabled,
+  });
   const statsQuery = useBookingStatistics(companyId);
 
   const rows = useMemo(
@@ -124,6 +148,10 @@ export function useDonDatBoard() {
   const statistics: CompanyBookingStatisticsResponse | null =
     statsQuery.data ?? null;
 
+  /* Tên khách đang lọc (chỉ gọi khi có customerId) để hiển thị ngữ cảnh trên toolbar. */
+  const customerQuery = useCustomer(companyId, customerId ?? "");
+  const customerName = customerQuery.data?.fullName ?? "";
+
   return {
     companyId,
     companyHydrated,
@@ -133,7 +161,8 @@ export function useDonDatBoard() {
     statistics,
     countsLoading: countsQuery.isLoading,
     statsLoading: statsQuery.isLoading,
-    isLoading: listQuery.isLoading,
+    /* customerId === null nghĩa là chưa đồng bộ URL → coi như đang tải. */
+    isLoading: listQuery.isLoading || customerId === null,
     isFetching: listQuery.isFetching,
     isError: listQuery.isError,
     errorText: apiMessage(listQuery.error),
@@ -143,6 +172,10 @@ export function useDonDatBoard() {
     totalElements,
     rangeStart: rows.length > 0 ? start + 1 : 0,
     rangeEnd: start + rows.length,
+    customerId,
+    customerName,
+    customerLoading: customerQuery.isLoading,
+    clearCustomer: () => setCustomerId(""),
     detail,
     detailOpen: detailId !== null,
     detailLoading: detailQuery.isLoading,

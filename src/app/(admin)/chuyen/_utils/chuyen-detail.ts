@@ -6,6 +6,8 @@ import type {
   VeItem,
 } from "../_data/chuyen";
 
+import type { TripDetailHistoryItem } from "@/api/chuyen/api/types";
+
 export type TimelineState =
   | "done"
   | "current"
@@ -181,4 +183,46 @@ export function buildChuyenTimeline(
     }
   }
   return timeline;
+}
+
+const pad2 = (value: number) => String(value).padStart(2, "0");
+
+/* Mốc ISO (LocalDateTime) → "dd/mm · HH:mm" theo giờ địa phương. */
+const mocThoiGian = (iso: string | null) => {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)} · ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+};
+
+/* Trạng thái mốc lịch sử backend (DONE/PENDING) → biến thể dot trên UI. */
+const HISTORY_STATE = (item: TripDetailHistoryItem): TimelineState => {
+  if (item.state !== "DONE") return "pending";
+  const key = item.eventType.toUpperCase();
+  if (key.includes("CANCEL")) return "cancelled";
+  if (key.includes("COMPLETE")) return "complete";
+  return "done";
+};
+
+/*
+ * Lịch sử trạng thái thật của backend (TripDetailResponse.history) → timeline UI.
+ * Mốc đã xảy ra dùng thời điểm thật; mốc chờ dùng expectedAt (nếu có).
+ */
+export function mapHistoryTimeline(
+  history: TripDetailHistoryItem[]
+): TimelineItem[] {
+  return history.map((item) => {
+    const occurred = mocThoiGian(item.occurredAt);
+    const expected = mocThoiGian(item.expectedAt);
+    const who = item.actorName ?? item.description ?? null;
+    const meta =
+      item.state === "DONE"
+        ? [occurred, who].filter(Boolean).join(" · ") || "—"
+        : `Dự kiến ${expected ?? "—"}`;
+    return {
+      title: item.title ?? item.eventType,
+      meta,
+      state: HISTORY_STATE(item),
+    };
+  });
 }

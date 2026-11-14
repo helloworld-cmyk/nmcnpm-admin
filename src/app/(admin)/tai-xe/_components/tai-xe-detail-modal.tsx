@@ -109,7 +109,7 @@ export function TaiXeDetailModal({
           <dl className={DETAIL_GRID}>
             <div>
               <dt className={DETAIL_DT}>Số điện thoại</dt>
-              <dd className={DETAIL_DD}>{taiXe.soDienThoai}</dd>
+              <dd className={DETAIL_DD}>{taiXe.soDienThoai || "—"}</dd>
             </div>
             <div>
               <dt className={DETAIL_DT}>Email</dt>

@@ -52,9 +52,10 @@ export function XeDocumentBody({
     activeType,
     savedByType,
     error,
-    isLoading,
+    ready,
     loadError,
     saving,
+    refetch,
     patchField,
     setActive,
     submit,
@@ -96,8 +97,29 @@ export function XeDocumentBody({
         })}
       </div>
 
-      {isLoading ? (
-        <div className="state-loading py-6">Đang tải giấy tờ xe...</div>
+      {!ready ? (
+        loadError ? (
+          <div
+            className="flex flex-wrap items-center gap-2.5"
+            role="status"
+            aria-live="polite"
+          >
+            <p className="form-status is-error">
+              Không tải được giấy tờ hiện có — hãy thử lại trước khi lưu để tránh
+              ghi đè.
+            </p>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => void refetch()}
+            >
+              <Icon name="i-refresh" />
+              Thử lại
+            </button>
+          </div>
+        ) : (
+          <div className="state-loading py-6">Đang tải giấy tờ xe...</div>
+        )
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-2 text-[12.5px] text-[var(--slate-500)]">
@@ -171,14 +193,14 @@ export function XeDocumentBody({
           </FormField>
 
           <p className="text-[12px] leading-snug text-[var(--slate-500)]">
-            Trường để trống sẽ giữ nguyên giá trị đã lưu. Trạng thái hiệu lực do
-            backend tính theo ngày hết hiệu lực.
+            Lưu sẽ ghi đè toàn bộ giấy tờ của loại đang chọn; để trống một trường
+            sẽ xóa giá trị cũ của trường đó. Trạng thái hiệu lực do backend tính
+            theo ngày hết hiệu lực.
           </p>
 
-          {(error || loadError) && (
+          {error && (
             <p className="form-status is-error" role="status" aria-live="polite">
-              {error ??
-                "Không tải được giấy tờ hiện có — bạn vẫn có thể lưu giấy tờ mới."}
+              {error}
             </p>
           )}
 
@@ -186,7 +208,11 @@ export function XeDocumentBody({
             <button type="button" className="btn btn-ghost" onClick={onClose}>
               Đóng
             </button>
-            <button type="submit" className="btn btn-primary" disabled={saving}>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={!ready || saving}
+            >
               {saving ? "Đang lưu..." : "Lưu giấy tờ"}
             </button>
           </div>

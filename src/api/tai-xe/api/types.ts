@@ -25,7 +25,8 @@ export type CompanyDriverResponse = {
   /* Tài xế "legacy" chưa có hồ sơ → các trường dưới đây có thể null. */
   profileId: string | null;
   fullName: string;
-  phone: string;
+  /* UserAccount.phone có thể null (tài khoản chưa gắn SĐT). */
+  phone: string | null;
   email: string | null;
   licenseNumber: string | null;
   licenseClass: string | null;

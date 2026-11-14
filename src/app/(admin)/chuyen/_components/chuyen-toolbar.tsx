@@ -134,10 +134,13 @@ export function ChuyenToolbar({
                 icon="i-route"
                 value={filters.tuyen}
                 onChange={(value) => setFilter("tuyen", value)}
-                options={tuyenOptions.map((option) => ({
-                  value: option.value,
-                  label: option.label,
-                }))}
+                options={[
+                  { value: "all", label: "Tất cả tuyến" },
+                  ...tuyenOptions.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                  })),
+                ]}
               />
             </FormField>
 

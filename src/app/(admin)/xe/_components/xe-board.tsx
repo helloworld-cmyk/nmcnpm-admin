@@ -29,10 +29,12 @@ export function XeBoard() {
     isFetching,
     errorText,
     refetch,
-    vehicles,
+    fleet,
     sorted,
     rows,
     stats,
+    soChoOptions,
+    hasNoVehicles,
     start,
     pageCount,
     safePage,
@@ -80,7 +82,12 @@ export function XeBoard() {
       );
     }
     if (sorted.length === 0) {
-      return <XeEmptyState />;
+      return (
+        <XeEmptyState
+          variant={hasNoVehicles ? "no-vehicles" : "no-match"}
+          onAddVehicle={() => setFormTarget({ mode: "add" })}
+        />
+      );
     }
     return (
       <Reveal>
@@ -139,7 +146,8 @@ export function XeBoard() {
       <Reveal>
         <XeFilters
           filteredCount={sorted.length}
-          totalCount={vehicles.length}
+          totalCount={fleet.length}
+          soChoOptions={soChoOptions}
         />
       </Reveal>
 
@@ -147,7 +155,7 @@ export function XeBoard() {
 
       <XeFormModal
         target={formTarget}
-        vehicles={vehicles}
+        vehicles={fleet}
         onClose={() => setFormTarget(null)}
         onSave={handleSave}
       />

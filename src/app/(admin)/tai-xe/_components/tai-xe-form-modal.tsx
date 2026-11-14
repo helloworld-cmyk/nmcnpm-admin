@@ -4,6 +4,7 @@ import { Modal } from "@/components/ui/modal";
 import {
   EMPTY_TAI_XE_FORM,
   toTaiXeFormState,
+  type TaiXeFormPatchValues,
   type TaiXeFormTarget,
   type TaiXeFormValues,
 } from "../_utils/tai-xe-form";
@@ -13,7 +14,7 @@ type TaiXeFormModalProps = {
   target: TaiXeFormTarget | null;
   saving: boolean;
   onClose: () => void;
-  onSave: (values: TaiXeFormValues) => void;
+  onSave: (values: TaiXeFormValues | TaiXeFormPatchValues) => void;
 };
 
 const TITLE_HINT_CLASS = [

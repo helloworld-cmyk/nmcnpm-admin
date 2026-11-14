@@ -38,6 +38,22 @@ export const DON_DAT_TAB_VIEW: Record<
   expired: "EXPIRED",
 };
 
+/* Map ngược BookingViewStatus → tab, dùng khi đọc deep link ?viewStatus=... */
+export const DON_DAT_VIEW_TAB: Record<BookingViewStatus, DonDatTab> = {
+  BOOKED: "booked",
+  PICKED_UP: "pickedUp",
+  COMPLETED: "completed",
+  NO_SHOW: "noShow",
+  CANCELLED: "cancelled",
+  HOLDING: "holding",
+  EXPIRED: "expired",
+};
+
+/* Kiểm tra một chuỗi có phải BookingViewStatus hợp lệ từ query string không. */
+export function laViewStatus(value: string): value is BookingViewStatus {
+  return Object.hasOwn(DON_DAT_VIEW_TAB, value);
+}
+
 /* Nhãn + lớp badge cho trạng thái chung của đơn. */
 export const DON_DAT_STATUS: Record<
   BookingViewStatus,

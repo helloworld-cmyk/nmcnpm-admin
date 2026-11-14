@@ -16,7 +16,13 @@ const EMPTY_STATE_CLASS = [
   "bg-[var(--surface)]",
 ].join(" ");
 
-export function DonDatBoard() {
+export function DonDatBoard({
+  initialCustomerId,
+  initialViewStatus,
+}: {
+  initialCustomerId?: string;
+  initialViewStatus?: string;
+}) {
   const {
     companyId,
     companyHydrated,
@@ -34,6 +40,10 @@ export function DonDatBoard() {
     totalElements,
     rangeStart,
     rangeEnd,
+    customerId,
+    customerName,
+    customerLoading,
+    clearCustomer,
     detail,
     detailOpen,
     detailLoading,
@@ -47,7 +57,7 @@ export function DonDatBoard() {
     toast,
     setToast,
     handleReset,
-  } = useDonDatBoard();
+  } = useDonDatBoard(initialCustomerId ?? "", initialViewStatus ?? "");
 
   const renderBody = () => {
     if (!companyHydrated) {
@@ -148,7 +158,14 @@ export function DonDatBoard() {
 
           <Reveal delay={60}>
             <div className="mt-6 max-[640px]:mt-[18px]">
-              <DonDatToolbar counts={counts} onReset={handleReset} />
+              <DonDatToolbar
+                counts={counts}
+                customerId={customerId}
+                customerName={customerName}
+                customerLoading={customerLoading}
+                onClearCustomer={clearCustomer}
+                onReset={handleReset}
+              />
             </div>
           </Reveal>
         </>

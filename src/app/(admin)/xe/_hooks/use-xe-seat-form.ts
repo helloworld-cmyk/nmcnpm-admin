@@ -45,17 +45,22 @@ export function useXeSeatForm({
   const configure = useConfigureVehicleSeats(companyId, vehicleId);
 
   const [state, setState] = useState<XeSeatEditorState>(emptyEditorState);
+  const [ready, setReady] = useState(false);
   const [brush, setBrush] = useState<string>(SEAT_FILLED);
   const [error, setError] = useState<string | null>(null);
   const [nameInvalid, setNameInvalid] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const seededRef = useRef(false);
 
-  /* Nạp sơ đồ ghế hiện tại từ API một lần khi truy vấn thành công. */
+  /*
+   * Nạp sơ đồ ghế hiện tại từ API một lần khi truy vấn thành công. Chỉ bật
+   * `ready` sau khi đã seed để không cho lưu đè khi GET đang tải hoặc lỗi.
+   */
   useEffect(() => {
     if (seededRef.current || !seatsQuery.isSuccess) return;
     seededRef.current = true;
     setState(seatLayoutFromResponse(seatsQuery.data));
+    setReady(true);
   }, [seatsQuery.isSuccess, seatsQuery.data]);
 
   const cells = useMemo(() => seatGridCells(state), [state]);
@@ -97,6 +102,12 @@ export function useXeSeatForm({
   }, []);
 
   const submit = useCallback(async () => {
+    if (!ready) {
+      setError(
+        "Chưa tải được sơ đồ ghế hiện tại — hãy thử lại trước khi lưu để tránh ghi đè."
+      );
+      return;
+    }
     const result = validateSeatEditor(state);
     if (!result.ok) {
       setError(result.error);
@@ -120,7 +131,7 @@ export function useXeSeatForm({
           : "Có lỗi xảy ra, vui lòng thử lại."
       );
     }
-  }, [state, configure, queryClient, companyId, vehicleId, onSaved]);
+  }, [ready, state, configure, queryClient, companyId, vehicleId, onSaved]);
 
   return {
     state,
@@ -131,9 +142,11 @@ export function useXeSeatForm({
     error,
     nameInvalid,
     nameRef,
+    ready,
     isLoading: seatsQuery.isLoading,
     loadError: seatsQuery.isError,
     saving: configure.isPending,
+    refetch: seatsQuery.refetch,
     patchState,
     paintCell,
     paintAll,

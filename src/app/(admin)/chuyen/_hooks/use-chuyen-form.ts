@@ -36,6 +36,8 @@ type UseChuyenFormOptions = {
   trips: ChuyenRecord[];
   routeDurations?: Record<string, number>;
   taixeOptions: TaiXeOption[];
+  /* Đang gọi API tạo/sửa → chặn submit lặp (kể cả Enter trong ô nhập). */
+  saving?: boolean;
   onSave: (values: ChuyenFormValues, publish: boolean) => void;
 };
 
@@ -57,6 +59,7 @@ export function useChuyenForm({
   trips,
   routeDurations,
   taixeOptions,
+  saving = false,
   onSave,
 }: UseChuyenFormOptions) {
   const [values, setValues] = useState<ChuyenFormFields>(initial);
@@ -146,6 +149,8 @@ export function useChuyenForm({
   ).replace(/\s*·.*$/, "");
 
   const submit = (publish: boolean) => {
+    /* Bỏ qua khi request trước đang chạy để không tạo trùng chuyến. */
+    if (saving) return;
     const nextInvalid: Record<string, boolean> = {};
     const missing: { key: keyof ChuyenFormFields; label: string }[] = [];
     REQUIRED_FIELDS.forEach((field) => {

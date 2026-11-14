@@ -2,7 +2,7 @@ import type { PassengerTripStatus } from "@/api/booking/types";
 import type {
   DriverAssignmentStatus,
   TripAssignmentResponse,
-  TripPassengerBookingResponse,
+  TripDetailPassenger,
   TripResponse,
 } from "@/api/chuyen/api/types";
 import type { VehicleResponse } from "@/api/xe/api/types";
@@ -178,44 +178,23 @@ export function buildExpectedArrivalAt(departureAt: string, minutes: number) {
 const DA_DON: readonly PassengerTripStatus[] = ["PICKED_UP", "DROPPED_OFF"];
 
 /*
- * Danh sách đặt vé + hành khách của chuyến → danh sách vé hiển thị trong ngăn
- * chi tiết. Vé CONFIRMED coi như đã thu; CANCELLED/EXPIRED coi như đã hủy.
+ * Vé trong chi tiết chuyến (TripDetailResponse.passengers) → danh sách vé hiển
+ * thị. Vé đã hủy/hết hạn coi như đã hủy; "đã thu" lấy từ paymentCollected.
  */
-export function mapTripBookings(
-  bookings: TripPassengerBookingResponse[]
+export function mapDetailPassengers(
+  passengers: TripDetailPassenger[]
 ): VeItem[] {
-  return bookings.flatMap((booking) =>
-    booking.passengers.map((ticket) => ({
-      id: ticket.id,
-      maVe: ticket.ticketCode,
-      khach: ticket.passengerName,
-      sdt: ticket.passengerPhone || booking.contactPhone,
-      ghe: ticket.seatCode,
-      diemDon: ticket.pickupAddress || "—",
-      diemTra: ticket.dropoffAddress || "—",
-      tien: ticket.fareAmount,
-      daDon: DA_DON.includes(ticket.passengerTripStatus),
-      daThu: ticket.status === "CONFIRMED",
-      daHuy: ticket.status === "CANCELLED" || ticket.status === "EXPIRED",
-    }))
-  );
-}
-
-export type ChuyenAssignment = {
-  driverName: string | null;
-  driverPhone: string | null;
-  vehicleId: string | null;
-};
-
-/* Phân công xe + tài xế hiện tại của chuyến (null khi chuyến chưa phân công). */
-export function mapTripAssignment(
-  assignment: TripAssignmentResponse | undefined
-): ChuyenAssignment | null {
-  if (!assignment) return null;
-  if (!assignment.driverId && !assignment.vehicleId) return null;
-  return {
-    driverName: assignment.driverName,
-    driverPhone: assignment.driverPhone,
-    vehicleId: assignment.vehicleId,
-  };
+  return passengers.map((ticket) => ({
+    id: ticket.id,
+    maVe: ticket.ticketCode,
+    khach: ticket.passengerName,
+    sdt: ticket.passengerPhone || ticket.contactPhone,
+    ghe: ticket.seatCode,
+    diemDon: ticket.pickupAddress || "—",
+    diemTra: ticket.dropoffAddress || "—",
+    tien: ticket.fareAmount,
+    daDon: DA_DON.includes(ticket.passengerTripStatus),
+    daThu: ticket.paymentCollected === true,
+    daHuy: ticket.status === "CANCELLED" || ticket.status === "EXPIRED",
+  }));
 }
